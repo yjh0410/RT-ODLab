@@ -20,6 +20,7 @@ def build_yolov2(args, cfg, device, num_classes=80, trainable=False):
         num_classes = num_classes,
         conf_thresh = args.conf_thresh,
         nms_thresh = args.nms_thresh,
+        topk = args.topk,
         trainable = trainable
         )
 

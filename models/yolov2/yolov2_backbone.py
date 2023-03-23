@@ -87,10 +87,11 @@ class DarkNet19(nn.Module):
         return c5
 
 
-def build_darknet19(pretrained=False):
-    # model
-    model = DarkNet19()
-    feat_dim = 1024
+def build_backbone(model_name='darknet19', pretrained=False):
+    if model_name == 'darknet19':
+        # model
+        model = DarkNet19()
+        feat_dim = 1024
 
     # load weight
     if pretrained:
@@ -119,7 +120,7 @@ def build_darknet19(pretrained=False):
 
 if __name__ == '__main__':
     import time
-    model, feat_dim = build_darknet19(pretrained=True)
+    model, feat_dim = build_backbone(pretrained=True)
     x = torch.randn(1, 3, 224, 224)
     t0 = time.time()
     y = model(x)

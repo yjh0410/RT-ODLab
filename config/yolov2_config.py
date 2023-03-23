@@ -21,6 +21,11 @@ yolov2_cfg = {
     'num_cls_head': 2,
     'num_reg_head': 2,
     'head_depthwise': False,
+    'anchor_size': [[17,  25],
+                    [55,  75],
+                    [92,  206],
+                    [202, 21],
+                    [289, 311]],  # 416
     # loss weight
     'loss_obj_weight': 1.0,
     'loss_cls_weight': 1.0,

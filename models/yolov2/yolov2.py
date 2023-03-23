@@ -17,6 +17,7 @@ class YOLOv2(nn.Module):
                  img_size=None,
                  num_classes=20,
                  conf_thresh=0.01,
+                 topk=100,
                  nms_thresh=0.5,
                  trainable=False):
         super(YOLOv2, self).__init__()
@@ -28,7 +29,11 @@ class YOLOv2(nn.Module):
         self.trainable = trainable                     # 训练的标记
         self.conf_thresh = conf_thresh                 # 得分阈值
         self.nms_thresh = nms_thresh                   # NMS阈值
+        self.topk = topk                               # topk
         self.stride = 32                               # 网络的最大步长
+        # ------------------- Anchor box -------------------
+        self.anchor_size = torch.as_tensor(cfg['anchor_size']).view(-1, 2) # [KA, 2]
+        self.num_anchors = self.anchor_size.shape[0]
         
         # ------------------- Network Structure -------------------
         ## 主干网络
@@ -36,16 +41,16 @@ class YOLOv2(nn.Module):
             cfg['backbone'], trainable&cfg['pretrained'])
 
         ## 颈部网络
-        self.neck = build_neck(cfg, feat_dim, out_dim=256)
+        self.neck = build_neck(cfg, feat_dim, out_dim=512)
         head_dim = self.neck.out_dim
 
         ## 检测头
         self.head = build_head(cfg, head_dim, head_dim, num_classes)
 
         ## 预测曾
-        self.obj_pred = nn.Conv2d(head_dim, 1, kernel_size=1)
-        self.cls_pred = nn.Conv2d(head_dim, num_classes, kernel_size=1)
-        self.reg_pred = nn.Conv2d(head_dim, 4, kernel_size=1)
+        self.obj_pred = nn.Conv2d(head_dim, 1*self.num_anchors, kernel_size=1)
+        self.cls_pred = nn.Conv2d(head_dim, num_classes*self.num_anchors, kernel_size=1)
+        self.reg_pred = nn.Conv2d(head_dim, 4*self.num_anchors, kernel_size=1)
     
 
         if self.trainable:
@@ -60,35 +65,36 @@ class YOLOv2(nn.Module):
         nn.init.constant_(self.cls_pred.bias, bias_value)
 
 
-    def create_grid(self, fmp_size):
-        """ 
-            用于生成G矩阵，其中每个元素都是特征图上的像素坐标。
+    def generate_anchors(self, fmp_size):
         """
-        # 特征图的宽和高
-        ws, hs = fmp_size
+            fmp_size: (List) [H, W]
+        """
+        fmp_h, fmp_w = fmp_size
 
-        # 生成网格的x坐标和y坐标
-        grid_y, grid_x = torch.meshgrid([torch.arange(hs), torch.arange(ws)])
+        # generate grid cells
+        anchor_y, anchor_x = torch.meshgrid([torch.arange(fmp_h), torch.arange(fmp_w)])
+        anchor_xy = torch.stack([anchor_x, anchor_y], dim=-1).float().view(-1, 2)
+        # [HW, 2] -> [HW, KA, 2] -> [M, 2]
+        anchor_xy = anchor_xy.unsqueeze(1).repeat(1, self.num_anchors, 1)
+        anchor_xy = anchor_xy.view(-1, 2).to(self.device)
 
-        # 将xy两部分的坐标拼起来：[H, W, 2]
-        grid_xy = torch.stack([grid_x, grid_y], dim=-1).float()
+        # [KA, 2] -> [1, KA, 2] -> [HW, KA, 2] -> [M, 2]
+        anchor_wh = self.anchor_size.unsqueeze(0).repeat(fmp_h*fmp_w, 1, 1)
+        anchor_wh = anchor_wh.view(-1, 2).to(self.device)
 
-        # [H, W, 2] -> [HW, 2] -> [HW, 2]
-        grid_xy = grid_xy.view(-1, 2).to(self.device)
+        anchors = torch.cat([anchor_xy, anchor_wh], dim=-1)
+
+        return anchors
         
-        return grid_xy
 
-
-    def decode_boxes(self, pred, fmp_size):
+    def decode_boxes(self, anchors, reg_pred):
         """
             将txtytwth转换为常用的x1y1x2y2形式。
         """
-        # 生成网格坐标矩阵
-        grid_cell = self.create_grid(fmp_size)
 
         # 计算预测边界框的中心点坐标和宽高
-        pred_ctr = (torch.sigmoid(pred[..., :2]) + grid_cell) * self.stride
-        pred_wh = torch.exp(pred[..., 2:]) * self.stride
+        pred_ctr = (torch.sigmoid(reg_pred[..., :2]) + anchors[..., :2]) * self.stride
+        pred_wh = torch.exp(reg_pred[..., 2:]) * anchors[..., 2:]
 
         # 将所有bbox的中心带你坐标和宽高换算成x1y1x2y2形式
         pred_x1y1 = pred_ctr - pred_wh * 0.5
@@ -98,25 +104,48 @@ class YOLOv2(nn.Module):
         return pred_box
 
 
-    def postprocess(self, bboxes, scores):
+    def postprocess(self, obj_pred, cls_pred, reg_pred, anchors):
         """
         Input:
-            bboxes: [HxW, 4]
-            scores: [HxW, num_classes]
-        Output:
-            bboxes: [N, 4]
-            score:  [N,]
-            labels: [N,]
+            conf_pred: (Tensor) [H*W*KA, 1]
+            cls_pred:  (Tensor) [H*W*KA, C]
+            reg_pred:  (Tensor) [H*W*KA, 4]
         """
+        # (H x W x KA x C,)
+        scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid()).flatten()
 
-        labels = np.argmax(scores, axis=1)
-        scores = scores[(np.arange(scores.shape[0]), labels)]
-        
+        # Keep top k top scoring indices only.
+        num_topk = min(self.topk, reg_pred.size(0))
+
+        # torch.sort is actually faster than .topk (at least on GPUs)
+        predicted_prob, topk_idxs = scores.sort(descending=True)
+        topk_scores = predicted_prob[:num_topk]
+        topk_idxs = topk_idxs[:num_topk]
+
+        # filter out the proposals with low confidence score
+        keep_idxs = topk_scores > self.conf_thresh
+        scores = topk_scores[keep_idxs]
+        topk_idxs = topk_idxs[keep_idxs]
+
+        anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
+        labels = topk_idxs % self.num_classes
+
+        reg_pred = reg_pred[anchor_idxs]
+        anchors = anchors[anchor_idxs]
+
+        # 解算边界框, 并归一化边界框: [H*W*KA, 4]
+        bboxes = self.decode_boxes(anchors, reg_pred)
+
         # threshold
-        keep = np.where(scores >= self.conf_thresh)
-        bboxes = bboxes[keep]
-        scores = scores[keep]
-        labels = labels[keep]
+        keep_idxs = scores.gt(self.conf_thresh)
+        scores = scores[keep_idxs]
+        labels = labels[keep_idxs]
+        bboxes = bboxes[keep_idxs]
+
+        # to cpu & numpy
+        scores = scores.cpu().numpy()
+        labels = labels.cpu().numpy()
+        bboxes = bboxes.cpu().numpy()
 
         # nms
         scores, labels, bboxes = multiclass_nms(
@@ -127,6 +156,7 @@ class YOLOv2(nn.Module):
 
     @torch.no_grad()
     def inference(self, x):
+        bs = x.shape[0]
         # 主干网络
         feat = self.backbone(x)
 
@@ -142,30 +172,24 @@ class YOLOv2(nn.Module):
         reg_pred = self.reg_pred(reg_feat)
         fmp_size = obj_pred.shape[-2:]
 
+        # anchors: [M, 2]
+        anchors = self.generate_anchors(fmp_size)
+
         # 对 pred 的size做一些view调整，便于后续的处理
-        # [B, C, H, W] -> [B, H, W, C] -> [B, H*W, C]
-        obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().flatten(1, 2)
-        cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().flatten(1, 2)
-        reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().flatten(1, 2)
+        # [B, KA*C, H, W] -> [B, H, W, KA*C] -> [B, H*W*KA, C]
+        obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 1)
+        cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, self.num_classes)
+        reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 4)
 
         # 测试时，笔者默认batch是1，
         # 因此，我们不需要用batch这个维度，用[0]将其取走。
-        obj_pred = obj_pred[0]       # [H*W, 1]
-        cls_pred = cls_pred[0]       # [H*W, NC]
-        reg_pred = reg_pred[0]       # [H*W, 4]
+        obj_pred = obj_pred[0]       # [H*W*KA, 1]
+        cls_pred = cls_pred[0]       # [H*W*KA, NC]
+        reg_pred = reg_pred[0]       # [H*W*KA, 4]
 
-        # 每个边界框的得分
-        scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid())
-        
-        # 解算边界框, 并归一化边界框: [H*W, 4]
-        bboxes = self.decode_boxes(reg_pred, fmp_size)
-        
-        # 将预测放在cpu处理上，以便进行后处理
-        scores = scores.cpu().numpy()
-        bboxes = bboxes.cpu().numpy()
-        
-        # 后处理
-        bboxes, scores, labels = self.postprocess(bboxes, scores)
+        # post process
+        bboxes, scores, labels = self.postprocess(
+            obj_pred, cls_pred, reg_pred, anchors)
 
         return bboxes, scores, labels
 
@@ -174,6 +198,7 @@ class YOLOv2(nn.Module):
         if not self.trainable:
             return self.inference(x)
         else:
+            bs = x.shape[0]
             # 主干网络
             feat = self.backbone(x)
 
@@ -189,14 +214,17 @@ class YOLOv2(nn.Module):
             reg_pred = self.reg_pred(reg_feat)
             fmp_size = obj_pred.shape[-2:]
 
+            # anchors: [M, 2]
+            anchors = self.generate_anchors(fmp_size)
+
             # 对 pred 的size做一些view调整，便于后续的处理
-            # [B, C, H, W] -> [B, H, W, C] -> [B, H*W, C]
-            obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().flatten(1, 2)
-            cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().flatten(1, 2)
-            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().flatten(1, 2)
+            # [B, KA*C, H, W] -> [B, H, W, KA*C] -> [B, H*W*KA, C]
+            obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 1)
+            cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, self.num_classes)
+            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 4)
 
             # decode bbox
-            box_pred = self.decode_boxes(reg_pred, fmp_size)
+            box_pred = self.decode_boxes(anchors, reg_pred)
 
             # 网络输出
             outputs = {"pred_obj": obj_pred,                  # (Tensor) [B, M, 1]

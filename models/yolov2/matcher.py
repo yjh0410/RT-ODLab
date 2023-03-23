@@ -2,9 +2,10 @@ import torch
 import numpy as np
 
 
-class YoloMatcher(object):
-    def __init__(self, num_classes):
+class Yolov2Matcher(object):
+    def __init__(self, num_classes, anchor_size):
         self.num_classes = num_classes
+        self.anchor_size = anchor_size
 
 
     @torch.no_grad()

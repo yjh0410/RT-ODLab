@@ -36,13 +36,13 @@ class YOLOv1(nn.Module):
             cfg['backbone'], trainable&cfg['pretrained'])
 
         ## 颈部网络
-        self.neck = build_neck(cfg, feat_dim, out_dim=256)
+        self.neck = build_neck(cfg, feat_dim, out_dim=512)
         head_dim = self.neck.out_dim
 
         ## 检测头
         self.head = build_head(cfg, head_dim, head_dim, num_classes)
 
-        ## 预测曾
+        ## 预测层
         self.obj_pred = nn.Conv2d(head_dim, 1, kernel_size=1)
         self.cls_pred = nn.Conv2d(head_dim, num_classes, kernel_size=1)
         self.reg_pred = nn.Conv2d(head_dim, 4, kernel_size=1)
