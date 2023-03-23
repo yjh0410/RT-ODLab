@@ -7,9 +7,9 @@ python train.py \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
-        --max_epoch 150 \
-        --step_epoch 90 120 \
-        --eval_epoch 10 \
+        --max_epoch 4 \
+        --step_epoch 2 3 \
+        --eval_epoch 1 \
         --ema \
         --fp16 \
         --multi_scale \
