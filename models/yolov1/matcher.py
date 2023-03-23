@@ -47,8 +47,13 @@ class YoloMatcher(object):
                 grid_y = int(ys_c)
 
                 if grid_x < fmp_w and grid_y < fmp_h:
+                    # obj
                     gt_objectness[batch_index, grid_y, grid_x] = 1.0
-                    gt_classes[batch_index, grid_y, grid_x, int(gt_label)] = 1.0
+                    # cls
+                    cls_ont_hot = np.zeros(self.num_classes)
+                    cls_ont_hot[int(gt_label)] = 1.0
+                    gt_classes[batch_index, grid_y, grid_x] = cls_ont_hot
+                    # box
                     gt_bboxes[batch_index, grid_y, grid_x] = np.array([x1, y1, x2, y2])
 
         # [B, M, C]

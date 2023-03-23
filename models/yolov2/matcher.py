@@ -83,7 +83,7 @@ class Yolov2Matcher(object):
 
                 # check
                 if bw < 1. or bh < 1.:
-                    return False    
+                    continue    
 
                 # compute IoU
                 iou = self.compute_iou(self.anchor_boxes, gt_box)
@@ -117,8 +117,13 @@ class Yolov2Matcher(object):
                 for result in label_assignment_results:
                     grid_x, grid_y, anchor_idx = result
                     if grid_x < fmp_w and grid_y < fmp_h:
+                        # obj
                         gt_objectness[batch_index, grid_y, grid_x, anchor_idx] = 1.0
-                        gt_classes[batch_index, grid_y, grid_x, anchor_idx, int(gt_label)] = 1.0
+                        # cls
+                        cls_ont_hot = np.zeros(self.num_classes)
+                        cls_ont_hot[int(gt_label)] = 1.0
+                        gt_classes[batch_index, grid_y, grid_x, anchor_idx] = cls_ont_hot
+                        # box
                         gt_bboxes[batch_index, grid_y, grid_x, anchor_idx] = np.array([x1, y1, x2, y2])
 
         # [B, H, W, A, C] -> [B, HWA, C]
