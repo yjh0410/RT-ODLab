@@ -8,7 +8,6 @@ python train.py \
         -size 640 \
         --wp_epoch 1 \
         --max_epoch 150 \
-        --step_epoch 90 120 \
         --eval_epoch 10 \
         --ema \
         --fp16 \
