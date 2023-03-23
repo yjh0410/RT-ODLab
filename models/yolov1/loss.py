@@ -34,7 +34,7 @@ class Criterion(object):
     
 
     def loss_labels(self, pred_cls, gt_label):
-        loss_cls = F.cross_entropy(pred_cls.permute(0, 2, 1), gt_label, reduction='none')
+        loss_cls = F.cross_entropy(pred_cls, gt_label, reduction='none')
 
         return loss_cls
 
