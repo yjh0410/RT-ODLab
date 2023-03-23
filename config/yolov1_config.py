@@ -18,7 +18,7 @@ yolov1_cfg = {
     # model EMA
     'ema_decay': 0.9999,       # SGD: 0.9999;   AdamW: 0.9998
     # lr schedule
-    'scheduler': 'step',
+    'scheduler': 'linear',
     'lr0': 0.001,              # SGD: 0.01;     AdamW: 0.004
     'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.05
     # warmup strategy
