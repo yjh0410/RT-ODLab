@@ -16,7 +16,7 @@ yolov1_cfg = {
     'neck_depthwise': False,
     # head
     'head': 'decoupled_head',
-    'head_act': 'silu',
+    'head_act': 'lrelu',
     'head_norm': 'BN',
     'num_cls_head': 2,
     'num_reg_head': 2,
