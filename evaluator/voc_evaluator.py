@@ -11,8 +11,7 @@ import numpy as np
 import pickle
 import xml.etree.ElementTree as ET
 
-from utils.box_ops import rescale_bboxes, rescale_bboxes_with_deltas
-from dataset.data_augment import SSDBaseTransform, YOLOv5BaseTransform
+from utils.box_ops import rescale_bboxes
 
 
 class VOCAPIEvaluator():
@@ -67,7 +66,7 @@ class VOCAPIEvaluator():
 
             # preprocess
             x, _, deltas = self.transform(img)
-            x = x.unsqueeze(0).to(self.device)
+            x = x.unsqueeze(0).to(self.device) / 255.
 
             # forward
             t0 = time.time()
@@ -75,14 +74,9 @@ class VOCAPIEvaluator():
             detect_time = time.time() - t0
 
             # rescale bboxes
-            if isinstance(self.transform, SSDBaseTransform):
-                origin_img_size = [orig_h, orig_w]
-                cur_img_size = [*x.shape[-2:]]
-                bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size)
-            elif isinstance(self.transform, YOLOv5BaseTransform):
-                origin_img_size = [orig_h, orig_w]
-                cur_img_size = [*x.shape[-2:]]
-                bboxes = rescale_bboxes_with_deltas(bboxes, deltas, origin_img_size, cur_img_size)
+            origin_img_size = [orig_h, orig_w]
+            cur_img_size = [*x.shape[-2:]]
+            bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas)
 
             for j in range(len(self.labelmap)):
                 inds = np.where(labels == j)[0]

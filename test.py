@@ -12,9 +12,8 @@ from dataset.data_augment import build_transform
 # load some utils
 from utils.misc import build_dataset, load_weight
 from utils.com_flops_params import FLOPs_and_Params
+from utils.box_ops import rescale_bboxes
 from utils import fuse_conv_bn
-from utils.box_ops import rescale_bboxes, rescale_bboxes_with_deltas
-from dataset.data_augment import SSDBaseTransform, YOLOv5BaseTransform
 
 from models import build_model
 from config import build_model_config, build_trans_config
@@ -132,7 +131,7 @@ def test(args,
 
         # prepare
         x, _, deltas = transforms(image)
-        x = x.unsqueeze(0).to(device)
+        x = x.unsqueeze(0).to(device) / 255.
 
         t0 = time.time()
         # inference
@@ -140,15 +139,9 @@ def test(args,
         print("detection time used ", time.time() - t0, "s")
         
         # rescale bboxes
-        if isinstance(transform, SSDBaseTransform):
-            origin_img_size = [orig_h, orig_w]
-            cur_img_size = [*x.shape[-2:]]
-            bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size)
-        elif isinstance(transform, YOLOv5BaseTransform):
-            origin_img_size = [orig_h, orig_w]
-            cur_img_size = x.shape[-2:]
-            print(origin_img_size, cur_img_size, deltas)
-            bboxes = rescale_bboxes_with_deltas(bboxes, deltas, origin_img_size, cur_img_size)
+        origin_img_size = [orig_h, orig_w]
+        cur_img_size = [*x.shape[-2:]]
+        bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas)
 
         # vis detection
         img_processed = visualize(

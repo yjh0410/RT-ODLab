@@ -2,8 +2,7 @@ import json
 import tempfile
 import torch
 from dataset.coco import COCODataset
-from utils.box_ops import rescale_bboxes, rescale_bboxes_with_deltas
-from dataset.data_augment import SSDBaseTransform, YOLOv5BaseTransform
+from utils.box_ops import rescale_bboxes
 
 try:
     from pycocotools.cocoeval import COCOeval
@@ -71,7 +70,7 @@ class COCOAPIEvaluator():
 
             # preprocess
             x, _, deltas = self.transform(img)
-            x = x.unsqueeze(0).to(self.device)
+            x = x.unsqueeze(0).to(self.device) / 255.
             
             id_ = int(id_)
             ids.append(id_)
@@ -81,14 +80,9 @@ class COCOAPIEvaluator():
             bboxes, scores, cls_inds = outputs
 
             # rescale bboxes
-            if isinstance(self.transform, SSDBaseTransform):
-                origin_img_size = [orig_h, orig_w]
-                cur_img_size = [*x.shape[-2:]]
-                bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size)
-            elif isinstance(self.transform, YOLOv5BaseTransform):
-                origin_img_size = [orig_h, orig_w]
-                cur_img_size = [*x.shape[-2:]]
-                bboxes = rescale_bboxes_with_deltas(bboxes, deltas, origin_img_size, cur_img_size)
+            origin_img_size = [orig_h, orig_w]
+            cur_img_size = [*x.shape[-2:]]
+            bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas)
 
             # process outputs
             for i, box in enumerate(bboxes):

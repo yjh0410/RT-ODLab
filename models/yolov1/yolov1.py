@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+from utils.nms import multiclass_nms
+
 from .yolov1_basic import Conv
 from .yolov1_neck import SPP
 from .yolov1_backbone import build_resnet
@@ -79,14 +81,6 @@ class YOLOv1(nn.Module):
         return grid_xy
 
 
-    def set_grid(self, img_size):
-        """
-            用于重置G矩阵。
-        """
-        self.img_size = img_size
-        self.grid_cell = self.create_grid(img_size)
-
-
     def decode_boxes(self, pred, fmp_size):
         """
             将txtytwth转换为常用的x1y1x2y2形式。
@@ -95,50 +89,15 @@ class YOLOv1(nn.Module):
         grid_cell = self.create_grid(fmp_size)
 
         # 计算预测边界框的中心点坐标和宽高
-        pred[..., :2] = torch.sigmoid(pred[..., :2]) + grid_cell
+        pred[..., :2] = (torch.sigmoid(pred[..., :2]) + grid_cell) * self.stride
         pred[..., 2:] = torch.exp(pred[..., 2:])
 
         # 将所有bbox的中心带你坐标和宽高换算成x1y1x2y2形式
         output = torch.zeros_like(pred)
-        output[..., :2] = pred[..., :2] * self.stride - pred[..., 2:] * 0.5
-        output[..., 2:] = pred[..., :2] * self.stride + pred[..., 2:] * 0.5
+        output[..., :2] = pred[..., :2] - pred[..., 2:] * 0.5
+        output[..., 2:] = pred[..., :2] + pred[..., 2:] * 0.5
         
         return output
-
-
-    def nms(self, bboxes, scores):
-        """"Pure Python NMS baseline."""
-        x1 = bboxes[:, 0]  #xmin
-        y1 = bboxes[:, 1]  #ymin
-        x2 = bboxes[:, 2]  #xmax
-        y2 = bboxes[:, 3]  #ymax
-
-        areas = (x2 - x1) * (y2 - y1)
-        order = scores.argsort()[::-1]
-        
-        keep = []                                             
-        while order.size > 0:
-            i = order[0]
-            keep.append(i)
-            # 计算交集的左上角点和右下角点的坐标
-            xx1 = np.maximum(x1[i], x1[order[1:]])
-            yy1 = np.maximum(y1[i], y1[order[1:]])
-            xx2 = np.minimum(x2[i], x2[order[1:]])
-            yy2 = np.minimum(y2[i], y2[order[1:]])
-            # 计算交集的宽高
-            w = np.maximum(1e-10, xx2 - xx1)
-            h = np.maximum(1e-10, yy2 - yy1)
-            # 计算交集的面积
-            inter = w * h
-
-            # 计算交并比
-            iou = inter / (areas[i] + areas[order[1:]] - inter)
-
-            # 滤除超过nms阈值的检测框
-            inds = np.where(iou <= self.nms_thresh)[0]
-            order = order[inds + 1]
-
-        return keep
 
 
     def postprocess(self, bboxes, scores):
@@ -161,21 +120,9 @@ class YOLOv1(nn.Module):
         scores = scores[keep]
         labels = labels[keep]
 
-        # NMS
-        keep = np.zeros(len(bboxes), dtype=np.int)
-        for i in range(self.num_classes):
-            inds = np.where(labels == i)[0]
-            if len(inds) == 0:
-                continue
-            c_bboxes = bboxes[inds]
-            c_scores = scores[inds]
-            c_keep = self.nms(c_bboxes, c_scores)
-            keep[inds[c_keep]] = 1
-
-        keep = np.where(keep > 0)
-        bboxes = bboxes[keep]
-        scores = scores[keep]
-        labels = labels[keep]
+        # nms
+        scores, labels, bboxes = multiclass_nms(
+            scores, labels, bboxes, self.nms_thresh, self.num_classes, False)
 
         return bboxes, scores, labels
 
@@ -201,27 +148,27 @@ class YOLOv1(nn.Module):
 
         # 从pred中分离出objectness预测、类别class预测、bbox的txtytwth预测  
         # [B, H*W, 1]
-        conf_pred = pred[..., :1]
+        obj_pred = pred[..., :1]
         # [B, H*W, num_cls]
         cls_pred = pred[..., 1:1+self.num_classes]
         # [B, H*W, 4]
-        txtytwth_pred = pred[..., 1+self.num_classes:]
+        reg_pred = pred[..., 1+self.num_classes:]
 
         # 测试时，笔者默认batch是1，
         # 因此，我们不需要用batch这个维度，用[0]将其取走。
-        conf_pred = conf_pred[0]            #[H*W, 1]
-        cls_pred = cls_pred[0]              #[H*W, NC]
-        txtytwth_pred = txtytwth_pred[0]    #[H*W, 4]
+        obj_pred = obj_pred[0]       # [H*W, 1]
+        cls_pred = cls_pred[0]       # [H*W, NC]
+        reg_pred = reg_pred[0]       # [H*W, 4]
 
         # 每个边界框的得分
-        scores = torch.sigmoid(conf_pred) * torch.softmax(cls_pred, dim=-1)
+        scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid())
         
         # 解算边界框, 并归一化边界框: [H*W, 4]
-        bboxes = self.decode_boxes(txtytwth_pred, fmp_size)
+        bboxes = self.decode_boxes(reg_pred, fmp_size)
         
         # 将预测放在cpu处理上，以便进行后处理
-        scores = scores.to('cpu').numpy()
-        bboxes = bboxes.to('cpu').numpy()
+        scores = scores.cpu().numpy()
+        bboxes = bboxes.cpu().numpy()
         
         # 后处理
         bboxes, scores, labels = self.postprocess(bboxes, scores)
@@ -244,6 +191,7 @@ class YOLOv1(nn.Module):
 
             # 预测层
             pred = self.pred(feat)
+            fmp_size = pred.shape[-2:]
 
             # 对pred 的size做一些view调整，便于后续的处理
             # [B, C, H, W] -> [B, H, W, C] -> [B, H*W, C]
@@ -251,19 +199,21 @@ class YOLOv1(nn.Module):
 
             # 从pred中分离出objectness预测、类别class预测、bbox的txtytwth预测  
             # [B, H*W, 1]
-            conf_pred = pred[..., :1]
+            obj_pred = pred[..., :1]
             # [B, H*W, num_cls]
             cls_pred = pred[..., 1:1+self.num_classes]
             # [B, H*W, 4]
-            txtytwth_pred = pred[..., 1+self.num_classes:]
+            reg_pred = pred[..., 1+self.num_classes:]
+
+            # decode bbox
+            box_pred = self.decode_boxes(reg_pred, fmp_size)
 
             # 网络输出
-            outputs = {"pred_obj": conf_pred,                  # (Tensor) [B, M, 1]
+            outputs = {"pred_obj": obj_pred,                  # (Tensor) [B, M, 1]
                        "pred_cls": cls_pred,                   # (Tensor) [B, M, C]
-                       "pred_txty": txtytwth_pred[..., :2],    # (Tensor) [B, M, 2]
-                       "pred_twth": txtytwth_pred[..., 2:],    # (Tensor) [B, M, 2]
+                       "pred_box": box_pred,                   # (Tensor) [B, M, 4]
                        "stride": self.stride,                  # (Int)
-                       "img_size": x.shape[-2:]                # (List) [img_h, img_w]
+                       "fmp_size": fmp_size                    # (List) [fmp_h, fmp_w]
                        }           
             return outputs
         

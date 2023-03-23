@@ -74,30 +74,25 @@ def get_ious(bboxes1,
         raise NotImplementedError
 
 
-def rescale_bboxes(bboxes, origin_img_size, cur_img_size):
+def rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas=None):
     origin_h, origin_w = origin_img_size
     cur_img_h, cur_img_w = cur_img_size
-    # rescale
-    bboxes[..., [0, 2]] = bboxes[..., [0, 2]] / cur_img_w * origin_w
-    bboxes[..., [1, 3]] = bboxes[..., [1, 3]] / cur_img_h * origin_h
+    if deltas is None:
+        # rescale
+        bboxes[..., [0, 2]] = bboxes[..., [0, 2]] / cur_img_w * origin_w
+        bboxes[..., [1, 3]] = bboxes[..., [1, 3]] / cur_img_h * origin_h
 
-    # clip bboxes
-    bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_w)
-    bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], a_min=0., a_max=origin_h)
-
-    return bboxes
-
-
-def rescale_bboxes_with_deltas(bboxes, deltas, origin_img_size, cur_img_size):
-    origin_h, origin_w = origin_img_size
-    cur_img_h, cur_img_w = cur_img_size
-    # rescale
-    bboxes[..., [0, 2]] = bboxes[..., [0, 2]] / (cur_img_w - deltas[0]) * origin_w
-    bboxes[..., [1, 3]] = bboxes[..., [1, 3]] / (cur_img_h - deltas[1]) * origin_h
-    
-    # clip bboxes
-    bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_w)
-    bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], a_min=0., a_max=origin_h)
+        # clip bboxes
+        bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_w)
+        bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], a_min=0., a_max=origin_h)
+    else:
+        # rescale
+        bboxes[..., [0, 2]] = bboxes[..., [0, 2]] / (cur_img_w - deltas[0]) * origin_w
+        bboxes[..., [1, 3]] = bboxes[..., [1, 3]] / (cur_img_h - deltas[1]) * origin_h
+        
+        # clip bboxes
+        bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_w)
+        bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], a_min=0., a_max=origin_h)
 
     return bboxes
 

@@ -56,14 +56,6 @@ class ConvertFromInts(object):
         return image.astype(np.float32), boxes, labels
 
 
-class Normalize(object):
-    def __call__(self, image, boxes=None, labels=None):
-        image = image.astype(np.float32)
-        image /= 255.
-
-        return image, boxes, labels
-
-
 class ConvertColor(object):
     def __init__(self, current='BGR', transform='HSV'):
         self.transform = transform
@@ -363,13 +355,13 @@ class SSDAugmentation(object):
             Expand(),                                  # 扩充增强
             RandomSampleCrop(),                        # 随机剪裁
             RandomHorizontalFlip(),                    # 随机水平翻转
-            Resize(self.img_size),                     # resize操作
-            Normalize()                                # 图像颜色归一化
+            Resize(self.img_size)                      # resize操作
         ])
 
     def __call__(self, image, target, mosaic=False):
         boxes = target['boxes'].copy()
         labels = target['labels'].copy()
+        deltas = None
         # augment
         image, boxes, labels = self.augment(image, boxes, labels)
 
@@ -379,7 +371,7 @@ class SSDAugmentation(object):
         target['labels'] = torch.from_numpy(labels).float()
         
 
-        return img_tensor, target, None
+        return img_tensor, target, deltas
     
 
 ## SSD-style valTransform
@@ -388,12 +380,12 @@ class SSDBaseTransform(object):
         self.img_size = img_size
 
     def __call__(self, image, target=None, mosaic=False):
+        deltas = None
         # resize
         orig_h, orig_w = image.shape[:2]
         image = cv2.resize(image, (self.img_size, self.img_size)).astype(np.float32)
         
-        # normalize
-        image /= 255.
+        # scale targets
         if target is not None:
             boxes = target['boxes'].copy()
             labels = target['labels'].copy()
@@ -408,4 +400,4 @@ class SSDBaseTransform(object):
             target['boxes'] = torch.from_numpy(boxes).float()
             target['labels'] = torch.from_numpy(labels).float()
             
-        return img_tensor, target, None
+        return img_tensor, target, deltas

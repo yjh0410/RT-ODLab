@@ -6,7 +6,7 @@ yolov1_cfg = {
     # loss weight
     'loss_obj_weight': 1.0,
     'loss_cls_weight': 1.0,
-    'loss_reg_weight': 5.0,
+    'loss_box_weight': 5.0,
     # training configuration
     'no_aug_epoch': -1,
     # optimizer

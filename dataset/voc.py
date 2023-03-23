@@ -256,7 +256,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    is_train = True
+    is_train = False
     img_size = 640
     yolov5_trans_config = {
         'aug_type': 'yolov5',
@@ -301,8 +301,6 @@ if __name__ == "__main__":
         image, target, deltas = dataset.pull_item(i)
         # to numpy
         image = image.permute(1, 2, 0).numpy()
-        # denormalize
-        image *= 255.
         # to uint8
         image = image.astype(np.uint8)
         image = image.copy()
