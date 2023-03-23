@@ -10,12 +10,13 @@ class Criterion(object):
         self.cfg = cfg
         self.device = device
         self.num_classes = num_classes
+        # loss weighr
         self.loss_obj_weight = cfg['loss_obj_weight']
         self.loss_cls_weight = cfg['loss_cls_weight']
         self.loss_box_weight = cfg['loss_box_weight']
 
         # matcher
-        self.matcher = Yolov2Matcher(num_classes=num_classes)
+        self.matcher = Yolov2Matcher(cfg['iou_thresh'], num_classes, cfg['anchor_size'])
 
 
     def loss_objectness(self, pred_obj, gt_obj):
@@ -38,7 +39,7 @@ class Criterion(object):
                         iou_type='giou')
         loss_box = 1.0 - ious
 
-        return loss_box
+        return loss_box, ious
 
 
     def __call__(self, outputs, targets):
@@ -68,10 +69,6 @@ class Criterion(object):
             torch.distributed.all_reduce(num_fgs)
         num_fgs = (num_fgs / get_world_size()).clamp(1.0)
 
-        # obj loss
-        loss_obj = self.loss_objectness(pred_obj, gt_objectness)
-        loss_obj = loss_obj.sum() / num_fgs
-
         # cls loss
         pred_cls_pos = pred_cls[pos_masks]
         gt_classes_pos = gt_classes[pos_masks]
@@ -81,9 +78,14 @@ class Criterion(object):
         # box loss
         pred_box_pos = pred_box[pos_masks]
         gt_bboxes_pos = gt_bboxes[pos_masks]
-        loss_box = self.loss_bboxes(pred_box_pos, gt_bboxes_pos)
+        loss_box, ious = self.loss_bboxes(pred_box_pos, gt_bboxes_pos)
         loss_box = loss_box.sum() / num_fgs
         
+        # obj loss
+        gt_objectness[pos_masks] = gt_objectness[pos_masks] * ious.clamp(0.)
+        loss_obj = self.loss_objectness(pred_obj, gt_objectness)
+        loss_obj = loss_obj.sum() / num_fgs
+
         # total loss
         losses = self.loss_obj_weight * loss_obj + \
                  self.loss_cls_weight * loss_cls + \

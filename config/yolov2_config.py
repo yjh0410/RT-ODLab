@@ -16,7 +16,7 @@ yolov2_cfg = {
     'neck_depthwise': False,
     # head
     'head': 'decoupled_head',
-    'head_act': 'silu',
+    'head_act': 'lrelu',
     'head_norm': 'BN',
     'num_cls_head': 2,
     'num_reg_head': 2,
@@ -26,6 +26,8 @@ yolov2_cfg = {
                     [92,  206],
                     [202, 21],
                     [289, 311]],  # 416
+    # matcher
+    'iou_thresh': 0.5,
     # loss weight
     'loss_obj_weight': 1.0,
     'loss_cls_weight': 1.0,
@@ -42,7 +44,7 @@ yolov2_cfg = {
     'ema_tau': 2000,
     # lr schedule
     'scheduler': 'linear',
-    'lr0': 0.01,              # SGD: 0.01;     AdamW: 0.004
+    'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.004
     'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.05
     'warmup_momentum': 0.8,
     'warmup_bias_lr': 0.1,

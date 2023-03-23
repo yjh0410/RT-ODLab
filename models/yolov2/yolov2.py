@@ -32,7 +32,7 @@ class YOLOv2(nn.Module):
         self.topk = topk                               # topk
         self.stride = 32                               # 网络的最大步长
         # ------------------- Anchor box -------------------
-        self.anchor_size = torch.as_tensor(cfg['anchor_size']).view(-1, 2) # [KA, 2]
+        self.anchor_size = torch.as_tensor(cfg['anchor_size']).view(-1, 2) # [A, 2]
         self.num_anchors = self.anchor_size.shape[0]
         
         # ------------------- Network Structure -------------------
@@ -74,11 +74,11 @@ class YOLOv2(nn.Module):
         # generate grid cells
         anchor_y, anchor_x = torch.meshgrid([torch.arange(fmp_h), torch.arange(fmp_w)])
         anchor_xy = torch.stack([anchor_x, anchor_y], dim=-1).float().view(-1, 2)
-        # [HW, 2] -> [HW, KA, 2] -> [M, 2]
+        # [HW, 2] -> [HW, A, 2] -> [M, 2]
         anchor_xy = anchor_xy.unsqueeze(1).repeat(1, self.num_anchors, 1)
         anchor_xy = anchor_xy.view(-1, 2).to(self.device)
 
-        # [KA, 2] -> [1, KA, 2] -> [HW, KA, 2] -> [M, 2]
+        # [A, 2] -> [1, A, 2] -> [HW, A, 2] -> [M, 2]
         anchor_wh = self.anchor_size.unsqueeze(0).repeat(fmp_h*fmp_w, 1, 1)
         anchor_wh = anchor_wh.view(-1, 2).to(self.device)
 
@@ -107,11 +107,11 @@ class YOLOv2(nn.Module):
     def postprocess(self, obj_pred, cls_pred, reg_pred, anchors):
         """
         Input:
-            conf_pred: (Tensor) [H*W*KA, 1]
-            cls_pred:  (Tensor) [H*W*KA, C]
-            reg_pred:  (Tensor) [H*W*KA, 4]
+            conf_pred: (Tensor) [H*W*A, 1]
+            cls_pred:  (Tensor) [H*W*A, C]
+            reg_pred:  (Tensor) [H*W*A, 4]
         """
-        # (H x W x KA x C,)
+        # (H x W x A x C,)
         scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid()).flatten()
 
         # Keep top k top scoring indices only.
@@ -133,7 +133,7 @@ class YOLOv2(nn.Module):
         reg_pred = reg_pred[anchor_idxs]
         anchors = anchors[anchor_idxs]
 
-        # 解算边界框, 并归一化边界框: [H*W*KA, 4]
+        # 解算边界框, 并归一化边界框: [H*W*A, 4]
         bboxes = self.decode_boxes(anchors, reg_pred)
 
         # threshold
@@ -176,16 +176,16 @@ class YOLOv2(nn.Module):
         anchors = self.generate_anchors(fmp_size)
 
         # 对 pred 的size做一些view调整，便于后续的处理
-        # [B, KA*C, H, W] -> [B, H, W, KA*C] -> [B, H*W*KA, C]
+        # [B, A*C, H, W] -> [B, H, W, A*C] -> [B, H*W*A, C]
         obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 1)
         cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, self.num_classes)
         reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 4)
 
         # 测试时，笔者默认batch是1，
         # 因此，我们不需要用batch这个维度，用[0]将其取走。
-        obj_pred = obj_pred[0]       # [H*W*KA, 1]
-        cls_pred = cls_pred[0]       # [H*W*KA, NC]
-        reg_pred = reg_pred[0]       # [H*W*KA, 4]
+        obj_pred = obj_pred[0]       # [H*W*A, 1]
+        cls_pred = cls_pred[0]       # [H*W*A, NC]
+        reg_pred = reg_pred[0]       # [H*W*A, 4]
 
         # post process
         bboxes, scores, labels = self.postprocess(
@@ -209,7 +209,7 @@ class YOLOv2(nn.Module):
             cls_feat, reg_feat = self.head(feat)
 
             # 预测层
-            obj_pred = self.obj_pred(cls_feat)
+            obj_pred = self.obj_pred(reg_feat)
             cls_pred = self.cls_pred(cls_feat)
             reg_pred = self.reg_pred(reg_feat)
             fmp_size = obj_pred.shape[-2:]
@@ -218,7 +218,7 @@ class YOLOv2(nn.Module):
             anchors = self.generate_anchors(fmp_size)
 
             # 对 pred 的size做一些view调整，便于后续的处理
-            # [B, KA*C, H, W] -> [B, H, W, KA*C] -> [B, H*W*KA, C]
+            # [B, A*C, H, W] -> [B, H, W, A*C] -> [B, H*W*A, C]
             obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 1)
             cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, self.num_classes)
             reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 4)
@@ -227,7 +227,7 @@ class YOLOv2(nn.Module):
             box_pred = self.decode_boxes(anchors, reg_pred)
 
             # 网络输出
-            outputs = {"pred_obj": obj_pred,                  # (Tensor) [B, M, 1]
+            outputs = {"pred_obj": obj_pred,                   # (Tensor) [B, M, 1]
                        "pred_cls": cls_pred,                   # (Tensor) [B, M, C]
                        "pred_box": box_pred,                   # (Tensor) [B, M, 4]
                        "stride": self.stride,                  # (Int)
