@@ -75,7 +75,7 @@ def train_one_epoch(epoch,
         images = images.to(device, non_blocking=True).float()
 
         # multi scale
-        if args.multi_scale:
+        if args.multi_scale and ni % 10 == 0:
             images, targets, img_size = rescale_image_targets(
                 images, targets, max(model.stride), args.min_box_size)
             
