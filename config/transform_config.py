@@ -4,8 +4,8 @@
 yolov5_trans_config = {
     'aug_type': 'yolov5',
     # Pixel mean & std
-    'pixel_mean': [0.406, 0.456, 0.485],
-    'pixel_std': [0.225, 0.224, 0.229],
+    'pixel_mean': [0., 0., 0.],
+    'pixel_std': [1., 1., 1.],
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
@@ -28,8 +28,6 @@ ssd_trans_config = {
     'aug_type': 'ssd',
     'pixel_mean': [0.406, 0.456, 0.485],
     'pixel_std': [0.225, 0.224, 0.229],
-    'mosaic_prob': 0.0,
-    'mixup_prob': 0.0,
     # Mosaic & Mixup
     'mosaic_prob': 0.,
     'mixup_prob': 0.,

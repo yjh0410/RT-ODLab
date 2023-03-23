@@ -2,7 +2,7 @@
 
 yolov1_cfg = {
     # input
-    'trans_type': 'yolov5',
+    'trans_type': 'ssd',
     # loss weight
     'loss_obj_weight': 1.0,
     'loss_cls_weight': 1.0,

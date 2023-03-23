@@ -71,6 +71,7 @@ class COCOAPIEvaluator():
 
             # preprocess
             x, _, deltas = self.transform(img)
+            x = x.unsqueeze(0).to(self.device)
             
             id_ = int(id_)
             ids.append(id_)
