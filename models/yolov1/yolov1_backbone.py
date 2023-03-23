@@ -222,7 +222,7 @@ def resnet152(pretrained=False, **kwargs):
     return model
 
 ## build resnet
-def build_resnet(model_name='resnet18', pretrained=False):
+def build_backbone(model_name='resnet18', pretrained=False):
     if model_name == 'resnet18':
         model = resnet18(pretrained)
         feat_dim = 512
@@ -240,7 +240,7 @@ def build_resnet(model_name='resnet18', pretrained=False):
 
 
 if __name__=='__main__':
-    model, feat_dim = build_resnet(model_name='resnet18', pretrained=True)
+    model, feat_dim = build_backbone(model_name='resnet18', pretrained=True)
     print(model)
 
     input = torch.randn(1, 3, 512, 512)

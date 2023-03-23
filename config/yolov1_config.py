@@ -3,6 +3,24 @@
 yolov1_cfg = {
     # input
     'trans_type': 'ssd',
+    # model
+    'backbone': 'resnet18',
+    'pretrained': True,
+    'stride': 32,  # P5
+    # neck
+    'neck': 'sppf',
+    'expand_ratio': 0.5,
+    'pooling_size': 5,
+    'neck_act': 'lrelu',
+    'neck_norm': 'BN',
+    'neck_depthwise': False,
+    # head
+    'head': 'decoupled_head',
+    'head_act': 'silu',
+    'head_norm': 'BN',
+    'num_cls_head': 2,
+    'num_reg_head': 2,
+    'head_depthwise': False,
     # loss weight
     'loss_obj_weight': 1.0,
     'loss_cls_weight': 1.0,

@@ -14,12 +14,13 @@ def build_yolov1(args, cfg, device, num_classes=80, trainable=False):
     print('Model Configuration: \n', cfg)
     
     model = YOLOv1(
-        device=device,
-        img_size=args.img_size,
-        num_classes=num_classes,
-        conf_thresh=args.conf_thresh,
-        nms_thresh=args.nms_thresh,
-        trainable=trainable
+        cfg = cfg,
+        device = device,
+        img_size = args.img_size,
+        num_classes = num_classes,
+        conf_thresh = args.conf_thresh,
+        nms_thresh = args.nms_thresh,
+        trainable = trainable
         )
 
     criterion = None

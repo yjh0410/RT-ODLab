@@ -32,7 +32,6 @@ class Criterion(object):
 
     def loss_bboxes(self, pred_box, gt_box):
         # regression loss
-        print(pred_box, gt_box)
         ious = get_ious(pred_box,
                         gt_box,
                         box_mode="xyxy",

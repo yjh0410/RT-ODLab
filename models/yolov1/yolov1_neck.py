@@ -1,38 +1,40 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from .yolov1_basic import Conv
 
 
-# Spatial Pyramid Pooling
-class SPP(nn.Module):
-    """
-        Spatial Pyramid Pooling
-    """
-    def __init__(self):
-        super(SPP, self).__init__()
+# Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
+class SPPF(nn.Module):
+    def __init__(self, in_dim, out_dim, expand_ratio=0.5, pooling_size=5, act_type='lrelu', norm_type='BN'):
+        super().__init__()
+        inter_dim = int(in_dim * expand_ratio)
+        self.out_dim = out_dim
+        self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.cv2 = Conv(inter_dim * 4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.m = nn.MaxPool2d(kernel_size=pooling_size, stride=1, padding=pooling_size // 2)
 
     def forward(self, x):
-        """
-        Input:
-            x: (Tensor) -> [B, C, H, W]
-        Output:
-            y: (Tensor) -> [B, 4C, H, W]
-        """
-        x_1 = F.max_pool2d(x, 5, stride=1, padding=2)
-        x_2 = F.max_pool2d(x, 9, stride=1, padding=4)
-        x_3 = F.max_pool2d(x, 13, stride=1, padding=6)
-        y = torch.cat([x, x_1, x_2, x_3], dim=1)
+        x = self.cv1(x)
+        y1 = self.m(x)
+        y2 = self.m(y1)
 
-        return y
+        return self.cv2(torch.cat((x, y1, y2, self.m(y2)), 1))
 
 
-def build_neck(cfg):
+def build_neck(cfg, in_dim, out_dim):
     model = cfg['neck']
     print('==============================')
     print('Neck: {}'.format(model))
     # build neck
-    if model == 'spp':
-        neck = SPP()
+    if model == 'sppf':
+        neck = SPPF(
+            in_dim=in_dim,
+            out_dim=out_dim,
+            expand_ratio=cfg['expand_ratio'], 
+            pooling_size=cfg['pooling_size'],
+            act_type=cfg['neck_act'],
+            norm_type=cfg['neck_norm']
+            )
 
     return neck
-    
+        
