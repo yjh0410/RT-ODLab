@@ -1,0 +1,11 @@
+*.pt
+*.pth
+*.pkl
+*.onnx
+*.pyc
+*.zip
+weights
+__pycache__
+det_results
+.vscode
+deployment/OpenVINO/cpp/build
