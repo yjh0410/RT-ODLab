@@ -2,26 +2,21 @@ import math
 import torch
 
 
-def build_lr_scheduler(args, cfg, optimizer, max_epochs):
+def build_lr_scheduler(cfg, optimizer, epochs):
     """Build learning rate scheduler from cfg file."""
     print('==============================')
     print('Lr Scheduler: {}'.format(cfg['scheduler']))
 
     if cfg['scheduler'] == 'cosine':
-        lf = lambda x: ((1 - math.cos(x * math.pi / max_epochs)) / 2) * (cfg['lrf'] - 1) + 1
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
+        lf = lambda x: ((1 - math.cos(x * math.pi / epochs)) / 2) * (cfg['lrf'] - 1) + 1
         
     elif cfg['scheduler'] == 'linear':
-        lf = lambda x: (1 - x / max_epochs) * (1.0 - cfg['lrf']) + cfg['lrf']
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-
-    elif cfg['scheduler'] == 'step':
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=args.step_epoch, gamma=0.1)
+        lf = lambda x: (1 - x / epochs) * (1.0 - cfg['lrf']) + cfg['lrf']
 
     else:
         print('unknown lr scheduler.')
         exit(0)
 
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
 
-    return scheduler
+    return scheduler, lf

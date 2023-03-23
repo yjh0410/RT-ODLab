@@ -12,7 +12,6 @@ from utils import distributed_utils
 from utils.com_flops_params import FLOPs_and_Params
 from utils.misc import ModelEMA, CollateFunc, build_dataset, build_dataloader
 from utils.solver.optimizer import build_optimizer
-from utils.solver.warmup_schedule import build_warmup
 from utils.solver.lr_scheduler import build_lr_scheduler
 
 from engine import train_one_epoch, val_one_epoch
@@ -170,6 +169,9 @@ def train():
         # wait for all processes to synchronize
         dist.barrier()
 
+    # amp
+    scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+
     # batch size
     total_bs = args.batch_size
     accumulate = max(1, round(64 / total_bs))
@@ -177,24 +179,18 @@ def train():
 
     # optimizer
     model_cfg['weight_decay'] *= total_bs * accumulate / 64
-    optimizer, start_epoch = build_optimizer(
-        model_cfg, model_without_ddp, model_cfg['lr0'], args.resume)
-
-    # warmup scheduler
-    warmup_scheduler = build_warmup(
-        model_cfg, model_cfg['lr0'], len(dataloader) * args.wp_epoch)
+    optimizer, start_epoch = build_optimizer(model_cfg, model_without_ddp, model_cfg['lr0'], args.resume)
 
     # Scheduler
-    lr_scheduler = build_lr_scheduler(
-        args, model_cfg, optimizer, args.max_epoch)
-    lr_scheduler.last_epoch = start_epoch - 1  # do not move
+    scheduler, lf = build_lr_scheduler(model_cfg, optimizer, args.max_epoch)
+    scheduler.last_epoch = start_epoch - 1  # do not move
     if args.resume:
-        lr_scheduler.step()
+        scheduler.step()
 
     # EMA
     if args.ema and distributed_utils.get_rank() in [-1, 0]:
         print('Build ModelEMA ...')
-        ema = ModelEMA(model, model_cfg['ema_decay'], start_epoch * len(dataloader))
+        ema = ModelEMA(model, decay=model_cfg['ema_decay'], tau=model_cfg['ema_tau'], updates=start_epoch * len(dataloader))
     else:
         ema = None
 
@@ -240,12 +236,13 @@ def train():
             ema=ema, 
             model=model,
             criterion=criterion,
+            cfg=model_cfg, 
             dataloader=dataloader, 
             optimizer=optimizer,
-            lr_scheduler=lr_scheduler,
-            warmup_scheduler=warmup_scheduler,
-            last_opt_step=last_opt_step
-            )
+            scheduler=scheduler,
+            lf=lf,
+            scaler=scaler,
+            last_opt_step=last_opt_step)
 
         # eval
         if heavy_eval:

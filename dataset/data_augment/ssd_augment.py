@@ -57,15 +57,9 @@ class ConvertFromInts(object):
 
 
 class Normalize(object):
-    def __init__(self, pixel_mean=None, pixel_std=None):
-        self.pixel_mean = np.array(pixel_mean, dtype=np.float32)
-        self.pixel_std = np.array(pixel_std, dtype=np.float32)
-
     def __call__(self, image, boxes=None, labels=None):
         image = image.astype(np.float32)
         image /= 255.
-        image -= self.pixel_mean
-        image /= self.pixel_std
 
         return image, boxes, labels
 
@@ -276,9 +270,6 @@ class RandomSampleCrop(object):
 
 
 class Expand(object):
-    def __init__(self, pixel_mean):
-        self.pixel_mean = pixel_mean
-
     def __call__(self, image, boxes, labels):
         if random.randint(2):
             return image, boxes, labels
@@ -291,7 +282,6 @@ class Expand(object):
         expand_image = np.zeros(
             (int(height*ratio), int(width*ratio), depth),
             dtype=image.dtype)
-        expand_image[:, :, :] = self.pixel_mean
         expand_image[int(top):int(top + height),
                      int(left):int(left + width)] = image
         image = expand_image
@@ -365,18 +355,16 @@ class PhotometricDistort(object):
 # ----------------------- Main Functions
 ## SSD-style Augmentation
 class SSDAugmentation(object):
-    def __init__(self, img_size=640, pixel_mean=(0.406, 0.456, 0.485), pixel_std=(0.225, 0.224, 0.229)):
-        self.pixel_mean = pixel_mean
+    def __init__(self, img_size=640):
         self.img_size = img_size
-        self.pixel_std = pixel_std
         self.augment = Compose([
             ConvertFromInts(),                         # 将int类型转换为float32类型
             PhotometricDistort(),                      # 图像颜色增强
-            Expand(self.pixel_mean),                   # 扩充增强
+            Expand(),                                  # 扩充增强
             RandomSampleCrop(),                        # 随机剪裁
             RandomHorizontalFlip(),                    # 随机水平翻转
             Resize(self.img_size),                     # resize操作
-            Normalize(self.pixel_mean, self.pixel_std) # 图像颜色归一化
+            Normalize()                                # 图像颜色归一化
         ])
 
     def __call__(self, image, target, mosaic=False):
@@ -384,9 +372,6 @@ class SSDAugmentation(object):
         labels = target['labels'].copy()
         # augment
         image, boxes, labels = self.augment(image, boxes, labels)
-
-        # to rgb
-        image = image[..., (2, 1, 0)]
 
         # to tensor
         img_tensor = torch.from_numpy(image).permute(2, 0, 1).contiguous().float()
@@ -399,10 +384,8 @@ class SSDAugmentation(object):
 
 ## SSD-style valTransform
 class SSDBaseTransform(object):
-    def __init__(self, img_size, pixel_mean=(0.406, 0.456, 0.485), pixel_std=(0.225, 0.224, 0.229)):
+    def __init__(self, img_size):
         self.img_size = img_size
-        self.pixel_mean = np.array(pixel_mean, dtype=np.float32)
-        self.pixel_std = np.array(pixel_std, dtype=np.float32)
 
     def __call__(self, image, target=None, mosaic=False):
         # resize
@@ -410,7 +393,7 @@ class SSDBaseTransform(object):
         image = cv2.resize(image, (self.img_size, self.img_size)).astype(np.float32)
         
         # normalize
-        image = (image / 255. - self.pixel_mean) / self.pixel_std
+        image /= 255.
         if target is not None:
             boxes = target['boxes'].copy()
             labels = target['labels'].copy()
@@ -419,9 +402,6 @@ class SSDBaseTransform(object):
             boxes[..., [1, 3]] = boxes[..., [1, 3]] / orig_h * img_h
             target['boxes'] = boxes
         
-        # to rgb
-        image = image[..., (2, 1, 0)]
-
         # to tensor
         img_tensor = torch.from_numpy(image).permute(2, 0, 1).contiguous().float()
         if target is not None:

@@ -344,9 +344,6 @@ class YOLOv5Augmentation(object):
             boxes[..., [0, 2]] = w - boxes[..., [2, 0]]
             target["boxes"] = boxes
 
-        # to rgb
-        img = img[..., (2, 1, 0)]
-
         # to tensor
         img_tensor = torch.from_numpy(img).permute(2, 0, 1).contiguous().float()
 
@@ -389,9 +386,6 @@ class YOLOv5BaseTransform(object):
             img = image
 
         img_h, img_w = img.shape[:2]
-
-        # to rgb
-        img = img[..., (2, 1, 0)]
 
         # to tensor
         img_tensor = torch.from_numpy(img).permute(2, 0, 1).contiguous().float()

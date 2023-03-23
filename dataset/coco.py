@@ -237,9 +237,6 @@ if __name__ == "__main__":
     img_size = 640
     yolov5_trans_config = {
         'aug_type': 'yolov5',
-        # Pixel mean & std
-        'pixel_mean': [0., 0., 0.],
-        'pixel_std': [1., 1., 1.],
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
@@ -258,8 +255,6 @@ if __name__ == "__main__":
     }
     ssd_trans_config = {
         'aug_type': 'ssd',
-        'pixel_mean': [0.406, 0.456, 0.485],
-        'pixel_std': [0.225, 0.224, 0.229],
         'mosaic_prob': 0.0,
         'mixup_prob': 0.0
     }
@@ -285,10 +280,7 @@ if __name__ == "__main__":
         image, target, deltas = dataset.pull_item(i)
         # to numpy
         image = image.permute(1, 2, 0).numpy()
-        # to BGR
-        image = image[:, :, (2, 1, 0)]
         # denormalize
-        image = image * yolov5_trans_config['pixel_std'] + yolov5_trans_config['pixel_mean']
         image *= 255.
         # to uint8
         image = image.astype(np.uint8)
