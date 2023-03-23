@@ -10,7 +10,7 @@ class Criterion(object):
         self.cfg = cfg
         self.device = device
         self.num_classes = num_classes
-        # loss weighr
+        # loss weight
         self.loss_obj_weight = cfg['loss_obj_weight']
         self.loss_cls_weight = cfg['loss_cls_weight']
         self.loss_box_weight = cfg['loss_box_weight']
@@ -82,7 +82,7 @@ class Criterion(object):
         loss_box = loss_box.sum() / num_fgs
         
         # obj loss
-        gt_objectness[pos_masks] = gt_objectness[pos_masks] * ious.clamp(0.)
+        gt_objectness[pos_masks] *= ious.clamp(0.)
         loss_obj = self.loss_objectness(pred_obj, gt_objectness)
         loss_obj = loss_obj.sum() / num_fgs
 
