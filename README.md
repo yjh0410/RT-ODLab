@@ -91,9 +91,9 @@ For example:
 python train.py --cuda -d voc --root path/to/VOCdevkit -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-| Model  | Scale |  IP  | mAP | FPS<sup>3090<br>FP32-bs1 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|--------|-------|------|-----|--------------------------|-------------------|--------------------|--------|
-| YOLOv1 |  640  |  √   |     |                          |   37.8            |   21.3             |  |
+| Model  | Scale |  IP  | mAP  | FPS<sup>3090<br>FP32-bs1 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|--------|-------|------|------|--------------------------|-------------------|--------------------|--------|
+| YOLOv1 |  640  |  √   | 76.7 |                          |   37.8            |   21.3             |  |
 | YOLOv2 |  640  |  √   |     |                          |   53.9            |   30.9             |  |
 | YOLOv3 |  640  |  √   |     |                          |                   |                    |  |
 | YOLOv4 |  640  |  √   |     |                          |                   |                    |  |
