@@ -69,7 +69,7 @@ def train_one_epoch(epoch,
     for iter_i, (images, targets) in enumerate(dataloader):
         ni = iter_i + epoch * epoch_size
         # Warmup
-        if ni <= nw:
+        if ni < nw:
             warmup_scheduler.warmup(ni, optimizer)
                             
         # visualize train targets
