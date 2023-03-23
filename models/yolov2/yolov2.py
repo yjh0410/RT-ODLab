@@ -4,13 +4,13 @@ import numpy as np
 
 from utils.nms import multiclass_nms
 
-from .yolov1_backbone import build_backbone
-from .yolov1_neck import build_neck
-from .yolov1_head import build_head
+from .yolov2_backbone import build_backbone
+from .yolov2_neck import build_neck
+from .yolov2_head import build_head
 
 
-# YOLOv1
-class YOLOv1(nn.Module):
+# YOLOv2
+class YOLOv2(nn.Module):
     def __init__(self,
                  cfg,
                  device,
@@ -19,7 +19,7 @@ class YOLOv1(nn.Module):
                  conf_thresh=0.01,
                  nms_thresh=0.5,
                  trainable=False):
-        super(YOLOv1, self).__init__()
+        super(YOLOv2, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
         self.img_size = img_size                       # 输入图像大小

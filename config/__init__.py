@@ -1,5 +1,6 @@
 # ------------------ Model Config ----------------------
 from .yolov1_config import yolov1_cfg
+from .yolov2_config import yolov2_cfg
 
 
 def build_model_config(args):
@@ -8,9 +9,9 @@ def build_model_config(args):
     # YOLOv1
     if args.model == 'yolov1':
         cfg = yolov1_cfg
-    # # YOLOv2
-    # elif args.model == 'yolov2':
-    #     cfg = yolov2_cfg
+    # YOLOv2
+    elif args.model == 'yolov2':
+        cfg = yolov2_cfg
     # # YOLOv3
     # elif args.model == 'yolov3':
     #     cfg = yolov3_cfg
