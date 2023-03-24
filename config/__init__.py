@@ -3,6 +3,7 @@ from .yolov1_config import yolov1_cfg
 from .yolov2_config import yolov2_cfg
 from .yolov3_config import yolov3_cfg
 from .yolov4_config import yolov4_cfg
+from .yolox_config import yolox_cfg
 
 
 def build_model_config(args):
@@ -20,12 +21,15 @@ def build_model_config(args):
     # YOLOv4
     elif args.model == 'yolov4':
         cfg = yolov4_cfg
+    # YOLOX
+    elif args.model == 'yolox':
+        cfg = yolox_cfg
 
     return cfg
 
 
 # ------------------ Transform Config ----------------------
-from .transform_config import yolov5_trans_config, ssd_trans_config
+from .transform_config import yolov5_trans_config, yolox_trans_config, ssd_trans_config
 
 def build_trans_config(trans_config='ssd'):
     print('==============================')
@@ -36,5 +40,8 @@ def build_trans_config(trans_config='ssd'):
     # YOLOv5-style transform 
     elif trans_config == 'yolov5':
         cfg = yolov5_trans_config
+    # YOLOX-style transform 
+    elif trans_config == 'yolox':
+        cfg = yolox_trans_config
 
     return cfg

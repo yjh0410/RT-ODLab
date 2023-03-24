@@ -23,7 +23,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='YOLO-Tutorial')
 
     # basic
-    parser.add_argument('-size', '--img_size', default=416, type=int,
+    parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')
     parser.add_argument('--show', action='store_true', default=False,
                         help='show the visulization results.')
@@ -40,7 +40,7 @@ def parse_args():
 
     # model
     parser.add_argument('-m', '--model', default='yolov1', type=str,
-                        choices=['yolov1', 'yolov2', 'yolov3', 'yolov4'], help='build yolo')
+                        choices=['yolov1', 'yolov2', 'yolov3', 'yolov4', 'yolox'], help='build yolo')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
     parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,

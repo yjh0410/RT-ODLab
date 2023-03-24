@@ -21,14 +21,14 @@ from config import build_model_config, build_trans_config
 def parse_args():
     parser = argparse.ArgumentParser(description='YOLO-Tutorial')
     # basic
-    parser.add_argument('-size', '--img_size', default=416, type=int,
+    parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')
     parser.add_argument('--cuda', action='store_true', default=False,
                         help='Use cuda')
 
     # model
-    parser.add_argument('-m', '--model', default='yolo_anchor', type=str,
-                        help='build YOLO')
+    parser.add_argument('-m', '--model', default='yolov1', type=str,
+                        choices=['yolov1', 'yolov2', 'yolov3', 'yolov4', 'yolox'], help='build yolo')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
     parser.add_argument('--conf_thresh', default=0.001, type=float,

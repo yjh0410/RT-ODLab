@@ -97,6 +97,7 @@ python train.py --cuda -d voc --root path/to/VOCdevkit -v yolov1 -bs 16 --max_ep
 | YOLOv2 |  640  |  √   |      |                          |   53.9            |   30.9             |  |
 | YOLOv3 |  640  |  √   |      |                          |   167.4           |   54.9             |  |
 | YOLOv4 |  640  |  √   |      |                          |                   |                    |  |
+| YOLOX  |  640  |  ×   |      |                          |                   |                    |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on VOC2007 test. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 

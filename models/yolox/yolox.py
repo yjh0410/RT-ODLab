@@ -1,16 +1,15 @@
 import torch
 import torch.nn as nn
 
+from .yolox_backbone import build_backbone
+from .yolox_pafpn import build_fpn
+from .yolox_head import build_head
+
 from utils.nms import multiclass_nms
 
-from .yolov3_backbone import build_backbone
-from .yolov3_neck import build_neck
-from .yolov3_fpn import build_fpn
-from .yolov3_head import build_head
 
-
-# YOLOv3
-class YOLOv3(nn.Module):
+# YOLOX
+class YOLOX(nn.Module):
     def __init__(self,
                  cfg,
                  device,
@@ -19,32 +18,21 @@ class YOLOv3(nn.Module):
                  topk=100,
                  nms_thresh=0.5,
                  trainable=False):
-        super(YOLOv3, self).__init__()
-        # ------------------- Basic parameters -------------------
-        self.cfg = cfg                                 # 模型配置文件
-        self.device = device                           # cuda或者是cpu
-        self.num_classes = num_classes                 # 类别的数量
-        self.trainable = trainable                     # 训练的标记
-        self.conf_thresh = conf_thresh                 # 得分阈值
-        self.nms_thresh = nms_thresh                   # NMS阈值
-        self.topk = topk                               # topk
-        self.stride = [8, 16, 32]                      # 网络的输出步长
-        # ------------------- Anchor box -------------------
-        self.num_levels = 3
-        self.num_anchors = len(cfg['anchor_size']) // self.num_levels
-        self.anchor_size = torch.as_tensor(
-            cfg['anchor_size']
-            ).view(self.num_levels, self.num_anchors, 2) # [S, A, 2]
+        super(YOLOX, self).__init__()
+        # --------- Basic Parameters ----------
+        self.cfg = cfg
+        self.device = device
+        self.stride = [8, 16, 32]
+        self.num_classes = num_classes
+        self.trainable = trainable
+        self.conf_thresh = conf_thresh
+        self.nms_thresh = nms_thresh
+        self.topk = topk
         
         # ------------------- Network Structure -------------------
         ## 主干网络
-        self.backbone, feats_dim = build_backbone(
-            cfg['backbone'], trainable&cfg['pretrained'])
-
-        ## 颈部网络: SPP模块
-        self.neck = build_neck(cfg, in_dim=feats_dim[-1], out_dim=feats_dim[-1])
-        feats_dim[-1] = self.neck.out_dim
-
+        self.backbone, feats_dim = build_backbone(cfg=cfg)
+        
         ## 颈部网络: 特征金字塔
         self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=int(256*cfg['width']))
         self.head_dim = self.fpn.out_dim
@@ -57,20 +45,20 @@ class YOLOv3(nn.Module):
 
         ## 预测层
         self.obj_preds = nn.ModuleList(
-                            [nn.Conv2d(head.reg_out_dim, 1 * self.num_anchors, kernel_size=1) 
+                            [nn.Conv2d(head.reg_out_dim, 1, kernel_size=1) 
                                 for head in self.non_shared_heads
                               ]) 
         self.cls_preds = nn.ModuleList(
-                            [nn.Conv2d(head.cls_out_dim, self.num_classes * self.num_anchors, kernel_size=1) 
+                            [nn.Conv2d(head.cls_out_dim, self.num_classes, kernel_size=1) 
                                 for head in self.non_shared_heads
                               ]) 
         self.reg_preds = nn.ModuleList(
-                            [nn.Conv2d(head.reg_out_dim, 4 * self.num_anchors, kernel_size=1) 
+                            [nn.Conv2d(head.reg_out_dim, 4, kernel_size=1) 
                                 for head in self.non_shared_heads
                               ])                 
-    
 
         # --------- Network Initialization ----------
+        # init bias
         self.init_yolo()
 
 
@@ -79,59 +67,57 @@ class YOLOv3(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
                 m.eps = 1e-3
-                m.momentum = 0.03
-                
+                m.momentum = 0.03    
         # Init bias
         init_prob = 0.01
         bias_value = -torch.log(torch.tensor((1. - init_prob) / init_prob))
         # obj pred
         for obj_pred in self.obj_preds:
-            b = obj_pred.bias.view(self.num_anchors, -1)
+            b = obj_pred.bias.view(1, -1)
             b.data.fill_(bias_value.item())
             obj_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
         # cls pred
         for cls_pred in self.cls_preds:
-            b = cls_pred.bias.view(self.num_anchors, -1)
+            b = cls_pred.bias.view(1, -1)
             b.data.fill_(bias_value.item())
             cls_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
+        # reg pred
+        for reg_pred in self.reg_preds:
+            b = reg_pred.bias.view(-1, )
+            b.data.fill_(1.0)
+            reg_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
+            w = reg_pred.weight
+            w.data.fill_(0.)
+            reg_pred.weight = torch.nn.Parameter(w, requires_grad=True)
 
 
     def generate_anchors(self, level, fmp_size):
         """
             fmp_size: (List) [H, W]
         """
-        fmp_h, fmp_w = fmp_size
-        # [KA, 2]
-        anchor_size = self.anchor_size[level]
-
         # generate grid cells
+        fmp_h, fmp_w = fmp_size
         anchor_y, anchor_x = torch.meshgrid([torch.arange(fmp_h), torch.arange(fmp_w)])
+        # [H, W, 2] -> [HW, 2]
         anchor_xy = torch.stack([anchor_x, anchor_y], dim=-1).float().view(-1, 2)
-        # [HW, 2] -> [HW, KA, 2] -> [M, 2]
-        anchor_xy = anchor_xy.unsqueeze(1).repeat(1, self.num_anchors, 1)
-        anchor_xy = anchor_xy.view(-1, 2).to(self.device)
-
-        # [KA, 2] -> [1, KA, 2] -> [HW, KA, 2] -> [M, 2]
-        anchor_wh = anchor_size.unsqueeze(0).repeat(fmp_h*fmp_w, 1, 1)
-        anchor_wh = anchor_wh.view(-1, 2).to(self.device)
-
-        anchors = torch.cat([anchor_xy, anchor_wh], dim=-1)
+        anchor_xy *= self.stride[level]
+        anchors = anchor_xy.to(self.device)
 
         return anchors
         
 
-    def decode_boxes(self, level, anchors, reg_pred):
+    def decode_boxes(self, anchors, reg_pred, stride):
         """
-            将txtytwth转换为常用的x1y1x2y2形式。
+            anchors:  (List[Tensor]) [1, M, 2] or [M, 2]
+            reg_pred: (List[Tensor]) [B, M, 4] or [M, 4]
         """
+        # center of bbox
+        pred_ctr_xy = anchors + reg_pred[..., :2] * stride
+        # size of bbox
+        pred_box_wh = reg_pred[..., 2:].exp() * stride
 
-        # 计算预测边界框的中心点坐标和宽高
-        pred_ctr = (torch.sigmoid(reg_pred[..., :2]) + anchors[..., :2]) * self.stride[level]
-        pred_wh = torch.exp(reg_pred[..., 2:]) * anchors[..., 2:]
-
-        # 将所有bbox的中心带你坐标和宽高换算成x1y1x2y2形式
-        pred_x1y1 = pred_ctr - pred_wh * 0.5
-        pred_x2y2 = pred_ctr + pred_wh * 0.5
+        pred_x1y1 = pred_ctr_xy - 0.5 * pred_box_wh
+        pred_x2y2 = pred_ctr_xy + 0.5 * pred_box_wh
         pred_box = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
 
         return pred_box
@@ -149,9 +135,8 @@ class YOLOv3(nn.Module):
         all_labels = []
         all_bboxes = []
         
-        for level, (obj_pred_i, cls_pred_i, reg_pred_i, anchor_i) \
-                in enumerate(zip(obj_preds, cls_preds, reg_preds, anchors)):
-            # (H x W x KA x C,)
+        for level, (obj_pred_i, cls_pred_i, reg_pred_i, anchors_i) in enumerate(zip(obj_preds, cls_preds, reg_preds, anchors)):
+            # (H x W x C,)
             scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
 
             # Keep top k top scoring indices only.
@@ -171,10 +156,10 @@ class YOLOv3(nn.Module):
             labels = topk_idxs % self.num_classes
 
             reg_pred_i = reg_pred_i[anchor_idxs]
-            anchor_i = anchor_i[anchor_idxs]
+            anchors_i = anchors_i[anchor_idxs]
 
             # decode box: [M, 4]
-            bboxes = self.decode_boxes(level, anchor_i, reg_pred_i)
+            bboxes = self.decode_boxes(anchors_i, reg_pred_i, self.stride[level])
 
             all_scores.append(scores)
             all_labels.append(labels)
@@ -183,12 +168,6 @@ class YOLOv3(nn.Module):
         scores = torch.cat(all_scores)
         labels = torch.cat(all_labels)
         bboxes = torch.cat(all_bboxes)
-
-        # threshold
-        keep_idxs = scores.gt(self.conf_thresh)
-        scores = scores[keep_idxs]
-        labels = labels[keep_idxs]
-        bboxes = bboxes[keep_idxs]
 
         # to cpu & numpy
         scores = scores.cpu().numpy()
@@ -203,21 +182,18 @@ class YOLOv3(nn.Module):
 
 
     @torch.no_grad()
-    def inference(self, x):
-        # 主干网络
+    def inference_single_image(self, x):
+        # backbone
         pyramid_feats = self.backbone(x)
 
-        # 颈部网络
-        pyramid_feats[-1] = self.neck(pyramid_feats[-1])
-
-        # 特征金字塔
+        # fpn
         pyramid_feats = self.fpn(pyramid_feats)
 
-        # 检测头
-        all_anchors = []
+        # non-shared heads
         all_obj_preds = []
         all_cls_preds = []
         all_reg_preds = []
+        all_anchors = []
         for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
             cls_feat, reg_feat = head(feat)
 
@@ -230,7 +206,7 @@ class YOLOv3(nn.Module):
             fmp_size = cls_pred.shape[-2:]
             anchors = self.generate_anchors(level, fmp_size)
 
-            # [1, AC, H, W] -> [H, W, AC] -> [M, C]
+            # [1, C, H, W] -> [H, W, C] -> [M, C]
             obj_pred = obj_pred[0].permute(1, 2, 0).contiguous().view(-1, 1)
             cls_pred = cls_pred[0].permute(1, 2, 0).contiguous().view(-1, self.num_classes)
             reg_pred = reg_pred[0].permute(1, 2, 0).contiguous().view(-1, 4)
@@ -243,26 +219,22 @@ class YOLOv3(nn.Module):
         # post process
         bboxes, scores, labels = self.post_process(
             all_obj_preds, all_cls_preds, all_reg_preds, all_anchors)
-
+        
         return bboxes, scores, labels
 
 
     def forward(self, x):
         if not self.trainable:
-            return self.inference(x)
+            return self.inference_single_image(x)
         else:
-            bs = x.shape[0]
-            # 主干网络
+            # backbone
             pyramid_feats = self.backbone(x)
 
-            # 颈部网络
-            pyramid_feats[-1] = self.neck(pyramid_feats[-1])
-
-            # 特征金字塔
+            # fpn
             pyramid_feats = self.fpn(pyramid_feats)
 
-            # 检测头
-            all_fmp_sizes = []
+            # non-shared heads
+            all_anchors = []
             all_obj_preds = []
             all_cls_preds = []
             all_box_preds = []
@@ -274,30 +246,29 @@ class YOLOv3(nn.Module):
                 cls_pred = self.cls_preds[level](cls_feat)
                 reg_pred = self.reg_preds[level](reg_feat)
 
-                fmp_size = cls_pred.shape[-2:]
-
+                B, _, H, W = cls_pred.size()
+                fmp_size = [H, W]
                 # generate anchor boxes: [M, 4]
                 anchors = self.generate_anchors(level, fmp_size)
                 
-                # [B, AC, H, W] -> [B, H, W, AC] -> [B, M, C]
-                obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 1)
-                cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, self.num_classes)
-                reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 4)
+                # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
+                obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 1)
+                cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
+                reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
 
-                # decode bbox
-                box_pred = self.decode_boxes(level, anchors, reg_pred)
+                # decode box: [M, 4]
+                box_pred = self.decode_boxes(anchors, reg_pred, self.stride[level])
 
                 all_obj_preds.append(obj_pred)
                 all_cls_preds.append(cls_pred)
                 all_box_preds.append(box_pred)
-                all_fmp_sizes.append(fmp_size)
-
+                all_anchors.append(anchors)
+            
             # output dict
-            outputs = {"pred_obj": all_obj_preds,        # List [B, M, 1]
-                       "pred_cls": all_cls_preds,        # List [B, M, C]
-                       "pred_box": all_box_preds,        # List [B, M, 4]
-                       'fmp_sizes': all_fmp_sizes,       # List
-                       'strides': self.stride,           # List
-                       }
+            outputs = {"pred_obj": all_obj_preds,        # List(Tensor) [B, M, 1]
+                       "pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
+                       "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
+                       "anchors": all_anchors,           # List(Tensor) [B, M, 2]
+                       'strides': self.stride}           # List(Int) [8, 16, 32]
 
             return outputs 

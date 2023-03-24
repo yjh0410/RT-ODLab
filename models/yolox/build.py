@@ -2,18 +2,18 @@
 # -*- coding:utf-8 -*-
 
 from .loss import build_criterion
-from .yolov3 import YOLOv3
+from .yolox import YOLOX
 
 
 # build object detector
-def build_yolov3(args, cfg, device, num_classes=80, trainable=False):
+def build_yolox(args, cfg, device, num_classes=80, trainable=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
     
     print('==============================')
     print('Model Configuration: \n', cfg)
     
-    model = YOLOv3(
+    model = YOLOX(
         cfg = cfg,
         device = device,
         num_classes = num_classes,
@@ -27,5 +27,4 @@ def build_yolov3(args, cfg, device, num_classes=80, trainable=False):
     if trainable:
         # build criterion for training
         criterion = build_criterion(cfg, device, num_classes)
-
     return model, criterion

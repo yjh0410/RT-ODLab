@@ -14,7 +14,6 @@ class YOLOv4(nn.Module):
     def __init__(self,
                  cfg,
                  device,
-                 img_size=None,
                  num_classes=20,
                  conf_thresh=0.01,
                  topk=100,
@@ -23,7 +22,6 @@ class YOLOv4(nn.Module):
         super(YOLOv4, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
-        self.img_size = img_size                       # 输入图像大小
         self.device = device                           # cuda或者是cpu
         self.num_classes = num_classes                 # 类别的数量
         self.trainable = trainable                     # 训练的标记
@@ -43,11 +41,11 @@ class YOLOv4(nn.Module):
         self.backbone, feats_dim = build_backbone(
             cfg['backbone'], trainable&cfg['pretrained'])
 
-        ## 颈部网络
+        ## 颈部网络: SPP模块
         self.neck = build_neck(cfg, in_dim=feats_dim[-1], out_dim=feats_dim[-1])
         feats_dim[-1] = self.neck.out_dim
 
-        ## 特征金字塔
+        ## 颈部网络: 特征金字塔
         self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=int(256*cfg['width']))
         self.head_dim = self.fpn.out_dim
 

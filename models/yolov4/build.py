@@ -16,7 +16,6 @@ def build_yolov4(args, cfg, device, num_classes=80, trainable=False):
     model = YOLOv4(
         cfg = cfg,
         device = device,
-        img_size = args.img_size,
         num_classes = num_classes,
         conf_thresh = args.conf_thresh,
         nms_thresh = args.nms_thresh,
