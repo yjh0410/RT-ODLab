@@ -5,6 +5,7 @@ import torch
 from .yolov1.build import build_yolov1
 from .yolov2.build import build_yolov2
 from .yolov3.build import build_yolov3
+from .yolov4.build import build_yolov4
 
 
 # build object detector
@@ -24,6 +25,10 @@ def build_model(args,
     # YOLOv3   
     elif args.model == 'yolov3':
         model, criterion = build_yolov3(
+            args, model_cfg, device, num_classes, trainable)
+    # YOLOv4   
+    elif args.model == 'yolov4':
+        model, criterion = build_yolov4(
             args, model_cfg, device, num_classes, trainable)
 
     if trainable:
