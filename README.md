@@ -58,12 +58,12 @@ For example:
 python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-| Model  | Scale |  IP  | AP<sup>val<br>0.5:0.95 | AP<sup>test<br>0.5:0.95 | FPS<sup>3090<br>FP32-bs1 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|--------|-------|------|------------------------|-------------------------|--------------------------|-------------------|--------------------|--------|
-| YOLOv1 |  640  |  √   |   35.5                 |                         |     100                  |   9.0             |   2.3              |  |
-| YOLOv2 |  640  |  √   |                        |                         |                          |   33.5            |   8.3              |  |
-| YOLOv3 |  640  |  √   |                        |                         |                          |   86.7            |   23.0             |  |
-| YOLOv4 |  640  |  √   |                        |                         |                          |   175.4           |   46.5             |  |
+| Model  | Scale |  IP  | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>test<br>0.5:0.95 | FPS<sup>3090<br>FP32-bs1 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|--------|-------|------|-------|------------------------|-------------------------|--------------------------|-------------------|--------------------|--------|
+| YOLOv1 |  640  |  √   |  150  | 35.5                   |                         |     100                  |   9.0             |   2.3              |  |
+| YOLOv2 |  640  |  √   |  150  |                        |                         |                          |   33.5            |   8.3              |  |
+| YOLOv3 |  640  |  √   |  150  |                        |                         |                          |   86.7            |   23.0             |  |
+| YOLOv4 |  640  |  √   |  150  |                        |                         |                          |   175.4           |   46.5             |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
