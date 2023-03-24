@@ -82,8 +82,8 @@ class Criterion(object):
         loss_box = loss_box.sum() / num_fgs
         
         # obj loss
-        # gt_objectness[pos_masks] *= ious.clamp(0.)
-        print(ious)
+        gt_objectness[pos_masks] *= ious.clamp(0.)
+        print(gt_objectness[pos_masks])
         loss_obj = self.loss_objectness(pred_obj, gt_objectness)
         loss_obj = loss_obj.sum() / num_fgs
 
