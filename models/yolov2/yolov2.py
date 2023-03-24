@@ -167,7 +167,7 @@ class YOLOv2(nn.Module):
         cls_feat, reg_feat = self.head(feat)
 
         # 预测层
-        obj_pred = self.obj_pred(cls_feat)
+        obj_pred = self.obj_pred(reg_feat)
         cls_pred = self.cls_pred(cls_feat)
         reg_pred = self.reg_pred(reg_feat)
         fmp_size = obj_pred.shape[-2:]
