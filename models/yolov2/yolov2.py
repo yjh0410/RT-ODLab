@@ -47,7 +47,7 @@ class YOLOv2(nn.Module):
         ## 检测头
         self.head = build_head(cfg, head_dim, head_dim, num_classes)
 
-        ## 预测曾
+        ## 预测层
         self.obj_pred = nn.Conv2d(head_dim, 1*self.num_anchors, kernel_size=1)
         self.cls_pred = nn.Conv2d(head_dim, num_classes*self.num_anchors, kernel_size=1)
         self.reg_pred = nn.Conv2d(head_dim, 4*self.num_anchors, kernel_size=1)

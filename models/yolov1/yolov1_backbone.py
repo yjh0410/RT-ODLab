@@ -16,7 +16,6 @@ model_urls = {
 }
 
 # --------------------- Basic Module -----------------------
-
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,

@@ -3,11 +3,11 @@ python train.py \
         --cuda \
         -d voc \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolov2 \
+        -m yolov3 \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
-        --max_epoch 150 \
+        --max_epoch 300 \
         --eval_epoch 10 \
         --ema \
         --fp16 \

@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from .matcher import Yolov2Matcher
+from .matcher import Yolov3Matcher
 from utils.box_ops import get_ious
 from utils.distributed_utils import get_world_size, is_dist_avail_and_initialized
 
@@ -16,7 +16,7 @@ class Criterion(object):
         self.loss_box_weight = cfg['loss_box_weight']
 
         # matcher
-        self.matcher = Yolov2Matcher(cfg['iou_thresh'], num_classes, cfg['anchor_size'])
+        self.matcher = Yolov3Matcher(num_classes, 3, cfg['anchor_size'], cfg['iou_thresh'])
 
 
     def loss_objectness(self, pred_obj, gt_obj):
@@ -43,20 +43,20 @@ class Criterion(object):
 
 
     def __call__(self, outputs, targets):
-        device = outputs['pred_cls'].device
-        stride = outputs['stride']
-        fmp_size = outputs['fmp_size']
+        device = outputs['pred_cls'][0].device
+        fpn_strides = outputs['strides']
+        fmp_sizes = outputs['fmp_sizes']
         (
             gt_objectness, 
             gt_classes, 
             gt_bboxes,
-            ) = self.matcher(fmp_size=fmp_size, 
-                             stride=stride, 
+            ) = self.matcher(fmp_sizes=fmp_sizes, 
+                             fpn_strides=fpn_strides, 
                              targets=targets)
         # List[B, M, C] -> [B, M, C] -> [BM, C]
-        pred_obj = outputs['pred_obj'].view(-1)                     # [BM,]
-        pred_cls = outputs['pred_cls'].view(-1, self.num_classes)   # [BM, C]
-        pred_box = outputs['pred_box'].view(-1, 4)                  # [BM, 4]
+        pred_obj = torch.cat(outputs['pred_obj'], dim=1).view(-1)                      # [BM,]
+        pred_cls = torch.cat(outputs['pred_cls'], dim=1).view(-1, self.num_classes)    # [BM, C]
+        pred_box = torch.cat(outputs['pred_box'], dim=1).view(-1, 4)                   # [BM, 4]
        
         gt_objectness = gt_objectness.view(-1).to(device).float()               # [BM,]
         gt_classes = gt_classes.view(-1, self.num_classes).to(device).float()   # [BM, C]

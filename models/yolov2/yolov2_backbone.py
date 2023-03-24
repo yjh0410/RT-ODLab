@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import os
+
 
 model_urls = {
     "darknet19": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/darknet19.pth",
@@ -10,6 +10,7 @@ model_urls = {
 __all__ = ['darknet19']
 
 
+# --------------------- Basic Module -----------------------
 class Conv_BN_LeakyReLU(nn.Module):
     def __init__(self, in_channels, out_channels, ksize, padding=0, stride=1, dilation=1):
         super(Conv_BN_LeakyReLU, self).__init__()
@@ -23,6 +24,7 @@ class Conv_BN_LeakyReLU(nn.Module):
         return self.convs(x)
 
 
+# --------------------- DarkNet-19 -----------------------
 class DarkNet19(nn.Module):
     def __init__(self):
         
@@ -87,6 +89,7 @@ class DarkNet19(nn.Module):
         return c5
 
 
+# --------------------- Fsnctions -----------------------
 def build_backbone(model_name='darknet19', pretrained=False):
     if model_name == 'darknet19':
         # model
