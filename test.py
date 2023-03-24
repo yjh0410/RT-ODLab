@@ -137,6 +137,7 @@ def test(args,
         # inference
         bboxes, scores, labels = model(x)
         print("detection time used ", time.time() - t0, "s")
+        print(bboxes)
         
         # rescale bboxes
         origin_img_size = [orig_h, orig_w]
