@@ -184,6 +184,10 @@ class RandomSampleCrop(object):
 
     def __call__(self, image, boxes=None, labels=None):
         height, width, _ = image.shape
+        # check
+        if len(boxes) == 0:
+            return image, boxes, labels
+
         while True:
             # randomly choose a mode
             sample_id = np.random.randint(len(self.sample_options))
