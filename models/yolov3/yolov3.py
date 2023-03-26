@@ -184,12 +184,6 @@ class YOLOv3(nn.Module):
         labels = torch.cat(all_labels)
         bboxes = torch.cat(all_bboxes)
 
-        # threshold
-        keep_idxs = scores.gt(self.conf_thresh)
-        scores = scores[keep_idxs]
-        labels = labels[keep_idxs]
-        bboxes = bboxes[keep_idxs]
-
         # to cpu & numpy
         scores = scores.cpu().numpy()
         labels = labels.cpu().numpy()

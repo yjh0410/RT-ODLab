@@ -107,9 +107,9 @@ class YOLOv2(nn.Module):
     def postprocess(self, obj_pred, cls_pred, reg_pred, anchors):
         """
         Input:
-            conf_pred: (Tensor) [H*W*A, 1]
-            cls_pred:  (Tensor) [H*W*A, C]
-            reg_pred:  (Tensor) [H*W*A, 4]
+            obj_pred: (Tensor) [H*W*A, 1]
+            cls_pred: (Tensor) [H*W*A, C]
+            reg_pred: (Tensor) [H*W*A, 4]
         """
         # (H x W x A x C,)
         scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid()).flatten()
@@ -135,12 +135,6 @@ class YOLOv2(nn.Module):
 
         # 解算边界框, 并归一化边界框: [H*W*A, 4]
         bboxes = self.decode_boxes(anchors, reg_pred)
-
-        # threshold
-        keep_idxs = scores.gt(self.conf_thresh)
-        scores = scores[keep_idxs]
-        labels = labels[keep_idxs]
-        bboxes = bboxes[keep_idxs]
 
         # to cpu & numpy
         scores = scores.cpu().numpy()

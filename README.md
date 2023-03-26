@@ -59,13 +59,13 @@ For example:
 python train.py --cuda -d voc --root path/to/VOCdevkit -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-| Model  | Scale |  IP  | Epoch | mAP  | FPS<sup>3090<br>FP32-bs1 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+| Model  | Scale |  IP  | Epoch | AP50 | FPS<sup>3090<br>FP32-bs1 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |--------|-------|------|-------|------|--------------------------|-------------------|--------------------|--------|
 | YOLOv1 |  640  |  √   |  150  | 76.7 |                          |   37.8            |   21.3             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpy/yolov1_voc.pth) |
-| YOLOv2 |  640  |  √   |  150  |      |                          |   53.9            |   30.9             |  |
-| YOLOv3 |  640  |  √   |  150  |      |                          |   167.4           |   54.9             |  |
+| YOLOv2 |  640  |  √   |  150  | 79.8 |                          |   53.9            |   30.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpy/yolov2_voc.pth) |
+| YOLOv3 |  640  |  √   |  150  | 82.0 |                          |   167.4           |   54.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpy/yolov3_voc.pth) |
 | YOLOv4 |  640  |  √   |  150  |      |                          |                   |                    |  |
-| YOLOX  |  640  |  ×   |  300  |      |                          |                   |                    |  |
+| YOLOX  |  640  |  √   |  150  |      |                          |                   |                    |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on VOC2007 test. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
@@ -97,7 +97,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv2 |  640  |  √   |  150  |                        |                         |  |
 | YOLOv3 |  640  |  √   |  300  |                        |                         |  |
 | YOLOv4 |  640  |  √   |  300  |                        |                         |  |
-| YOLOX  |  640  |  ×   |  300  |                        |                         |  |
+| YOLOX  |  640  |  √   |  300  |                        |                         |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
