@@ -1,9 +1,9 @@
 # Train FreeYOLO
 python train.py \
         --cuda \
-        -d voc \
+        -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolov4 \
+        -m yolov2 \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
