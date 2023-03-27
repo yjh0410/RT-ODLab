@@ -1,4 +1,4 @@
-# Train FreeYOLO
+# Train YOLO on VOC
 python train.py \
         --cuda \
         -d coco \
@@ -15,3 +15,4 @@ python train.py \
         # --resume weights/coco/yolo_free_vx_pico/yolo_free_vx_pico_epoch_41_20.46.pth \
         # --pretrained weights/coco/yolo_free_medium/yolo_free_medium_39.46.pth \
         # --eval_first
+
