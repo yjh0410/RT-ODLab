@@ -38,7 +38,7 @@ class YoloMatcher(object):
 
                 # check
                 if bw < 1. or bh < 1.:
-                    return False    
+                    continue    
 
                 # grid
                 xs_c = xc / stride
