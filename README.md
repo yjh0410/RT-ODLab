@@ -4,7 +4,7 @@ YOLO Tutorial
 English | [简体中文](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/blob/main/README_CN.md)
 
 # Introduction
-Here is the source code for an introduction to YOLO. We adopted the core concept of YOLOv1-YOLOv4 for this project, made the necessary adjustments, and then developed the new YOLOv1-YOLOv4. By learning how to use the well-known YOLO detector, we hope that newcomers can enter the field of object detection without any difficulty.
+Here is the source code for an introduction to YOLO. We adopted the core concept of YOLOv1-YOLOv4 for this project, made the necessary adjustments, and then developed the new YOLOv1-YOLOv4. By learning how to construct the well-known YOLO detector, we hope that newcomers can enter the field of object detection without any difficulty.
 
 **Book**: The technical books that go along with this project's code is being reviewed, please be patient.
 
