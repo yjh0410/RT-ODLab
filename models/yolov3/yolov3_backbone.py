@@ -12,7 +12,7 @@ model_urls = {
 }
 
 
-# --------------------- DarkNet-19 -----------------------
+# --------------------- DarkNet-53 -----------------------
 class DarkNet53(nn.Module):
     def __init__(self, act_type='silu', norm_type='BN'):
         super(DarkNet53, self).__init__()
