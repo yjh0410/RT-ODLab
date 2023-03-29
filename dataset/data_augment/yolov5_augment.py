@@ -183,6 +183,22 @@ def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params=None,
 
 # YOLOv5-Mixup
 def yolov5_mixup_augment(origin_image, origin_target, new_image, new_target):
+    if origin_image.shape[:2] != new_image.shape[:2]:
+        img_size = max(new_image.shape[:2])
+        # origin_image is not a mosaic image
+        orig_h, orig_w = origin_image.shape[:2]
+        scale_ratio = img_size / max(orig_h, orig_w)
+        if scale_ratio != 1: 
+            interp = cv2.INTER_LINEAR if scale_ratio > 1 else cv2.INTER_AREA
+            resize_size = (int(orig_w * scale_ratio), int(orig_h * scale_ratio))
+            origin_image = cv2.resize(origin_image, resize_size, interpolation=interp)
+
+        # pad new image
+        pad_origin_image = np.ones([img_size, img_size, origin_image.shape[2]], dtype=np.uint8) * 114
+        pad_origin_image[:resize_size[1], :resize_size[0]] = origin_image
+        origin_image = pad_origin_image.copy()
+        del pad_origin_image
+
     r = np.random.beta(32.0, 32.0)  # mixup ratio, alpha=beta=32.0
     mixup_image = r * origin_image.astype(np.float32) + \
                   (1.0 - r)* new_image.astype(np.float32)

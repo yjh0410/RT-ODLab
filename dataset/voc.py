@@ -256,7 +256,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    is_train = False
+    is_train = True
     img_size = 640
     yolov5_trans_config = {
         'aug_type': 'yolov5',
@@ -271,7 +271,7 @@ if __name__ == "__main__":
         'hsv_v': 0.4,
         # Mosaic & Mixup
         'mosaic_prob': 1.0,
-        'mixup_prob': 0.15,
+        'mixup_prob': 0,
         'mosaic_type': 'yolov5_mosaic',
         'mixup_type': 'yolov5_mixup',
         'mixup_scale': [0.5, 1.5]
@@ -281,12 +281,12 @@ if __name__ == "__main__":
         'mosaic_prob': 0.0,
         'mixup_prob': 0.0
     }
-    transform = build_transform(img_size, ssd_trans_config, is_train)
+    transform = build_transform(img_size, yolov5_trans_config, is_train)
 
     dataset = VOCDetection(
         img_size=img_size,
         data_dir=args.root,
-        trans_config=ssd_trans_config,
+        trans_config=yolov5_trans_config,
         transform=transform,
         is_train=is_train
         )
