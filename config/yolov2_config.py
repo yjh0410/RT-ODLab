@@ -3,6 +3,7 @@
 yolov2_cfg = {
     # input
     'trans_type': 'ssd',
+    'multi_scale': [0.5, 1.5],
     # model
     'backbone': 'darknet19',
     'pretrained': True,

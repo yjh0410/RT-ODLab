@@ -3,6 +3,7 @@
 yolox_cfg = {
     # input
     'trans_type': 'yolox',
+    'multi_scale': [0.5, 1.25],
     # model
     'backbone': 'cspdarknet',
     'pretrained': True,

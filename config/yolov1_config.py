@@ -3,6 +3,7 @@
 yolov1_cfg = {
     # input
     'trans_type': 'ssd',
+    'multi_scale': [0.5, 1.5],
     # model
     'backbone': 'resnet18',
     'pretrained': True,

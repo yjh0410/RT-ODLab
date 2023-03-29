@@ -3,6 +3,7 @@
 yolov3_cfg = {
     # input
     'trans_type': 'yolov5',
+    'multi_scale': [0.5, 1.25],
     # model
     'backbone': 'darknet53',
     'pretrained': True,
