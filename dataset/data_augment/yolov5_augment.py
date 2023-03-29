@@ -306,9 +306,7 @@ class YOLOv5Augmentation(object):
         else:
             img = image
 
-        # rescale bboxes
-        if target is not None:
-            img_h, img_w = img.shape[:2]
+        img_h, img_w = img.shape[:2]
 
         # hsv augment
         augment_hsv(img, hgain=self.trans_config['hsv_h'], 
