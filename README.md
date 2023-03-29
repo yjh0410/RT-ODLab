@@ -96,13 +96,13 @@ For example:
 python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-| Model  | Scale |  IP  | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>test<br>0.5:0.95 | Weight |
-|--------|-------|------|-------|------------------------|-------------------------|--------|
+| Model  | Scale |  IP  | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>test<br>50 | Weight |
+|--------|-------|------|-------|------------------------|-------------------|--------|
 | YOLOv1 |  640  |  √   |  150  |                        |                         |  |
-| YOLOv2 |  640  |  √   |  150  |                        |                         |  |
-| YOLOv3 |  640  |  √   |  150  |                        |                         |  |
-| YOLOv4 |  640  |  √   |  150  |                        |                         |  |
-| YOLOX  |  640  |  √   |  150  |                        |                         |  |
+| YOLOv2 |  640  |  √   |  150  |        32.7            |       50.9        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov2_coco.pth) |
+| YOLOv3 |  640  |  √   |  250  |                        |                         |  |
+| YOLOv4 |  640  |  √   |  250  |                        |                         |  |
+| YOLOX  |  640  |  √   |  250  |                        |                         |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
