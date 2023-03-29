@@ -3,7 +3,7 @@
 yolov4_cfg = {
     # input
     'trans_type': 'yolov5',
-    'multi_scale': [0.5, 1.25],
+    'multi_scale': [0.5, 1.0],
     # model
     'backbone': 'cspdarknet53',
     'pretrained': True,
