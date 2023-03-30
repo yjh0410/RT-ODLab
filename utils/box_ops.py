@@ -89,6 +89,7 @@ def rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas=None):
         # rescale
         bboxes[..., [0, 2]] = bboxes[..., [0, 2]] / (cur_img_w - deltas[0]) * origin_w
         bboxes[..., [1, 3]] = bboxes[..., [1, 3]] / (cur_img_h - deltas[1]) * origin_h
+        print('deltas')
         
         # clip bboxes
         bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_w)
