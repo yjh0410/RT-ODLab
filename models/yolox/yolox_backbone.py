@@ -8,6 +8,9 @@ except:
     from yolox_basic import Conv, CSPBlock
     from yolox_neck import SPPF
 
+model_urls = {
+    "cspdarknet_large": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_large.pth",
+}
 
 # CSPDarkNet
 class CSPDarkNet(nn.Module):
@@ -58,13 +61,39 @@ class CSPDarkNet(nn.Module):
 
 
 # ---------------------------- Functions ----------------------------
-def build_backbone(cfg): 
+def build_backbone(cfg, pretrained=False): 
     """Constructs a darknet-53 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     backbone = CSPDarkNet(cfg['depth'], cfg['width'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_dpw'])
     feat_dims = backbone.feat_dims
+
+    if pretrained:
+        if cfg['width'] == 1.0 and  cfg['depth'] == 1.0:
+            url = model_urls['cspdarknet_large']
+        if url is not None:
+            print('Loading pretrained weight ...')
+            checkpoint = torch.hub.load_state_dict_from_url(
+                url=url, map_location="cpu", check_hash=True)
+            # checkpoint state dict
+            checkpoint_state_dict = checkpoint.pop("model")
+            # model state dict
+            model_state_dict = backbone.state_dict()
+            # check
+            for k in list(checkpoint_state_dict.keys()):
+                if k in model_state_dict:
+                    shape_model = tuple(model_state_dict[k].shape)
+                    shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
+                    if shape_model != shape_checkpoint:
+                        checkpoint_state_dict.pop(k)
+                else:
+                    checkpoint_state_dict.pop(k)
+                    print(k)
+
+            backbone.load_state_dict(checkpoint_state_dict)
+        else:
+            print('No backbone pretrained: CSPDarkNet53')        
 
     return backbone, feat_dims
 
