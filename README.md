@@ -98,7 +98,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 
 | Model  | Scale |  IP  | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>test<br>50 | Weight |
 |--------|-------|------|-------|------------------------|-------------------|--------|
-| YOLOv1 |  640  |  √   |  150  |                        |                         |  |
+| YOLOv1 |  640  |  √   |  150  |        27.9            |       47.5        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov1_coco.pth) |
 | YOLOv2 |  640  |  √   |  150  |        32.7            |       50.9        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov2_coco.pth) |
 | YOLOv3 |  640  |  √   |  250  |                        |                         |  |
 | YOLOv4 |  640  |  √   |  250  |                        |                         |  |
