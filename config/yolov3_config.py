@@ -39,7 +39,7 @@ yolov3_cfg = {
     'loss_cls_weight': 1.0,
     'loss_box_weight': 5.0,
     # training configuration
-    'no_aug_epoch': 20,
+    'no_aug_epoch': 10,
     # optimizer
     'optimizer': 'sgd',        # optional: sgd, adam, adamw
     'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
