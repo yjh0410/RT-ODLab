@@ -70,7 +70,7 @@ def build_backbone(cfg, pretrained=False):
     feat_dims = backbone.feat_dims
 
     if pretrained:
-        if cfg['width'] == 1.0 and  cfg['depth'] == 1.0:
+        if cfg['width'] == 1.0 and cfg['depth'] == 1.0:
             url = model_urls['cspdarknet_large']
         if url is not None:
             print('Loading pretrained weight ...')
