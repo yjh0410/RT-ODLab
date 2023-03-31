@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 
-class Yolov3Matcher(object):
+class Yolov4Matcher(object):
     def __init__(self, num_classes, num_anchors, anchor_size, iou_thresh):
         self.num_classes = num_classes
         self.num_anchors = num_anchors

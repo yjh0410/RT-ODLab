@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from .matcher import Yolov3Matcher
+from .matcher import Yolov4Matcher
 from utils.box_ops import get_ious
 from utils.distributed_utils import get_world_size, is_dist_avail_and_initialized
 
@@ -16,7 +16,7 @@ class Criterion(object):
         self.loss_box_weight = cfg['loss_box_weight']
 
         # matcher
-        self.matcher = Yolov3Matcher(num_classes, 3, cfg['anchor_size'], cfg['iou_thresh'])
+        self.matcher = Yolov4Matcher(num_classes, 3, cfg['anchor_size'], cfg['iou_thresh'])
 
 
     def loss_objectness(self, pred_obj, gt_obj):

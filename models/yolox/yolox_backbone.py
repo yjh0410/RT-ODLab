@@ -112,7 +112,7 @@ if __name__ == '__main__':
         'depth': 1.0,
     }
     model, feats = build_backbone(cfg)
-    x = torch.randn(1, 3, 256, 256)
+    x = torch.randn(1, 3, 224, 224)
     t0 = time.time()
     outputs = model(x)
     t1 = time.time()
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     for out in outputs:
         print(out.shape)
 
-    x = torch.randn(1, 3, 256, 256)
+    x = torch.randn(1, 3, 224, 224)
     print('==============================')
     flops, params = profile(model, inputs=(x, ), verbose=False)
     print('==============================')
