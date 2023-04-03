@@ -6,6 +6,8 @@ from .yolov1.build import build_yolov1
 from .yolov2.build import build_yolov2
 from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
+from .yolov5.build import build_yolov5
+from .yolov7.build import build_yolov7
 from .yolox.build import build_yolox
 
 
@@ -30,6 +32,14 @@ def build_model(args,
     # YOLOv4   
     elif args.model == 'yolov4':
         model, criterion = build_yolov4(
+            args, model_cfg, device, num_classes, trainable)
+    # YOLOv5   
+    elif args.model == 'yolov5':
+        model, criterion = build_yolov5(
+            args, model_cfg, device, num_classes, trainable)
+    # YOLOv5   
+    elif args.model == 'yolov7':
+        model, criterion = build_yolov7(
             args, model_cfg, device, num_classes, trainable)
     # YOLOX   
     elif args.model == 'yolox':
