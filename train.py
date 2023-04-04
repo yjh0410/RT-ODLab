@@ -56,7 +56,7 @@ def parse_args():
 
     # model
     parser.add_argument('-m', '--model', default='yolov1', type=str,
-                        choices=['yolov1', 'yolov2', 'yolov3', 'yolov4', 'yolov5', 'yolov7', 'yolox'], help='build yolo')
+                        choices=['yolov1', 'yolov2', 'yolov3', 'yolov4', 'yolov5', 'yolov7', 'yolov8', 'yolox'], help='build yolo')
     parser.add_argument('-ct', '--conf_thresh', default=0.005, type=float,
                         help='confidence threshold')
     parser.add_argument('-nt', '--nms_thresh', default=0.6, type=float,

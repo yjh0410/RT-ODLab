@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from .yolox_backbone import build_backbone
-from .yolox_pafpn import build_fpn
+from .yolox_fpn import build_fpn
 from .yolox_head import build_head
 
 from utils.nms import multiclass_nms
