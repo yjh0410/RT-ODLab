@@ -8,7 +8,7 @@ except:
     
 
 model_urls = {
-    "elannet": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/yolov7_elannet.pth",
+    "elannet": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/yolov7_elannet_large.pth",
 }
 
 # --------------------- CSPDarkNet-53 -----------------------
