@@ -2,7 +2,7 @@
 
 yolov7_cfg = {
     # input
-    'trans_type': 'yolov5',
+    'trans_type': 'yolox',
     'multi_scale': [0.5, 1.0],
     # model
     'backbone': 'elannet',

@@ -26,7 +26,6 @@ class Yolov7PaFPN(nn.Module):
                                              norm_type=norm_type,
                                              depthwise=depthwise
                                              )
-
         # P4 -> P3
         self.reduce_layer_3 = Conv(256, 128, k=1, norm_type=norm_type, act_type=act_type)
         self.reduce_layer_4 = Conv(c3, 128, k=1, norm_type=norm_type, act_type=act_type)
@@ -47,7 +46,6 @@ class Yolov7PaFPN(nn.Module):
                                               norm_type=norm_type,
                                               depthwise=depthwise
                                               )
-
         # P4 -> P5
         self.downsample_layer_2 = DownSampleFPN(256, act_type=act_type,
                                     norm_type=norm_type, depthwise=depthwise)
@@ -57,18 +55,26 @@ class Yolov7PaFPN(nn.Module):
                                               norm_type=norm_type,
                                               depthwise=depthwise
                                               )
+        
+        # head conv
+        self.head_conv_1 = Conv(128, 256, k=3, p=1,
+                                act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.head_conv_2 = Conv(256, 512, k=3, p=1,
+                                act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.head_conv_3 = Conv(512, 1024, k=3, p=1,
+                                act_type=act_type, norm_type=norm_type, depthwise=depthwise)
 
         # output proj layers
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
                 Conv(in_dim, out_dim, k=1,
                      norm_type=norm_type, act_type=act_type)
-                     for in_dim in [128, 256, 512]
+                     for in_dim in [256, 512, 1024]
                      ])
             self.out_dim = [out_dim] * 3
         else:
             self.out_layers = None
-            self.out_dim = [128, 256, 512]
+            self.out_dim = [256, 512, 1024]
 
 
     def forward(self, features):
@@ -96,7 +102,11 @@ class Yolov7PaFPN(nn.Module):
         c18 = torch.cat([c17, c5], dim=1)
         c19 = self.bottom_up_layer_2(c18)
 
-        out_feats = [c13, c16, c19] # [P3, P4, P5]
+        c20 = self.head_conv_1(c13)
+        c21 = self.head_conv_2(c16)
+        c22 = self.head_conv_3(c19)
+
+        out_feats = [c20, c21, c22] # [P3, P4, P5]
         
         # output proj layers
         if self.out_layers is not None:

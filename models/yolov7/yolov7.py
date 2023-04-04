@@ -28,14 +28,7 @@ class YOLOv7(nn.Module):
         self.conf_thresh = conf_thresh                 # 得分阈值
         self.nms_thresh = nms_thresh                   # NMS阈值
         self.topk = topk                               # topk
-        self.stride = [8, 16, 32]                      # 网络的输出步长
-        # ------------------- Anchor box -------------------
-        self.num_levels = 3
-        self.num_anchors = len(cfg['anchor_size']) // self.num_levels
-        self.anchor_size = torch.as_tensor(
-            cfg['anchor_size']
-            ).view(self.num_levels, self.num_anchors, 2) # [S, A, 2]
-        
+        self.stride = [8, 16, 32]                      # 网络的输出步长        
         # ------------------- Network Structure -------------------
         ## 主干网络
         self.backbone, feats_dim = build_backbone(cfg, trainable&cfg['pretrained'])
