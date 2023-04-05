@@ -172,10 +172,10 @@ class Yolov5Matcher(object):
 
                 # label assignment
                 for result in label_assignment_results:
-                    stride = fpn_strides[level]
-                    fmp_h, fmp_w = fmp_sizes[level]
                     # assignment
                     grid_x, grid_y, xc_s, yc_s, level, anchor_idx = result
+                    stride = fpn_strides[level]
+                    fmp_h, fmp_w = fmp_sizes[level]
                     # coord on the feature
                     x1s, y1s = x1 / stride, y1 / stride
                     x2s, y2s = x2 / stride, y2 / stride
