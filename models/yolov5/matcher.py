@@ -187,7 +187,7 @@ class Yolov5Matcher(object):
                         grids = [(grid_x-1, grid_y), (grid_x, grid_y-1), (grid_x, grid_y)]
                     elif off_x > 0.5 and off_y <= 0.5: # top right
                         grids = [(grid_x+1, grid_y), (grid_x, grid_y-1), (grid_x, grid_y)]
-                    elif off_x < 0.5 and off_y > 0.5:  # bottom left
+                    elif off_x <= 0.5 and off_y > 0.5: # bottom left
                         grids = [(grid_x-1, grid_y), (grid_x, grid_y+1), (grid_x, grid_y)]
                     elif off_x > 0.5 and off_y > 0.5:  # bottom right
                         grids = [(grid_x+1, grid_y), (grid_x, grid_y+1), (grid_x, grid_y)]
