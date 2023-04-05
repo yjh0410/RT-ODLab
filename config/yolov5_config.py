@@ -6,7 +6,7 @@ yolov5_cfg = {
     'multi_scale': [0.5, 1.0],
     # model
     'backbone': 'cspdarknet',
-    'pretrained': False,
+    'pretrained': True,
     'bk_act': 'silu',
     'bk_norm': 'BN',
     'bk_dpw': False,
