@@ -5,7 +5,7 @@ yolov7_cfg = {
     'trans_type': 'yolox',
     'multi_scale': [0.5, 1.0],
     # model
-    'backbone': 'elannet',
+    'backbone': 'elannet_large',
     'pretrained': True,
     'bk_act': 'silu',
     'bk_norm': 'BN',

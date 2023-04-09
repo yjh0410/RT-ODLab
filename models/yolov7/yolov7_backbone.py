@@ -8,17 +8,17 @@ except:
     
 
 model_urls = {
-    "elannet": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/yolov7_elannet_large.pth",
+    "elannet_large": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/yolov7_elannet_large.pth",
 }
 
-# --------------------- CSPDarkNet-53 -----------------------
-# ELANNet
-class ELANNet(nn.Module):
+# --------------------- ELANNet -----------------------
+# ELANNet-Large
+class ELANNet_Lagre(nn.Module):
     """
     ELAN-Net of YOLOv7-L.
     """
     def __init__(self, act_type='silu', norm_type='BN', depthwise=False):
-        super(ELANNet, self).__init__()
+        super(ELANNet_Lagre, self).__init__()
         self.feat_dims = [512, 1024, 1024]
         
         # P1/2
@@ -71,13 +71,20 @@ def build_backbone(cfg, pretrained=False):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    backbone = ELANNet(cfg['bk_act'], cfg['bk_norm'], cfg['bk_dpw'])
+    if cfg['backbone'] == 'elannet_huge':
+        backbone = None
+    elif cfg['backbone'] == 'elannet_large':
+        backbone = ELANNet_Lagre(cfg['bk_act'], cfg['bk_norm'], cfg['bk_dpw'])
+    elif cfg['backbone'] == 'elannet_tiny':
+        backbone = None
+    elif cfg['backbone'] == 'elannet_nano':
+        backbone = None
     feat_dims = backbone.feat_dims
 
     if pretrained:
-        url = model_urls['elannet']
+        url = model_urls[cfg['backbone']]
         if url is not None:
-            print('Loading pretrained weight ...')
+            print('Loading pretrained weight for {}.'.format(cfg['backbone'].upper()))
             checkpoint = torch.hub.load_state_dict_from_url(
                 url=url, map_location="cpu", check_hash=True)
             # checkpoint state dict
