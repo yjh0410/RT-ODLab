@@ -38,7 +38,7 @@ class YOLOv7(nn.Module):
         feats_dim[-1] = self.neck.out_dim
 
         ## 颈部网络: 特征金字塔
-        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=256)
+        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))
         self.head_dim = self.fpn.out_dim
 
         ## 检测头

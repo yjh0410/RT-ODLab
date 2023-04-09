@@ -79,18 +79,18 @@ class Conv(nn.Module):
 
 # ELAN Block
 class ELANBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, expand_ratio=0.5, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, in_dim, out_dim, expand_ratio=0.5, depth=2.0, act_type='silu', norm_type='BN', depthwise=False):
         super(ELANBlock, self).__init__()
         inter_dim = int(in_dim * expand_ratio)
         self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv3 = nn.Sequential(*[
             Conv(inter_dim, inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            for _ in range(2)
+            for _ in range(round(depth))
         ])
         self.cv4 = nn.Sequential(*[
             Conv(inter_dim, inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            for _ in range(2)
+            for _ in range(round(depth))
         ])
 
         self.out = Conv(inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
@@ -107,48 +107,25 @@ class ELANBlock(nn.Module):
         return out
 
 
-# DownSample Block
-class DownSample(nn.Module):
-    def __init__(self, in_dim, act_type='silu', norm_type='BN'):
-        super().__init__()
-        inter_dim = in_dim // 2
-        self.mp = nn.MaxPool2d((2, 2), 2)
-        self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.cv2 = nn.Sequential(
-            Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type),
-            Conv(inter_dim, inter_dim, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type)
-        )
-
-    def forward(self, x):
-        x1 = self.cv1(self.mp(x))
-        x2 = self.cv2(x)
-        out = torch.cat([x1, x2], dim=1)
-
-        return out
-
-
 # ELAN Block for PaFPN
 class ELANBlockFPN(nn.Module):
-    def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, in_dim, out_dim, expand_ratio=0.5, nbranch=4, depth=1, act_type='silu', norm_type='BN', depthwise=False):
         super(ELANBlockFPN, self).__init__()
         # Basic parameters
-        e1, e2 = 0.5, 0.5
-        width = 4
-        depth = 1
-        inter_dim = int(in_dim * e1)
-        inter_dim2 = int(inter_dim * e2) 
+        inter_dim = int(in_dim * expand_ratio)
+        inter_dim2 = int(inter_dim * expand_ratio) 
         # Network structure
         self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv3 = nn.ModuleList()
-        for idx in range(width):
+        for idx in range(round(nbranch)):
             if idx == 0:
                 cvs = [Conv(inter_dim, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)]
             else:
                 cvs = [Conv(inter_dim2, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)]
             # deeper
-            if depth > 1:
-                for _ in range(1, depth):
+            if round(depth) > 1:
+                for _ in range(1, round(depth)):
                     cvs.append(Conv(inter_dim2, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
                 self.cv3.append(nn.Sequential(*cvs))
             else:
@@ -170,11 +147,11 @@ class ELANBlockFPN(nn.Module):
         return out
 
 
-# DownSample Block for PaFPN
-class DownSampleFPN(nn.Module):
-    def __init__(self, in_dim, act_type='silu', norm_type='BN', depthwise=False):
+# DownSample Block
+class DownSample(nn.Module):
+    def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
-        inter_dim = in_dim
+        inter_dim = out_dim // 2
         self.mp = nn.MaxPool2d((2, 2), 2)
         self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = nn.Sequential(
