@@ -28,7 +28,7 @@ def build_model_config(args):
     elif args.model == 'yolov5':
         cfg = yolov5_cfg
     # YOLOv7
-    elif args.model in ['yolov7_nano' 'yolov7_tiny', 'yolov7_large', 'yolov7_huge']:
+    elif args.model in ['yolov7_nano', 'yolov7_tiny', 'yolov7_large', 'yolov7_huge']:
         cfg = yolov7_cfg[args.model]
     # YOLOv8
     elif args.model == 'yolov8':
@@ -41,7 +41,7 @@ def build_model_config(args):
 
 
 # ------------------ Transform Config ----------------------
-from .transform_config import yolov5_trans_config, yolox_trans_config, ssd_trans_config
+from .transform_config import yolov5_strong_trans_config, yolov5_weak_trans_config, yolox_trans_config, ssd_trans_config
 
 def build_trans_config(trans_config='ssd'):
     print('==============================')
@@ -50,8 +50,10 @@ def build_trans_config(trans_config='ssd'):
     if trans_config == 'ssd':
         cfg = ssd_trans_config
     # YOLOv5-style transform 
-    elif trans_config == 'yolov5':
-        cfg = yolov5_trans_config
+    elif trans_config == 'yolov5_strong':
+        cfg = yolov5_strong_trans_config
+    elif trans_config == 'yolov5_weak':
+        cfg = yolov5_weak_trans_config
     # YOLOX-style transform 
     elif trans_config == 'yolox':
         cfg = yolox_trans_config

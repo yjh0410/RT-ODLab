@@ -1,7 +1,7 @@
 # Train YOLO on VOC
 python train.py \
         --cuda \
-        -d coco \
+        -d voc \
         --root /mnt/share/ssd2/dataset/ \
         -m yolov7_large \
         -bs 16 \

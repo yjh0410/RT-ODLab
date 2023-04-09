@@ -2,7 +2,7 @@
 
 yolov5_cfg = {
     # input
-    'trans_type': 'yolov5',
+    'trans_type': 'yolov5_strong',
     'multi_scale': [0.5, 1.0],
     # model
     'backbone': 'cspdarknet',
