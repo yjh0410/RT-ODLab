@@ -3,7 +3,7 @@ python train.py \
         --cuda \
         -d voc \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolov7_large \
+        -m yolox \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
