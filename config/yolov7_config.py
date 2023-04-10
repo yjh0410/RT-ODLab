@@ -4,11 +4,11 @@ yolov7_cfg = {
     'yolov7_nano':{
         # input
         'trans_type': 'yolov5_nano',
-        'multi_scale': [0.5, 1.0],
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_nano',
         'pretrained': True,
-        'bk_act': 'silu',
+        'bk_act': 'lrelu',
         'bk_norm': 'BN',
         'bk_dpw': True,
         'stride': [8, 16, 32],  # P3, P4, P5
@@ -16,12 +16,12 @@ yolov7_cfg = {
         'neck': 'sppf',
         'expand_ratio': 0.5,
         'pooling_size': 5,
-        'neck_act': 'silu',
+        'neck_act': 'lrelu',
         'neck_norm': 'BN',
         'neck_depthwise': True,
         # fpn
         'fpn': 'yolov7_pafpn',
-        'fpn_act': 'silu',
+        'fpn_act': 'lrelu',
         'fpn_norm': 'BN',
         'fpn_depthwise': True,
         'nbranch': 2.0,
@@ -29,7 +29,7 @@ yolov7_cfg = {
         'depth': 1.0,
         # head
         'head': 'decoupled_head',
-        'head_act': 'silu',
+        'head_act': 'lrelu',
         'head_norm': 'BN',
         'num_cls_head': 2,
         'num_reg_head': 2,
@@ -62,7 +62,7 @@ yolov7_cfg = {
     'yolov7_tiny':{
         # input
         'trans_type': 'yolov5_weak',
-        'multi_scale': [0.5, 1.0],
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_tiny',
         'pretrained': True,
@@ -120,7 +120,7 @@ yolov7_cfg = {
     'yolov7_large':{
         # input
         'trans_type': 'yolov5_strong',
-        'multi_scale': [0.5, 1.0],
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_large',
         'pretrained': True,
@@ -178,7 +178,7 @@ yolov7_cfg = {
     'yolov7_huge':{
         # input
         'trans_type': 'yolov5_strong',
-        'multi_scale': [0.5, 1.0],
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_huge',
         'pretrained': True,
