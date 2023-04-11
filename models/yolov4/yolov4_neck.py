@@ -5,6 +5,9 @@ from .yolov4_basic import Conv
 
 # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
 class SPPF(nn.Module):
+    """
+        This code referenced to https://github.com/ultralytics/yolov5
+    """
     def __init__(self, in_dim, out_dim, expand_ratio=0.5, pooling_size=5, act_type='lrelu', norm_type='BN'):
         super().__init__()
         inter_dim = int(in_dim * expand_ratio)

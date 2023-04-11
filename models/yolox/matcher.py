@@ -1,11 +1,18 @@
+# ---------------------------------------------------------------------
+# Copyright (c) Megvii Inc. All rights reserved.
+# ---------------------------------------------------------------------
+
+
 import torch
 import torch.nn.functional as F
 from utils.box_ops import *
 
 
-
 # YOLOX SimOTA
 class SimOTA(object):
+    """
+        This code referenced to https://github.com/Megvii-BaseDetection/YOLOX/blob/main/yolox/models/yolo_head.py
+    """
     def __init__(self, 
                  num_classes,
                  center_sampling_radius,
