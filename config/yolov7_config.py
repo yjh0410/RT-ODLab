@@ -4,7 +4,7 @@ yolov7_cfg = {
     'yolov7_nano':{
         # input
         'trans_type': 'yolov5_nano',
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_nano',
         'pretrained': True,
@@ -62,7 +62,7 @@ yolov7_cfg = {
     'yolov7_tiny':{
         # input
         'trans_type': 'yolov5_weak',
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_tiny',
         'pretrained': True,
@@ -120,7 +120,7 @@ yolov7_cfg = {
     'yolov7_large':{
         # input
         'trans_type': 'yolov5_strong',
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_large',
         'pretrained': True,
@@ -178,7 +178,7 @@ yolov7_cfg = {
     'yolov7_huge':{
         # input
         'trans_type': 'yolov5_strong',
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_huge',
         'pretrained': True,

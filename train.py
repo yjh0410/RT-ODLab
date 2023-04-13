@@ -197,7 +197,7 @@ def train():
     # start training loop
     best_map = -1.0
     last_opt_step = -1
-    total_epochs = args.max_epoch
+    total_epochs = args.max_epoch + args.wp_epoch
     heavy_eval = False
     optimizer.zero_grad()
     
