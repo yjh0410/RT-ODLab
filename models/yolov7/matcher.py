@@ -13,11 +13,7 @@ class SimOTA(object):
     """
         This code referenced to https://github.com/Megvii-BaseDetection/YOLOX/blob/main/yolox/models/yolo_head.py
     """
-    def __init__(self, 
-                 num_classes,
-                 center_sampling_radius,
-                 topk_candidate
-                 ) -> None:
+    def __init__(self, num_classes, center_sampling_radius, topk_candidate ):
         self.num_classes = num_classes
         self.center_sampling_radius = center_sampling_radius
         self.topk_candidate = topk_candidate

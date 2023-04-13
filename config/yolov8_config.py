@@ -3,7 +3,7 @@
 yolov8_cfg = {
     # input
     'trans_type': 'yolov5_strong',
-    'multi_scale': [0.5, 1.0],
+    'multi_scale': [0.5, 1.5],   # 320 -> 960
     # model
     'backbone': 'elan_cspnet',
     'pretrained': True,
@@ -46,7 +46,7 @@ yolov8_cfg = {
     # training configuration
     'no_aug_epoch': 10,
     # optimizer
-    'optimizer': 'sgd',      # optional: sgd, adamw
+    'optimizer': 'sgd',        # optional: sgd, adamw
     'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
     'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
     'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
