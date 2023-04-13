@@ -25,8 +25,8 @@ yolov7_cfg = {
         'fpn_norm': 'BN',
         'fpn_depthwise': True,
         'nbranch': 2.0,       # number of branch in ELANBlockFPN
-        'depth': 0.25,        # depth factor of each branch in ELANBlockFPN
-        'width': 1.0,         # width factor of channel in FPN
+        'depth': 1.0,        # depth factor of each branch in ELANBlockFPN
+        'width': 0.25,         # width factor of channel in FPN
         # head
         'head': 'decoupled_head',
         'head_act': 'lrelu',
@@ -83,8 +83,8 @@ yolov7_cfg = {
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
         'nbranch': 2.0,       # number of branch in ELANBlockFPN
-        'depth': 0.5,         # depth factor of each branch in ELANBlockFPN
-        'width': 1.0,         # width factor of channel in FPN
+        'depth': 1.0,         # depth factor of each branch in ELANBlockFPN
+        'width': 0.5,         # width factor of channel in FPN
         # head
         'head': 'decoupled_head',
         'head_act': 'silu',
@@ -198,9 +198,9 @@ yolov7_cfg = {
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
-        'nbranch': 4.0,       # number of branch in ELANBlockFPN
-        'depth': 1.25,        # depth factor of each branch in ELANBlockFPN
-        'width': 2.0,         # width factor of channel in FPN
+        'nbranch': 4.0,        # number of branch in ELANBlockFPN
+        'depth': 2.0,          # depth factor of each branch in ELANBlockFPN
+        'width': 1.25,         # width factor of channel in FPN
         # head
         'head': 'decoupled_head',
         'head_act': 'silu',
