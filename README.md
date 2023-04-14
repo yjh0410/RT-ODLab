@@ -98,15 +98,18 @@ For example:
 python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-| Model  |   Backbone    | Scale |  IP  | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>50 | Weight |
-|--------|---------------|-------|------|-------|------------------------|------------------|--------|
-| YOLOv1 | ResNet-18     |  640  |  √   |  150  |        27.9            |       47.5       | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov1_coco.pth) |
-| YOLOv2 | DarkNet-19    |  640  |  √   |  150  |        32.7            |       50.9       | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov2_coco.pth) |
-| YOLOv3 | DarkNet-53    |  640  |  √   |  250  |        42.9            |       63.5       | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
-| YOLOv4 | CSPDarkNet-53 |  640  |  √   |  250  |                        |                  |  |
-| YOLOv5 | CSPDarkNet-L  |  640  |  √   |  250  |                        |                  |  |
-| YOLOX  | CSPDarkNet-L  |  640  |  √   |  300  |                        |                  |  |
-| YOLOv7 | ELANNet-Large |  640  |  √   |  300  |                        |                  |  |
+| Model        |   Backbone    | Scale |  IP  | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>50 | Weight |
+|--------------|---------------|-------|------|-------|-------|------------------------|------------------|--------|
+| YOLOv1       | ResNet-18     |  640  |  √   |  150  |       |        27.9            |       47.5       | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov1_coco.pth) |
+| YOLOv2       | DarkNet-19    |  640  |  √   |  150  |       |        32.7            |       50.9       | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov2_coco.pth) |
+| YOLOv3       | DarkNet-53    |  640  |  √   |  250  |       |        42.9            |       63.5       | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
+| YOLOv4       | CSPDarkNet-53 |  640  |  √   |  250  |       |                        |                  |  |
+| YOLOv5       | CSPDarkNet-L  |  640  |  √   |  250  |       |                        |                  |  |
+| YOLOX        | CSPDarkNet-L  |  640  |  √   |  300  |       |                        |                  |  |
+| YOLOv7-Nano  | ELANNet-Nano  |  640  |  √   |  300  |       |                        |                  |  |
+| YOLOv7-Tiny  | ELANNet-Tiny  |  640  |  √   |  300  |       |                        |                  |  |
+| YOLOv7-Large | ELANNet-Large |  640  |  √   |  300  |       |                        |                  |  |
+| YOLOv7-Huge  | ELANNet-Huge  |  640  |  √   |  300  |       |                        |                  |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 

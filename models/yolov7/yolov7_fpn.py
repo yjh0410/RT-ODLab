@@ -108,11 +108,11 @@ class Yolov7PaFPN(nn.Module):
         c13 = self.top_down_layer_2(c12)
 
         # Bottom up
-        # p3 -> P4
+        ## p3 -> P4
         c14 = self.downsample_layer_1(c13)
         c15 = torch.cat([c14, c9], dim=1)
         c16 = self.bottom_up_layer_1(c15)
-        # P4 -> P5
+        ## P4 -> P5
         c17 = self.downsample_layer_2(c16)
         c18 = torch.cat([c17, c5], dim=1)
         c19 = self.bottom_up_layer_2(c18)
