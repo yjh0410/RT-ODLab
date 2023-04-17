@@ -105,11 +105,11 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv3       | DarkNet-53    |  640  |  √   |  250  |       |        42.9            |       63.5        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
 | YOLOv4       | CSPDarkNet-53 |  640  |  √   |  250  |       |                        |                   |  |
 | YOLOv5       | CSPDarkNet-L  |  640  |  √   |  250  |       |                        |                   |  |
-| YOLOX        | CSPDarkNet-L  |  640  |  √   |  250  |       |        46.6            |       66.1        |  |
-| YOLOv7-Nano  | ELANNet-Nano  |  640  |  √   |  250  |       |                        |                   |  |
-| YOLOv7-Tiny  | ELANNet-Tiny  |  640  |  √   |  250  |       |                        |                   |  |
-| YOLOv7-Large | ELANNet-Large |  640  |  √   |  250  |       |                        |                   |  |
-| YOLOv7-Huge  | ELANNet-Huge  |  640  |  √   |  250  |       |                        |                   |  |
+| YOLOX        | CSPDarkNet-L  |  640  |  √   |  300  |       |        46.6            |       66.1        |  |
+| YOLOv7-Nano  | ELANNet-Nano  |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv7-Tiny  | ELANNet-Tiny  |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv7-Large | ELANNet-Large |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv7-Huge  | ELANNet-Huge  |  640  |  √   |  300  |       |                        |                   |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
@@ -143,7 +143,7 @@ python train.py \
         -d coco \
         -v yolov1 \
         -bs 16 \
-        --max_epoch 250 \
+        --max_epoch 300 \
         --wp_epoch 3 \
         --eval_epoch 10 \
         --ema \
