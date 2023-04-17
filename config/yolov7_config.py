@@ -24,8 +24,8 @@ yolov7_cfg = {
         'fpn_act': 'lrelu',
         'fpn_norm': 'BN',
         'fpn_depthwise': True,
-        'nbranch': 2.0,       # number of branch in ELANBlockFPN
-        'depth': 1.0,        # depth factor of each branch in ELANBlockFPN
+        'nbranch': 2.0,        # number of branch in ELANBlockFPN
+        'depth': 1.0,          # depth factor of each branch in ELANBlockFPN
         'width': 0.25,         # width factor of channel in FPN
         # head
         'head': 'decoupled_head',
@@ -53,8 +53,8 @@ yolov7_cfg = {
         'ema_tau': 2000,
         # lr schedule
         'scheduler': 'linear',
-        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.004
-        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.05
+        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
+        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
     },
@@ -111,8 +111,8 @@ yolov7_cfg = {
         'ema_tau': 2000,
         # lr schedule
         'scheduler': 'linear',
-        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.004
-        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.05
+        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
+        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
     },
@@ -169,8 +169,8 @@ yolov7_cfg = {
         'ema_tau': 2000,
         # lr schedule
         'scheduler': 'linear',
-        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.004
-        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.05
+        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
+        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
     },
@@ -227,8 +227,8 @@ yolov7_cfg = {
         'ema_tau': 2000,
         # lr schedule
         'scheduler': 'linear',
-        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.004
-        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.05
+        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
+        'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
     },

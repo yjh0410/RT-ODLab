@@ -105,7 +105,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv3       | DarkNet-53    |  640  |  √   |  250  |       |        42.9            |       63.5        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
 | YOLOv4       | CSPDarkNet-53 |  640  |  √   |  250  |       |                        |                   |  |
 | YOLOv5       | CSPDarkNet-L  |  640  |  √   |  250  |       |                        |                   |  |
-| YOLOX        | CSPDarkNet-L  |  640  |  √   |  300  |       |        46.6            |       66.1        |  |
+| YOLOX        | CSPDarkNet-L  |  640  |  √   |  300  |       |        46.6            |       66.1        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
 | YOLOv7-Nano  | ELANNet-Nano  |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Tiny  | ELANNet-Tiny  |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Large | ELANNet-Large |  640  |  √   |  300  |       |                        |                   |  |
