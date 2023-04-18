@@ -7,6 +7,7 @@ yolov8_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
+        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -67,6 +68,7 @@ yolov8_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
+        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -127,6 +129,7 @@ yolov8_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
+        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -187,6 +190,7 @@ yolov8_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
+        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -247,6 +251,7 @@ yolov8_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
+        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,

@@ -110,11 +110,11 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv7-Tiny   | ELANNet-Tiny       |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Large  | ELANNet-Large      |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Huge   | ELANNet-Huge       |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Nano   | CSP-ELANNet-Nano   |  640  |  ×   |  500  |       |                        |                   |  |
-| YOLOv8-Small  | CSP-ELANNet-Small  |  640  |  ×   |  500  |       |                        |                   |  |
-| YOLOv8-Medium | CSP-ELANNet-Medium |  640  |  ×   |  500  |       |                        |                   |  |
-| YOLOv8-Large  | CSP-ELANNet-Large  |  640  |  ×   |  500  |       |                        |                   |  |
-| YOLOv8-Huge   | CSP-ELANNet-Large  |  640  |  ×   |  500  |       |                        |                   |  |
+| YOLOv8-Nano   | CSP-ELANNet-Nano   |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv8-Small  | CSP-ELANNet-Small  |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv8-Medium | CSP-ELANNet-Medium |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv8-Large  | CSP-ELANNet-Large  |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv8-Huge   | CSP-ELANNet-Large  |  640  |  √   |  300  |       |                        |                   |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
