@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from utils.box_ops import bbox_iou
 
 
+# -------------------------- Task Aligned Assigner --------------------------
 class TaskAlignedAssigner(nn.Module):
     def __init__(self,
                  topk=10,
@@ -54,89 +56,88 @@ class TaskAlignedAssigner(nn.Module):
 
         # normalize
         align_metric *= mask_pos
-        pos_align_metrics = align_metric.max(axis=-1, keepdim=True)[0]
-        pos_overlaps = (overlaps * mask_pos).max(axis=-1, keepdim=True)[0]
-        norm_align_metric = (align_metric * pos_overlaps / (pos_align_metrics + self.eps)).max(-2)[0].unsqueeze(-1)
+        pos_align_metrics = align_metric.amax(axis=-1, keepdim=True)  # b, max_num_obj
+        pos_overlaps = (overlaps * mask_pos).amax(axis=-1, keepdim=True)  # b, max_num_obj
+        norm_align_metric = (align_metric * pos_overlaps / (pos_align_metrics + self.eps)).amax(-2).unsqueeze(-1)
         target_scores = target_scores * norm_align_metric
 
-        return target_labels, target_bboxes, target_scores, fg_mask.bool()
+        return target_labels, target_bboxes, target_scores, fg_mask.bool(), target_gt_idx
 
 
-    def get_pos_mask(self,
-                     pd_scores,
-                     pd_bboxes,
-                     gt_labels,
-                     gt_bboxes,
-                     anc_points):
-
-        # get anchor_align metric
+    def get_pos_mask(self, pd_scores, pd_bboxes, gt_labels, gt_bboxes, anc_points):
+        # get anchor_align metric, (b, max_num_obj, h*w)
         align_metric, overlaps = self.get_box_metrics(pd_scores, pd_bboxes, gt_labels, gt_bboxes)
-        # get in_gts mask
+        # get in_gts mask, (b, max_num_obj, h*w)
         mask_in_gts = select_candidates_in_gts(anc_points, gt_bboxes)
-        # get topk_metric mask
+        # get topk_metric mask, (b, max_num_obj, h*w)
         mask_topk = self.select_topk_candidates(align_metric * mask_in_gts)
-        # merge all mask to a final mask
+        # merge all mask to a final mask, (b, max_num_obj, h*w)
         mask_pos = mask_topk * mask_in_gts
 
         return mask_pos, align_metric, overlaps
 
 
-    def get_box_metrics(self,
-                        pd_scores,
-                        pd_bboxes,
-                        gt_labels,
-                        gt_bboxes):
+    def get_box_metrics(self, pd_scores, pd_bboxes, gt_labels, gt_bboxes):
+        ind = torch.zeros([2, self.bs, self.n_max_boxes], dtype=torch.long)  # 2, b, max_num_obj
+        ind[0] = torch.arange(end=self.bs).view(-1, 1).repeat(1, self.n_max_boxes)  # b, max_num_obj
+        ind[1] = gt_labels.long().squeeze(-1)  # b, max_num_obj
+        # get the scores of each grid for each gt cls
+        bbox_scores = pd_scores[ind[0], :, ind[1]]  # b, max_num_obj, h*w
 
-        pd_scores = pd_scores.permute(0, 2, 1)
-        gt_labels = gt_labels.long()
-        ind = torch.zeros([2, self.bs, self.n_max_boxes], dtype=torch.long)
-        ind[0] = torch.arange(end=self.bs).view(-1, 1).repeat(1, self.n_max_boxes)
-        ind[1] = gt_labels.squeeze(-1)
-        bbox_scores = pd_scores[ind[0], ind[1]]
-
-        overlaps = iou_calculator(gt_bboxes, pd_bboxes)
+        overlaps = bbox_iou(gt_bboxes.unsqueeze(2), pd_bboxes.unsqueeze(1), xywh=False,
+                            CIoU=True).squeeze(3).clamp(0)
         align_metric = bbox_scores.pow(self.alpha) * overlaps.pow(self.beta)
 
         return align_metric, overlaps
 
 
     def select_topk_candidates(self, metrics, largest=True):
-        num_anchors = metrics.shape[-1]
-        topk_metrics, topk_idxs = torch.topk(
-            metrics, self.topk, axis=-1, largest=largest)
-        topk_mask = (topk_metrics.max(axis=-1, keepdim=True)[0] > self.eps).tile(
-            [1, 1, self.topk])
-        topk_idxs = torch.where(topk_mask, topk_idxs, torch.zeros_like(topk_idxs))
-        is_in_topk = F.one_hot(topk_idxs, num_anchors).sum(axis=-2)
-        is_in_topk = torch.where(is_in_topk > 1,
-            torch.zeros_like(is_in_topk), is_in_topk)
+        """
+        Args:
+            metrics: (b, max_num_obj, h*w).
+            topk_mask: (b, max_num_obj, topk) or None
+        """
+
+        num_anchors = metrics.shape[-1]  # h*w
+        # (b, max_num_obj, topk)
+        topk_metrics, topk_idxs = torch.topk(metrics, self.topk, dim=-1, largest=largest)
+        topk_mask = (topk_metrics.max(-1, keepdim=True)[0] > self.eps).tile([1, 1, self.topk])
+        # (b, max_num_obj, topk)
+        topk_idxs[~topk_mask] = 0
+        # (b, max_num_obj, topk, h*w) -> (b, max_num_obj, h*w)
+        is_in_topk = F.one_hot(topk_idxs, num_anchors).sum(-2)
+        # filter invalid bboxes
+        is_in_topk = torch.where(is_in_topk > 1, 0, is_in_topk)
         return is_in_topk.to(metrics.dtype)
 
 
-    def get_targets(self,
-                    gt_labels,
-                    gt_bboxes,
-                    target_gt_idx,
-                    fg_mask):
+    def get_targets(self, gt_labels, gt_bboxes, target_gt_idx, fg_mask):
+        """
+        Args:
+            gt_labels: (b, max_num_obj, 1)
+            gt_bboxes: (b, max_num_obj, 4)
+            target_gt_idx: (b, h*w)
+            fg_mask: (b, h*w)
+        """
 
-        # assigned target labels
-        batch_ind = torch.arange(end=self.bs, dtype=torch.int64, device=gt_labels.device)[...,None]
-        target_gt_idx = target_gt_idx + batch_ind * self.n_max_boxes
-        target_labels = gt_labels.long().flatten()[target_gt_idx]
+        # assigned target labels, (b, 1)
+        batch_ind = torch.arange(end=self.bs, dtype=torch.int64, device=gt_labels.device)[..., None]
+        target_gt_idx = target_gt_idx + batch_ind * self.n_max_boxes  # (b, h*w)
+        target_labels = gt_labels.long().flatten()[target_gt_idx]  # (b, h*w)
 
-        # assigned target boxes
-        target_bboxes = gt_bboxes.reshape([-1, 4])[target_gt_idx]
+        # assigned target boxes, (b, max_num_obj, 4) -> (b, h*w)
+        target_bboxes = gt_bboxes.view(-1, 4)[target_gt_idx]
 
         # assigned target scores
-        target_labels[target_labels<0] = 0
-        target_scores = F.one_hot(target_labels, self.num_classes)
-        fg_scores_mask  = fg_mask[:, :, None].repeat(1, 1, self.num_classes)
-        target_scores = torch.where(fg_scores_mask > 0, target_scores,
-                                        torch.full_like(target_scores, 0))
+        target_labels.clamp(0)
+        target_scores = F.one_hot(target_labels, self.num_classes)  # (b, h*w, 80)
+        fg_scores_mask = fg_mask[:, :, None].repeat(1, 1, self.num_classes)  # (b, h*w, 80)
+        target_scores = torch.where(fg_scores_mask > 0, target_scores, 0)
 
         return target_labels, target_bboxes, target_scores
     
 
+# -------------------------- Basic Functions --------------------------
 def select_candidates_in_gts(xy_centers, gt_bboxes, eps=1e-9):
     """select the positive anchors's center in gt
     Args:
