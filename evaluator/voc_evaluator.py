@@ -39,7 +39,7 @@ class VOCAPIEvaluator():
         self.annopath = os.path.join(data_dir, 'VOC2007', 'Annotations', '%s.xml')
         self.imgpath = os.path.join(data_dir, 'VOC2007', 'JPEGImages', '%s.jpg')
         self.imgsetpath = os.path.join(data_dir, 'VOC2007', 'ImageSets', 'Main', set_type+'.txt')
-        self.output_dir = self.get_output_dir('voc_eval/', self.set_type)
+        self.output_dir = self.get_output_dir('det_results/eval/voc_eval/', self.set_type)
 
         # dataset
         self.dataset = VOCDetection(
