@@ -33,7 +33,7 @@ def parse_args():
                         help='use cuda.')
     parser.add_argument('--save_folder', default='det_results/', type=str,
                         help='Dir to save results')
-    parser.add_argument('-vs', '--visual_threshold', default=0.3, type=float,
+    parser.add_argument('-vs', '--visual_threshold', default=0.4, type=float,
                         help='Final confidence threshold')
     parser.add_argument('-ws', '--window_scale', default=1.0, type=float,
                         help='resize window of cv2 for visualization.')
