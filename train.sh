@@ -3,11 +3,11 @@ python train.py \
         --cuda \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolov5 \
+        -m yolov8_nano \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
-        --max_epoch 250 \
+        --max_epoch 300 \
         --eval_epoch 10 \
         --ema \
         --fp16 \
