@@ -389,7 +389,7 @@ class YOLOv5BaseTransform(object):
         img_h0, img_w0 = image.shape[:2]
 
         r = self.img_size / max(img_h0, img_w0)
-        r = min(r, 1.0) # only scale down, do not scale up (for better val mAP)
+        # r = min(r, 1.0) # only scale down, do not scale up (for better val mAP)
         if r != 1: 
             new_shape = (int(round(img_w0 * r)), int(round(img_h0 * r)))
             img = cv2.resize(image, new_shape, interpolation=cv2.INTER_LINEAR)
