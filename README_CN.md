@@ -112,12 +112,10 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv7-Nano   | ELANNet-Nano       |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Tiny   | ELANNet-Tiny       |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Large  | ELANNet-Large      |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv7-Huge   | ELANNet-Huge       |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv8-Nano   | CSP-ELANNet-Nano   |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv8-Small  | CSP-ELANNet-Small  |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv8-Medium | CSP-ELANNet-Medium |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv8-Large  | CSP-ELANNet-Large  |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Huge   | CSP-ELANNet-Large  |  640  |  √   |  300  |       |                        |                   |  |
 
 *所有的模型都使用了ImageNet预训练权重（IP），所有的FLOPs都是在COCO-val数据集上以640x640或1280x1280的输入尺寸来测试的。FPS指标是在一张3090型号的GPU上以batch size=1的输入来测试的，请注意，测速的内容包括模型前向推理、后处理以及NMS操作。*
 
