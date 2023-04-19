@@ -45,7 +45,7 @@ yolov8_cfg = {
         'loss_iou_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # training configuration
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         # optimizer
         'optimizer': 'sgd',        # optional: sgd, adamw
         'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
@@ -106,7 +106,7 @@ yolov8_cfg = {
         'loss_iou_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # training configuration
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         # optimizer
         'optimizer': 'sgd',        # optional: sgd, adamw
         'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
@@ -167,7 +167,7 @@ yolov8_cfg = {
         'loss_iou_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # training configuration
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         # optimizer
         'optimizer': 'sgd',        # optional: sgd, adamw
         'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
@@ -228,7 +228,7 @@ yolov8_cfg = {
         'loss_iou_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # training configuration
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         # optimizer
         'optimizer': 'sgd',        # optional: sgd, adamw
         'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
@@ -289,7 +289,7 @@ yolov8_cfg = {
         'loss_iou_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # training configuration
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         # optimizer
         'optimizer': 'sgd',        # optional: sgd, adamw
         'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
