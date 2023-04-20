@@ -109,15 +109,14 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv4        | CSPDarkNet-L       |  640  |  √   |  250  |       |        46.6            |       65.8        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
 | YOLOv5        | CSPDarkNet-53      |  640  |  √   |  250  |       |                        |                   |  |
 | YOLOX         | CSPDarkNet-L       |  640  |  √   |  300  |       |        46.6            |       66.1        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
-| YOLOv7-Nano   | ELANNet-Nano       |  640  |  √   |  300  |       |                        |                   |  |
 | YOLOv7-Tiny   | ELANNet-Tiny       |  640  |  √   |  300  |       |        37.7            |       56.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
 | YOLOv7-Large  | ELANNet-Large      |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Nano   | CSP-ELANNet-Nano   |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Small  | CSP-ELANNet-Small  |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Medium | CSP-ELANNet-Medium |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Large  | CSP-ELANNet-Large  |  640  |  √   |  300  |       |                        |                   |  |
+| YOLOv8-Nano   | CSP-ELANNet-Nano   |  640  |  √   |  500  |       |                        |                   |  |
+| YOLOv8-Large  | CSP-ELANNet-Large  |  640  |  √   |  500  |       |                        |                   |  |
 
 *所有的模型都使用了ImageNet预训练权重（IP），所有的FLOPs都是在COCO-val数据集上以640x640或1280x1280的输入尺寸来测试的。FPS指标是在一张3090型号的GPU上以batch size=1的输入来测试的，请注意，测速的内容包括模型前向推理、后处理以及NMS操作。*
+
+*受限于我贫瘠的计算资源，更多的YOLO检测器被放弃训练了，例如YOLOv7-Huge、YOLOv8-Small和YOLOv8-Medium等。如果您对他们感兴趣，并使用本项目的代码训练了他们，我很真诚地希望您能分享训练好的权重文件，那将会令我感激不尽。*
 
 ## 训练
 ### 使用单个GPU来训练
