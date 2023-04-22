@@ -1,13 +1,13 @@
 # Train YOLO on VOC
 python train.py \
         --cuda \
-        -d voc \
+        -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolov7_large \
+        -m yolov7_tiny \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
-        --max_epoch 150 \
+        --max_epoch 300 \
         --eval_epoch 10 \
         --ema \
         --fp16 \
