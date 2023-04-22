@@ -33,7 +33,7 @@ def parse_args():
                         help='use cuda.')
     parser.add_argument('--save_folder', default='det_results/', type=str,
                         help='Dir to save results')
-    parser.add_argument('-vs', '--visual_threshold', default=0.4, type=float,
+    parser.add_argument('-vt', '--visual_threshold', default=0.4, type=float,
                         help='Final confidence threshold')
     parser.add_argument('-ws', '--window_scale', default=1.0, type=float,
                         help='resize window of cv2 for visualization.')
@@ -49,10 +49,12 @@ def parse_args():
                         help='NMS threshold')
     parser.add_argument('--topk', default=100, type=int,
                         help='topk candidates for testing')
-    parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
-                        help='fuse conv and bn')
     parser.add_argument("--no_decode", action="store_true", default=False,
                         help="not decode in inference or yes")
+    parser.add_argument('--fuse_repconv', action='store_true', default=False,
+                        help='fuse RepConv')
+    parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
+                        help='fuse Conv & BN')
 
     # dataset
     parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
@@ -193,7 +195,7 @@ if __name__ == '__main__':
     model = build_model(args, model_cfg, device, num_classes, False)
 
     # load trained weight
-    model = load_weight(model=model, path_to_ckpt=args.weight)
+    model = load_weight(model, args.weight, args.fuse_conv_bn, args.fuse_repconv)
     model.to(device).eval()
 
     # compute FLOPs and Params
@@ -205,11 +207,6 @@ if __name__ == '__main__':
         img_size=args.img_size, 
         device=device)
     del model_copy
-
-    # fuse conv bn
-    if args.fuse_conv_bn:
-        print('fuse conv and bn ...')
-        model = fuse_conv_bn.fuse_conv_bn(model)
 
     # transform
     transform = build_transform(args.img_size, trans_cfg, is_train=False)

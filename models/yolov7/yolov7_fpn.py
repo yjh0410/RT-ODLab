@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .yolov7_basic import Conv, ELANBlockFPN, DownSample
+from .yolov7_basic import Conv, ELANBlockFPN, DownSample, RepConv
 
 
 # PaFPN-ELAN (YOLOv7's)
@@ -72,12 +72,9 @@ class Yolov7PaFPN(nn.Module):
                                               )
         
         # head conv
-        self.head_conv_1 = Conv(round(128*width), round(256*width), k=3, p=1,
-                                act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.head_conv_2 = Conv(round(256*width), round(512*width), k=3, p=1,
-                                act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.head_conv_3 = Conv(round(512*width), round(1024*width), k=3, p=1,
-                                act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.head_conv_1 = RepConv(round(128*width), round(256*width), k=3, s=1, p=1, act_type=act_type)
+        self.head_conv_2 = RepConv(round(256*width), round(512*width), k=3, s=1, p=1, act_type=act_type)
+        self.head_conv_3 = RepConv(round(512*width), round(1024*width), k=3, s=1, p=1, act_type=act_type)
 
         # output proj layers
         if out_dim is not None:

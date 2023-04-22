@@ -39,6 +39,10 @@ def parse_args():
                         help='topk candidates for testing')
     parser.add_argument("--no_decode", action="store_true", default=False,
                         help="not decode in inference or yes")
+    parser.add_argument('--fuse_repconv', action='store_true', default=False,
+                        help='fuse RepConv')
+    parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
+                        help='fuse Conv & BN')
 
     # dataset
     parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
@@ -119,7 +123,7 @@ if __name__ == '__main__':
     model = build_model(args, model_cfg, device, num_classes, False)
 
     # load trained weight
-    model = load_weight(model=model, path_to_ckpt=args.weight)
+    model = load_weight(model, args.weight, args.fuse_conv_bn, args.fuse_repconv)
     model.to(device).eval()
 
     # compute FLOPs and Params
