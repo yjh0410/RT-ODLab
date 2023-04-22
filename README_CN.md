@@ -115,7 +115,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 
 *所有的模型都使用了ImageNet预训练权重（IP），所有的FLOPs都是在COCO-val数据集上以640x640或1280x1280的输入尺寸来测试的。FPS指标是在一张3090型号的GPU上以batch size=1的输入来测试的，请注意，测速的内容包括模型前向推理、后处理以及NMS操作。*
 
-*受限于我贫瘠的计算资源，更多的YOLO检测器被放弃训练了，包括YOLOv7-Huge、YOLOv8-Small、YOLOv8-Medium、YOLOv8-Large以及YOLOv8-Huge。如果您对他们感兴趣，并使用本项目的代码训练了他们，我很真诚地希望您能分享训练好的权重文件，那将会令我感激不尽。*
+*受限于我贫瘠的计算资源，更多的YOLO检测器被放弃训练了，包括YOLOv7-Huge、YOLOv8-Small~Large。如果您对他们感兴趣，并使用本项目的代码训练了他们，我很真诚地希望您能分享训练好的权重文件，那将会令我感激不尽。*
 
 ## 训练
 ### 使用单个GPU来训练

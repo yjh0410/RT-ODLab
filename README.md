@@ -107,12 +107,11 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv5        | CSPDarkNet-53      |  640  |  √   |  250  |       |                        |                   |  |
 | YOLOX         | CSPDarkNet-L       |  640  |  √   |  300  |       |        46.6            |       66.1        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
 | YOLOv7-Tiny   | ELANNet-Tiny       |  640  |  √   |  300  |       |                    |               |  |
-| YOLOv7-Large  | ELANNet-Large      |  640  |  √   |  300  |       |                        |                   |  |
-| YOLOv8-Nano   | CSP-ELANNet-Nano   |  640  |  √   |  500  |       |                        |                   |  |
+| YOLOv7-Large  | ELANNet-Large      |  640  |  √   |  300  |       |                    |               |  |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
-*Due to my limited computing resources, I had to abandon training on other YOLO detectors, including YOLOv7-Huge, YOLOv8-Small, YOLOv8-Medium, YOLOv8-Large and YOLOv8-Huge. If you are interested in these models and have trained them using the code from this project, I would greatly appreciate it if you could share the trained weight files with me.*
+*Due to my limited computing resources, I had to abandon training on other YOLO detectors, including YOLOv7-Huge and YOLOv8-Nano~Large. If you are interested in these models and have trained them using the code from this project, I would greatly appreciate it if you could share the trained weight files with me.*
 
 ## Train
 ### Single GPU
