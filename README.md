@@ -38,7 +38,7 @@ At least, please make sure your torch is version 1.x.
 | Warmup Scheduler        | Linear                     |
 | Lr Scheduler            | Linear                     |
 | Optimizer               | SGD                        |
-| Multi Scale Train       | True                       |
+| Multi Scale Train       | True (320 ~ 640)           |
 
 
 ## Experiments

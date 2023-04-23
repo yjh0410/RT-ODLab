@@ -37,7 +37,7 @@ pip install -r requirements.txt
 | Warnmup策略            | 线性warmup策略      |
 | 学习率策略              | 线性学习了衰减策略  |
 | 训练优化器              | SGD               |
-| 多尺度训练              | True              |
+| 多尺度训练              | True (320 ~ 640)  |
 
 ## 实验结果
 ### VOC
