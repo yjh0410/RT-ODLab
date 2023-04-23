@@ -23,6 +23,8 @@ def parse_args():
                         help='number of anchor box.')
     parser.add_argument('-size', '--img_size', default=416, type=int,
                         help='input size.')
+    parser.add_argument('--max_iter', default=1000, type=int,
+                        help='input size.')
     parser.add_argument('-ab', '--absolute', action='store_true', default=False,
                         help='absolute coords.')
     return parser.parse_args()
@@ -171,13 +173,7 @@ def anchor_box_kmeans(total_gt_boxes, n_anchors, loss_convergence, iters, plus=T
 
 
 if __name__ == "__main__":
-
-    n_anchors = args.num_anchorbox
-    img_size = args.img_size
-    
-    loss_convergence = 1e-6
-    iters_n = 1000
-    
+    # prepare    
     boxes = []
     if args.dataset == 'voc':
         data_root = os.path.join(args.root, 'VOCdevkit')
@@ -197,8 +193,8 @@ if __name__ == "__main__":
             for box_and_label in annotation:
                 box = box_and_label[:-1]
                 xmin, ymin, xmax, ymax = box
-                bw = (xmax - xmin) / max(img_w, img_h) * img_size
-                bh = (ymax - ymin) / max(img_w, img_h) * img_size
+                bw = (xmax - xmin) / max(img_w, img_h) * args.img_size
+                bh = (ymax - ymin) / max(img_w, img_h) * args.img_size
                 # check bbox
                 if bw < 1.0 or bh < 1.0:
                     continue
@@ -207,7 +203,7 @@ if __name__ == "__main__":
 
     elif args.dataset == 'coco':
         data_root = os.path.join(args.root, 'COCO')
-        dataset = COCODataset(data_dir=data_root, img_size=img_size)
+        dataset = COCODataset(data_dir=data_root, img_size=args.img_size)
 
         for i in range(len(dataset)):
             if i % 5000 == 0:
@@ -222,8 +218,8 @@ if __name__ == "__main__":
             for box_and_label in annotation:
                 box = box_and_label[:-1]
                 xmin, ymin, xmax, ymax = box
-                bw = (xmax - xmin) / max(img_w, img_h) * img_size
-                bh = (ymax - ymin) / max(img_w, img_h) * img_size
+                bw = (xmax - xmin) / max(img_w, img_h) * args.img_size
+                bh = (ymax - ymin) / max(img_w, img_h) * args.img_size
                 # check bbox
                 if bw < 1.0 or bh < 1.0:
                     continue
@@ -231,4 +227,4 @@ if __name__ == "__main__":
 
     print("Number of all bboxes: ", len(boxes))
     print("Start k-means !")
-    centroids = anchor_box_kmeans(boxes, n_anchors, loss_convergence, iters_n, plus=True)
+    centroids = anchor_box_kmeans(boxes, args.num_anchorbox, 1e-6, args.max_iter, plus=True)
