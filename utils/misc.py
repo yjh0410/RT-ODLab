@@ -10,8 +10,11 @@ from copy import deepcopy
 
 from evaluator.coco_evaluator import COCOAPIEvaluator
 from evaluator.voc_evaluator import VOCAPIEvaluator
+from evaluator.ourdataset_evaluator import OurDatasetEvaluator
+
 from dataset.voc import VOCDetection, VOC_CLASSES
 from dataset.coco import COCODataset, coco_class_index, coco_class_labels
+from dataset.ourdataset import OurDataset, our_class_labels
 from dataset.data_augment import build_transform
 
 from utils import fuse_conv_bn
@@ -72,6 +75,29 @@ def build_dataset(args, trans_config, device, is_train=False):
             device=device,
             transform=val_transform
             )
+
+    elif args.dataset == 'ourdataset':
+        data_dir = os.path.join(args.root, 'OurDataset')
+        class_names = our_class_labels
+        num_classes = len(our_class_labels)
+        class_indexs = None
+
+        # dataset
+        dataset = OurDataset(
+            data_dir=data_dir,
+            img_size=args.img_size,
+            image_set='train' if is_train else 'val',
+            transform=train_transform,
+            trans_config=trans_config,
+            is_train=is_train
+            )
+        # evaluator
+        evaluator = OurDatasetEvaluator(
+            data_dir=data_dir,
+            device=device,
+            image_set='val',
+            transform=val_transform
+        )
 
     else:
         print('unknow dataset !! Only support voc, coco !!')

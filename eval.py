@@ -6,8 +6,10 @@ import torch
 
 from evaluator.voc_evaluator import VOCAPIEvaluator
 from evaluator.coco_evaluator import COCOAPIEvaluator
+from evaluator.ourdataset_evaluator import OurDatasetEvaluator
 
 # load transform
+from dataset.ourdataset import our_class_labels
 from dataset.data_augment import build_transform
 
 # load some utils
@@ -89,6 +91,17 @@ def coco_test(model, data_dir, device, transform, test=False):
     evaluator.evaluate(model)
 
 
+def our_test(model, data_dir, device, transform):
+    evaluator = OurDatasetEvaluator(
+        data_dir=data_dir,
+        device=device,
+        image_set='val',
+        transform=transform)
+
+    # WiderFace evaluation
+    evaluator.evaluate(model)
+
+
 if __name__ == '__main__':
     args = parse_args()
     # cuda
@@ -111,6 +124,10 @@ if __name__ == '__main__':
         print('eval on coco-test-dev ...')
         num_classes = 80
         data_dir = os.path.join(args.root, 'COCO')
+    elif args.dataset == 'ourdataset':
+        print('eval on crowdhuman ...')
+        num_classes = len(our_class_labels)
+        data_dir = os.path.join(args.root, 'OurDataset')
     else:
         print('unknow dataset !! we only support voc, coco-val, coco-test !!!')
         exit(0)
@@ -147,3 +164,5 @@ if __name__ == '__main__':
             coco_test(model, data_dir, device, transform, test=False)
         elif args.dataset == 'coco-test':
             coco_test(model, data_dir, device, transform, test=True)
+        elif args.dataset == 'ourdataset':
+            our_test(model, data_dir, device, transform)
