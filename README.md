@@ -72,7 +72,7 @@ python train.py --cuda -d voc --root path/to/VOCdevkit -v yolov1 -bs 16 --max_ep
 | YOLOv4       | CSPDarkNet-53       |  640  |  √   |  150  |       83.6        |                          |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_voc.pth) |
 | YOLOv5       | CSPDarkNet-L        |  640  |  √   |  150  |       83.8        |                          |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_voc.pth) |
 | YOLOX        | CSPDarkNet-L        |  640  |  √   |  150  |       84.6        |                          |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_voc.pth) |
-| YOLOv7-Large | ELANNet-Large       |  640  |  √   |  150  |       85.5        |                          |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_voc.pth) |
+| YOLOv7-Large | ELANNet-Large       |  640  |  √   |  150  |       86.0        |                          |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_voc.pth) |
 
 *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on VOC2007 test. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
@@ -162,6 +162,19 @@ python test.py -d coco \
                --root path/to/dataset/ \
                --show
 ```
+
+For YOLOv7, since it uses the RepConv in PaFPN, you can add `--fuse_repconv` to fuse the RepConv block.
+```Shell
+python test.py -d coco \
+               --cuda \
+               -v yolov7_large \
+               --fuse_repconv \
+               --img_size 640 \
+               --weight path/to/weight \
+               --root path/to/dataset/ \
+               --show
+```
+
 
 ## Evaluation
 ```Shell

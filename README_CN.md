@@ -72,7 +72,7 @@ python train.py --cuda -d voc --root path/to/VOC -v yolov1 -bs 16 --max_epoch 15
 | YOLOv4       | CSPDarkNet-53       |  640  |  √   |  150  |       83.6        |                          |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_voc.pth) |
 | YOLOv5       | CSPDarkNet-L        |  640  |  √   |  150  |       83.8        |                          |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_voc.pth) |
 | YOLOX        | CSPDarkNet-L        |  640  |  √   |  150  |       84.6        |                          |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_voc.pth) |
-| YOLOv7-Large | ELANNet-Large       |  640  |  √   |  150  |       85.5        |                          |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_voc.pth) |
+| YOLOv7-Large | ELANNet-Large       |  640  |  √   |  150  |       86.0        |                          |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_voc.pth) |
 
 *所有的模型都使用了ImageNet预训练权重（IP），所有的FLOPs都是在VOC2007 test数据集上以640x640或1280x1280的输入尺寸来测试的。FPS指标是在一张3090型号的GPU上以batch size=1的输入来测试的，请注意，测速的内容包括模型前向推理、后处理以及NMS操作。*
 
@@ -165,6 +165,20 @@ python test.py -d coco \
                --root path/to/dataset/ \
                --show
 ```
+
+对于YOLOv7，由于YOLOv7的PaFPN中包含了RepConv模块，因此你可以在测试命中加上`--fuse_repconv`来融合其中的RepConv:
+
+```Shell
+python test.py -d coco \
+               --cuda \
+               -v yolov7_large \
+               --fuse_repconv \
+               --img_size 640 \
+               --weight path/to/weight \
+               --root path/to/dataset/ \
+               --show
+```
+
 
 ## 验证
 使用者可以参考下面的给出的例子在相应的数据集上去验证训练好的模型，正常情况下，使用者将会看到COCO风格的AP结果输出。
