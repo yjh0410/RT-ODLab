@@ -25,8 +25,8 @@ def build_model_config(args):
     elif args.model == 'yolov4':
         cfg = yolov4_cfg
     # YOLOv5
-    elif args.model == 'yolov5':
-        cfg = yolov5_cfg
+    elif args.model in ['yolov5_nano', 'yolov5_small', 'yolov5_medium', 'yolov5_large', 'yolov5_huge']:
+        cfg = yolov5_cfg[args.model]
     # YOLOv7
     elif args.model in ['yolov7_nano', 'yolov7_tiny', 'yolov7_large', 'yolov7_huge']:
         cfg = yolov7_cfg[args.model]

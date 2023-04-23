@@ -97,7 +97,7 @@ def load_weight(model, model_name):
 
 
 ## build ELAN-Net
-def build_backbone(cfg): 
+def build_backbone(cfg, pretrained=False): 
     # model
     backbone = ELAN_CSPNet(
         width=cfg['width'],
@@ -110,7 +110,7 @@ def build_backbone(cfg):
     feat_dims = backbone.feat_dims
         
     # check whether to load imagenet pretrained weight
-    if cfg['pretrained']:
+    if pretrained:
         if cfg['width'] == 0.25 and cfg['depth'] == 0.34 and cfg['ratio'] == 2.0:
             backbone = load_weight(backbone, model_name='elan_cspnet_nano')
         elif cfg['width'] == 0.5 and cfg['depth'] == 0.34 and cfg['ratio'] == 2.0:
@@ -119,7 +119,7 @@ def build_backbone(cfg):
             backbone = load_weight(backbone, model_name='elan_cspnet_medium')
         elif cfg['width'] == 1.0 and cfg['depth'] == 1.0 and cfg['ratio'] == 1.0:
             backbone = load_weight(backbone, model_name='elan_cspnet_large')
-        elif cfg['width'] == 1.25 and cfg['depth'] == 1.34 and cfg['ratio'] == 1.0:
+        elif cfg['width'] == 1.25 and cfg['depth'] == 1.0 and cfg['ratio'] == 1.0:
             backbone = load_weight(backbone, model_name='elan_cspnet_huge')
 
     return backbone, feat_dims
