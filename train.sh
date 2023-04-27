@@ -1,9 +1,9 @@
-# Train YOLO on VOC
+# Train YOLO
 python train.py \
         --cuda \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolov7_tiny \
+        -m yolov7_large \
         -bs 16 \
         -size 640 \
         --wp_epoch 1 \
@@ -12,7 +12,7 @@ python train.py \
         --ema \
         --fp16 \
         --multi_scale \
-        --resume weights/coco/yolov7_tiny/yolov7_tiny_epoch_231_35.19.pth \
+        --resume weights/coco/yolov7_large/yolov7_large_epoch_151_44.30.pth \
         # --pretrained weights/coco/yolo_free_medium/yolo_free_medium_39.46.pth \
         # --eval_first
 

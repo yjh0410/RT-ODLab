@@ -31,21 +31,21 @@ def rescale_image_targets(images, targets, stride, min_box_size, multi_scale_ran
                             size=new_img_size, 
                             mode='bilinear', 
                             align_corners=False)
-        # rescale targets
-        for tgt in targets:
-            boxes = tgt["boxes"].clone()
-            labels = tgt["labels"].clone()
-            boxes = torch.clamp(boxes, 0, old_img_size)
-            # rescale box
-            boxes[:, [0, 2]] = boxes[:, [0, 2]] / old_img_size * new_img_size
-            boxes[:, [1, 3]] = boxes[:, [1, 3]] / old_img_size * new_img_size
-            # refine tgt
-            tgt_boxes_wh = boxes[..., 2:] - boxes[..., :2]
-            min_tgt_size = torch.min(tgt_boxes_wh, dim=-1)[0]
-            keep = (min_tgt_size >= min_box_size)
+    # rescale targets
+    for tgt in targets:
+        boxes = tgt["boxes"].clone()
+        labels = tgt["labels"].clone()
+        boxes = torch.clamp(boxes, 0, old_img_size)
+        # rescale box
+        boxes[:, [0, 2]] = boxes[:, [0, 2]] / old_img_size * new_img_size
+        boxes[:, [1, 3]] = boxes[:, [1, 3]] / old_img_size * new_img_size
+        # refine tgt
+        tgt_boxes_wh = boxes[..., 2:] - boxes[..., :2]
+        min_tgt_size = torch.min(tgt_boxes_wh, dim=-1)[0]
+        keep = (min_tgt_size >= min_box_size)
 
-            tgt["boxes"] = boxes[keep]
-            tgt["labels"] = labels[keep]
+        tgt["boxes"] = boxes[keep]
+        tgt["labels"] = labels[keep]
 
     return images, targets, new_img_size
 
