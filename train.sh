@@ -12,7 +12,7 @@ python train.py \
         --ema \
         --fp16 \
         --multi_scale \
-        --resume weights/coco/yolov7_large/yolov7_large_epoch_151_44.30.pth \
+        # --resume weights/coco/yolov7_large/yolov7_large_epoch_151_44.30.pth \
         # --pretrained weights/coco/yolo_free_medium/yolo_free_medium_39.46.pth \
         # --eval_first
 
