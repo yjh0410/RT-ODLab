@@ -70,9 +70,9 @@ class Yolov7PaFPN(nn.Module):
                                               norm_type=norm_type,
                                               depthwise=depthwise
                                               )
-        self.head_conv_1 = Conv(round(128*width), round(256*width), k=1, act_type=act_type, norm_type=norm_type)
-        self.head_conv_2 = Conv(round(256*width), round(512*width), k=1, act_type=act_type, norm_type=norm_type)
-        self.head_conv_3 = Conv(round(512*width), round(1024*width), k=1, act_type=act_type, norm_type=norm_type)
+        self.head_conv_1 = Conv(round(128*width), round(256*width), k=3, s=1, p=1, act_type=act_type, norm_type=norm_type)
+        self.head_conv_2 = Conv(round(256*width), round(512*width), k=3, s=1, p=1, act_type=act_type, norm_type=norm_type)
+        self.head_conv_3 = Conv(round(512*width), round(1024*width), k=3, s=1, p=1, act_type=act_type, norm_type=norm_type)
         # output proj layers
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
