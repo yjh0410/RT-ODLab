@@ -113,10 +113,10 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 
 | Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |       |                        |                   |   7.7             |   2.4              |  |
-| YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |       |                        |                   |   27.1            |   9.0              |  |
-| YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |       |                        |                   |   74.3            |   25.4             |  |
-| YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |       |                        |                   |   155.6           |   54.2             |  |
+| YOLOv5-N      | CSPDarkNet-N       |  640  |  300  |       |                        |                   |   7.7             |   2.4              |  |
+| YOLOv5-S      | CSPDarkNet-S       |  640  |  300  |       |                        |                   |   27.1            |   9.0              |  |
+| YOLOv5-M      | CSPDarkNet-M       |  640  |  300  |       |                        |                   |   74.3            |   25.4             |  |
+| YOLOv5-L      | CSPDarkNet-L       |  640  |  300  |       |                        |                   |   155.6           |   54.2             |  |
 
 - *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
