@@ -243,3 +243,44 @@ python demo.py --mode camera \
                --cuda \
                --weight path/to/weight
 ```
+
+
+## 目标跟踪
+该项目也支持**多目标跟踪**任务。我们使用本项目的YOLO检测器作为“tracking-by-detection”的检测器，并使用简单高效的**ByteTrack**作为跟踪器。
+
+* images tracking
+```Shell
+python track.py --mode image \
+                --path_to_img path/to/images/ \
+                -dt yolov2 \
+                -tk byte_tracker \
+                --weight path/to/coco_pretrained/ \
+                -size 640 \
+                --cuda \
+                --show
+```
+
+* video tracking
+
+```Shell
+python track.py --mode video \
+                --path_to_img path/to/video/ \
+                -dt yolov2 \
+                -tk byte_tracker \
+                --weight path/to/coco_pretrained/ \
+                -size 640 \
+                --cuda \
+                --show
+```
+
+* camera tracking
+
+```Shell
+python track.py --mode camera \
+                -dt yolov2 \
+                -tk byte_tracker \
+                --weight path/to/coco_pretrained/ \
+                -size 640 \
+                --cuda \
+                --show
+```

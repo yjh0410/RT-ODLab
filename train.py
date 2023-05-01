@@ -17,7 +17,7 @@ from utils.solver.lr_scheduler import build_lr_scheduler
 from engine import train_one_epoch, val_one_epoch
 
 from config import build_model_config, build_trans_config
-from models import build_model
+from models.detectors import build_model
 
 
 def parse_args():

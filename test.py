@@ -14,7 +14,7 @@ from utils.misc import build_dataset, load_weight
 from utils.misc import compute_flops
 from utils.box_ops import rescale_bboxes
 
-from models import build_model
+from models.detectors import build_model
 from config import build_model_config, build_trans_config
 
 

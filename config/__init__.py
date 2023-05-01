@@ -42,7 +42,12 @@ def build_model_config(args):
 
 # ------------------ Transform Config ----------------------
 from .transform_config import (
-    yolov5_strong_trans_config, yolov5_weak_trans_config, yolov5_nano_trans_config,
+    yolov5_nano_trans_config,
+    yolov5_tiny_trans_config,
+    yolov5_small_trans_config,
+    yolov5_medium_trans_config,
+    yolov5_large_trans_config,
+    yolov5_huge_trans_config,
     ssd_trans_config
 )
 
@@ -54,11 +59,17 @@ def build_trans_config(trans_config='ssd'):
         cfg = ssd_trans_config
 
     # YOLOv5-style transform 
-    elif trans_config == 'yolov5_strong':
-        cfg = yolov5_strong_trans_config
-    elif trans_config == 'yolov5_weak':
-        cfg = yolov5_weak_trans_config
     elif trans_config == 'yolov5_nano':
         cfg = yolov5_nano_trans_config
+    elif trans_config == 'yolov5_tiny':
+        cfg = yolov5_tiny_trans_config
+    elif trans_config == 'yolov5_small':
+        cfg = yolov5_small_trans_config
+    elif trans_config == 'yolov5_medium':
+        cfg = yolov5_medium_trans_config
+    elif trans_config == 'yolov5_large':
+        cfg = yolov5_large_trans_config
+    elif trans_config == 'yolov5_huge':
+        cfg = yolov5_huge_trans_config
         
     return cfg

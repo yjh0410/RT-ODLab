@@ -3,7 +3,7 @@
 yolov8_cfg = {
     'yolov8_n':{
         # input
-        'trans_type': 'yolov5_weak',
+        'trans_type': 'yolov5_tiny',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
@@ -64,7 +64,7 @@ yolov8_cfg = {
 
     'yolov8_s':{
         # input
-        'trans_type': 'yolov5_strong',
+        'trans_type': 'yolov5_small',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
@@ -125,7 +125,7 @@ yolov8_cfg = {
 
     'yolov8_m':{
         # input
-        'trans_type': 'yolov5_strong',
+        'trans_type': 'yolov5_medium',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
@@ -186,7 +186,7 @@ yolov8_cfg = {
 
     'yolov8_l':{
         # input
-        'trans_type': 'yolov5_strong',
+        'trans_type': 'yolov5_large',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
@@ -247,7 +247,7 @@ yolov8_cfg = {
 
     'yolov8_x':{
         # input
-        'trans_type': 'yolov5_strong',
+        'trans_type': 'yolov5_huge',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         # model
         'backbone': 'elan_cspnet',
