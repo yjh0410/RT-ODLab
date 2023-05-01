@@ -302,6 +302,14 @@ class ModelEMA(object):
         # Update EMA attributes
         self.copy_attr(self.ema, model, include, exclude)
 
+## SiLU
+class SiLU(nn.Module):
+    """export-friendly version of nn.SiLU()"""
+
+    @staticmethod
+    def forward(x):
+        return x * torch.sigmoid(x)
+
 
 # ---------------------------- NMS ----------------------------
 ## basic NMS

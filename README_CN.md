@@ -39,6 +39,8 @@ pip install -r requirements.txt
 | 训练优化器              | SGD               |
 | 多尺度训练              | True (320 ~ 640)  |
 
+*受限于我贫瘠的计算资源，我无法使用更大的多尺度范围，如320~960。*
+
 ## 实验结果
 ### VOC
 - 下载 VOC.
@@ -107,10 +109,21 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv3        | DarkNet-53         |  640  |  250  |       |        42.9            |       63.5        |   167.4           |   54.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
 | YOLOv4        | CSPDarkNet-53      |  640  |  250  |       |        46.6            |       65.8        |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
 | YOLOX-L       | CSPDarkNet-L       |  640  |  300  |       |        46.6            |       66.1        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
-| YOLOv7-Tiny   | ELANNet-Tiny       |  640  |  300  |       |                        |                   |   22.9            |   8.1              |  |
-| YOLOv7-Large  | ELANNet-Large      |  640  |  300  |       |                        |                   |   144.6           |   44.0             |  |
+| YOLOv7-T      | ELANNet-Tiny       |  640  |  300  |       |                        |                   |   22.9            |   8.1              |  |
+| YOLOv7-L      | ELANNet-Large      |  640  |  300  |       |                        |                   |   144.6           |   44.0             |  |
+
+* 我们复现的YOLOv5:
+
+| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |       |                        |                   |   7.7             |   2.4              |  |
+| YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |       |                        |                   |   27.1            |   9.0              |  |
+| YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |       |                        |                   |   74.3            |   25.4             |  |
+| YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |       |                        |                   |   155.6           |   54.2             |  |
 
 - *所有的模型都使用了ImageNet预训练权重（IP），所有的FLOPs都是在COCO-val数据集上以640x640或1280x1280的输入尺寸来测试的。FPS指标是在一张3090型号的GPU上以batch size=1的输入来测试的，请注意，测速的内容包括模型前向推理、后处理以及NMS操作。*
+
+- *我们实现的YOLOv5的检测头是**解耦检测头**，所以FLOPs和参数量要高于官方的.*
 
 - *受限于我贫瘠的计算资源，更多的YOLO检测器被放弃训练了，包括YOLOv7-Huge、YOLOv8-Small~Large。如果您对他们感兴趣，并使用本项目的代码训练了他们，我很真诚地希望您能分享训练好的权重文件，那将会令我感激不尽。*
 

@@ -40,6 +40,7 @@ At least, please make sure your torch is version 1.x.
 | Optimizer               | SGD                        |
 | Multi Scale Train       | True (320 ~ 640)           |
 
+*Due to my limited computing resources, I can not use a larger multi-scale range, such as 320-960.*
 
 ## Experiments
 ### VOC
@@ -105,10 +106,21 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv3        | DarkNet-53         |  640  |  250  |       |        42.9            |       63.5        |   167.4           |   54.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
 | YOLOv4        | CSPDarkNet-53      |  640  |  250  |       |        46.6            |       65.8        |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
 | YOLOX-L       | CSPDarkNet-L       |  640  |  300  |       |        46.6            |       66.1        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
-| YOLOv7-Tiny   | ELANNet-Tiny       |  640  |  300  |       |                        |                   |   22.9            |   8.1              |  |
-| YOLOv7-Large  | ELANNet-Large      |  640  |  300  |       |                        |                   |   144.6           |   44.0             |  |
+| YOLOv7-T      | ELANNet-Tiny       |  640  |  300  |       |                        |                   |   22.9            |   8.1              |  |
+| YOLOv7-L      | ELANNet-Large      |  640  |  300  |       |                        |                   |   144.6           |   44.0             |  |
+
+* Reproduced YOLOv5:
+
+| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |       |                        |                   |   7.7             |   2.4              |  |
+| YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |       |                        |                   |   27.1            |   9.0              |  |
+| YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |       |                        |                   |   74.3            |   25.4             |  |
+| YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |       |                        |                   |   155.6           |   54.2             |  |
 
 - *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
+
+- *The reproduced YOLOv5's head is the **Decoupled Head**, which is why the FLOPs and Params are higher than the official YOLOv5.*
 
 - *Due to my limited computing resources, I had to abandon training on other YOLO detectors, including YOLOv7-Huge and YOLOv8-Nano~Large. If you are interested in these models and have trained them using the code from this project, I would greatly appreciate it if you could share the trained weight files with me.*
 
