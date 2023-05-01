@@ -5,7 +5,7 @@ from .yolox_backbone import build_backbone
 from .yolox_fpn import build_fpn
 from .yolox_head import build_head
 
-from utils.nms import multiclass_nms
+from utils.misc import multiclass_nms
 
 
 # YOLOX
@@ -15,8 +15,8 @@ class YOLOX(nn.Module):
                  device,
                  num_classes=20,
                  conf_thresh=0.01,
-                 topk=100,
                  nms_thresh=0.5,
+                 topk=100,
                  trainable=False):
         super(YOLOX, self).__init__()
         # --------- Basic Parameters ----------
@@ -57,40 +57,8 @@ class YOLOX(nn.Module):
                                 for head in self.non_shared_heads
                               ])                 
 
-        # --------- Network Initialization ----------
-        # init bias
-        self.init_yolo()
-
-
-    def init_yolo(self): 
-        # Init yolo
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.eps = 1e-3
-                m.momentum = 0.03    
-        # Init bias
-        init_prob = 0.01
-        bias_value = -torch.log(torch.tensor((1. - init_prob) / init_prob))
-        # obj pred
-        for obj_pred in self.obj_preds:
-            b = obj_pred.bias.view(1, -1)
-            b.data.fill_(bias_value.item())
-            obj_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-        # cls pred
-        for cls_pred in self.cls_preds:
-            b = cls_pred.bias.view(1, -1)
-            b.data.fill_(bias_value.item())
-            cls_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-        # reg pred
-        for reg_pred in self.reg_preds:
-            b = reg_pred.bias.view(-1, )
-            b.data.fill_(1.0)
-            reg_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-            w = reg_pred.weight
-            w.data.fill_(0.)
-            reg_pred.weight = torch.nn.Parameter(w, requires_grad=True)
-
-
+    # ---------------------- Basic Functions ----------------------
+    ## generate anchor points
     def generate_anchors(self, level, fmp_size):
         """
             fmp_size: (List) [H, W]
@@ -106,42 +74,25 @@ class YOLOX(nn.Module):
 
         return anchors
         
-
-    def decode_boxes(self, anchors, reg_pred, stride):
-        """
-            anchors:  (List[Tensor]) [1, M, 2] or [M, 2]
-            reg_pred: (List[Tensor]) [B, M, 4] or [M, 4]
-        """
-        # center of bbox
-        pred_ctr_xy = anchors + reg_pred[..., :2] * stride
-        # size of bbox
-        pred_box_wh = reg_pred[..., 2:].exp() * stride
-
-        pred_x1y1 = pred_ctr_xy - 0.5 * pred_box_wh
-        pred_x2y2 = pred_ctr_xy + 0.5 * pred_box_wh
-        pred_box = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
-        return pred_box
-
-
-    def post_process(self, obj_preds, cls_preds, reg_preds, anchors):
+    ## post-process
+    def post_process(self, obj_preds, cls_preds, box_preds):
         """
         Input:
             obj_preds: List(Tensor) [[H x W, 1], ...]
             cls_preds: List(Tensor) [[H x W, C], ...]
-            reg_preds: List(Tensor) [[H x W, 4], ...]
-            anchors:  List(Tensor) [[H x W, 2], ...]
+            box_preds: List(Tensor) [[H x W, 4], ...]
+            anchors:   List(Tensor) [[H x W, 2], ...]
         """
         all_scores = []
         all_labels = []
         all_bboxes = []
         
-        for level, (obj_pred_i, cls_pred_i, reg_pred_i, anchors_i) in enumerate(zip(obj_preds, cls_preds, reg_preds, anchors)):
-            # (H x W x C,)
+        for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
+            # (H x W x KA x C,)
             scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
 
             # Keep top k top scoring indices only.
-            num_topk = min(self.topk, reg_pred_i.size(0))
+            num_topk = min(self.topk, box_pred_i.size(0))
 
             # torch.sort is actually faster than .topk (at least on GPUs)
             predicted_prob, topk_idxs = scores_i.sort(descending=True)
@@ -156,11 +107,7 @@ class YOLOX(nn.Module):
             anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
             labels = topk_idxs % self.num_classes
 
-            reg_pred_i = reg_pred_i[anchor_idxs]
-            anchors_i = anchors_i[anchor_idxs]
-
-            # decode box: [M, 4]
-            bboxes = self.decode_boxes(anchors_i, reg_pred_i, self.stride[level])
+            bboxes = box_pred_i[anchor_idxs]
 
             all_scores.append(scores)
             all_labels.append(labels)
@@ -182,6 +129,7 @@ class YOLOX(nn.Module):
         return bboxes, scores, labels
 
 
+    # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
         # backbone
@@ -193,7 +141,7 @@ class YOLOX(nn.Module):
         # non-shared heads
         all_obj_preds = []
         all_cls_preds = []
-        all_reg_preds = []
+        all_box_preds = []
         all_anchors = []
         for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
             cls_feat, reg_feat = head(feat)
@@ -212,14 +160,21 @@ class YOLOX(nn.Module):
             cls_pred = cls_pred[0].permute(1, 2, 0).contiguous().view(-1, self.num_classes)
             reg_pred = reg_pred[0].permute(1, 2, 0).contiguous().view(-1, 4)
 
+            # decode bbox
+            ctr_pred = reg_pred[..., :2] * self.stride[level] + anchors[..., :2]
+            wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride[level]
+            pred_x1y1 = ctr_pred - wh_pred * 0.5
+            pred_x2y2 = ctr_pred + wh_pred * 0.5
+            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
             all_obj_preds.append(obj_pred)
             all_cls_preds.append(cls_pred)
-            all_reg_preds.append(reg_pred)
+            all_box_preds.append(box_pred)
             all_anchors.append(anchors)
 
         # post process
         bboxes, scores, labels = self.post_process(
-            all_obj_preds, all_cls_preds, all_reg_preds, all_anchors)
+            all_obj_preds, all_cls_preds, all_box_preds)
         
         return bboxes, scores, labels
 
@@ -257,8 +212,12 @@ class YOLOX(nn.Module):
                 cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
                 reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
 
-                # decode box: [M, 4]
-                box_pred = self.decode_boxes(anchors, reg_pred, self.stride[level])
+                # decode bbox
+                ctr_pred = reg_pred[..., :2] * self.stride[level] + anchors[..., :2]
+                wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride[level]
+                pred_x1y1 = ctr_pred - wh_pred * 0.5
+                pred_x2y2 = ctr_pred + wh_pred * 0.5
+                box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
 
                 all_obj_preds.append(obj_pred)
                 all_cls_preds.append(cls_pred)

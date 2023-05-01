@@ -23,9 +23,10 @@ class Yolov8PaFPN(nn.Module):
         self.in_dims = in_dims
         self.width = width
         self.depth = depth
+        self.out_dim = [int(256 * width), int(512 * width), int(512 * width * ratio)]
         c3, c4, c5 = in_dims
 
-        # top dwon
+        # --------------------------- Top-dwon ---------------------------
         ## P5 -> P4
         self.head_elan_1 = ELAN_CSP_Block(in_dim=c5 + c4,
                                           out_dim=int(512*width),
@@ -36,8 +37,7 @@ class Yolov8PaFPN(nn.Module):
                                           norm_type=norm_type,
                                           act_type=act_type
                                           )
-
-        # P4 -> P3
+        ## P4 -> P3
         self.head_elan_2 = ELAN_CSP_Block(in_dim=int(512*width) + c3,
                                           out_dim=int(256*width),
                                           expand_ratio=0.5,
@@ -47,10 +47,8 @@ class Yolov8PaFPN(nn.Module):
                                           norm_type=norm_type,
                                           act_type=act_type
                                           )
-
-
-        # bottom up
-        # P3 -> P4
+        # --------------------------- Bottom-up ---------------------------
+        ## P3 -> P4
         self.mp1 = Conv(int(256*width), int(256*width), k=3, p=1, s=2,
                         act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         self.head_elan_3 = ELAN_CSP_Block(in_dim=int(256*width) + int(512*width),
@@ -62,8 +60,7 @@ class Yolov8PaFPN(nn.Module):
                                           norm_type=norm_type,
                                           act_type=act_type
                                           )
-
-        # P4 -> P5
+        ## P4 -> P5
         self.mp2 = Conv(int(512 * width), int(512 * width), k=3, p=1, s=2,
                         act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         self.head_elan_4 = ELAN_CSP_Block(in_dim=int(512 * width) + c5,
@@ -75,8 +72,6 @@ class Yolov8PaFPN(nn.Module):
                                           norm_type=norm_type,
                                           act_type=act_type
                                           )
-
-        self.out_dim = [int(256 * width), int(512 * width), int(512 * width * ratio)]
 
 
     def forward(self, features):

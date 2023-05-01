@@ -7,7 +7,7 @@ from .yolov8_neck import build_neck
 from .yolov8_pafpn import build_fpn
 from .yolov8_head import build_head
 
-from utils.nms import multiclass_nms
+from utils.misc import multiclass_nms
 
 
 # Anchor-free YOLO
@@ -63,38 +63,9 @@ class YOLOv8(nn.Module):
                                 for head in self.non_shared_heads
                               ])                 
 
-        # --------- Network Initialization ----------
-        # init bias
-        self.init_yolo()
 
-
-    def init_yolo(self): 
-        # Init yolo
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.eps = 1e-3
-                m.momentum = 0.03    
-        # Init bias
-        init_prob = 0.01
-        bias_value = -torch.log(torch.tensor((1. - init_prob) / init_prob))
-        # cls pred
-        for cls_pred in self.cls_preds:
-            b = cls_pred.bias.view(1, -1)
-            b.data.fill_(bias_value.item())
-            cls_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-        for reg_pred in self.reg_preds:
-            b = reg_pred.bias.view(-1, )
-            b.data.fill_(1.0)
-            reg_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-            w = reg_pred.weight
-            w.data.fill_(0.)
-            reg_pred.weight = torch.nn.Parameter(w, requires_grad=True)
-
-        self.proj = nn.Parameter(torch.linspace(0, self.reg_max, self.reg_max), requires_grad=False)
-        self.proj_conv.weight = nn.Parameter(self.proj.view([1, self.reg_max, 1, 1]).clone().detach(),
-                                                   requires_grad=False)
-
-
+    # ---------------------- Basic Functions ----------------------
+    ## generate anchor points
     def generate_anchors(self, level, fmp_size):
         """
             fmp_size: (List) [H, W]
@@ -109,70 +80,39 @@ class YOLOv8(nn.Module):
 
         return anchors
         
-
-    def decode_boxes(self, anchors, pred_regs, stride):
+    ## post-process
+    def post_process(self, cls_preds, box_preds):
         """
         Input:
-            anchors:  (List[Tensor]) [1, M, 2]
-            pred_reg: (List[Tensor]) [B, M, 4*(reg_max)]
-        Output:
-            pred_box: (Tensor) [B, M, 4]
-        """
-        if self.use_dfl:
-            B, M = pred_regs.shape[:2]
-            # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max] -> [B, 4, M, reg_max]
-            pred_regs = pred_regs.reshape([B, M, 4, self.reg_max])
-            # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
-            pred_regs = pred_regs.permute(0, 3, 2, 1).contiguous()
-            # [B, reg_max, 4, M] -> [B, 1, 4, M]
-            pred_regs = self.proj_conv(F.softmax(pred_regs, dim=1))
-            # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
-            pred_regs = pred_regs.view(B, 4, M).permute(0, 2, 1).contiguous()
-
-        # tlbr -> xyxy
-        pred_x1y1 = anchors - pred_regs[..., :2] * stride
-        pred_x2y2 = anchors + pred_regs[..., 2:] * stride
-        pred_box = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
-        return pred_box
-
-
-    def post_process(self, cls_preds, reg_preds, anchors):
-        """
-        Input:
-            cls_preds: List(Tensor) [[B, H x W, C], ...]
-            reg_preds: List(Tensor) [[B, H x W, 4*(reg_max)], ...]
+            cls_preds: List(Tensor) [[H x W, C], ...]
+            box_preds: List(Tensor) [[H x W, 4], ...]
             anchors:   List(Tensor) [[H x W, 2], ...]
         """
         all_scores = []
         all_labels = []
         all_bboxes = []
         
-        for level, (cls_pred_i, reg_pred_i, anchors_i) in enumerate(zip(cls_preds, reg_preds, anchors)):
-            # [B, M, C] -> [M, C]
-            cur_cls_pred_i = cls_pred_i[0]
-            cur_reg_pred_i = reg_pred_i[0]
-            # [MC,]
-            scores_i = cur_cls_pred_i.sigmoid().flatten()
+        for cls_pred_i, box_pred_i in zip(cls_preds, box_preds):
+            # (H x W x KA x C,)
+            scores_i = cls_pred_i.sigmoid().flatten()
 
             # Keep top k top scoring indices only.
-            num_topk = min(self.topk, cur_reg_pred_i.size(0))
+            num_topk = min(self.topk, box_pred_i.size(0))
 
             # torch.sort is actually faster than .topk (at least on GPUs)
             predicted_prob, topk_idxs = scores_i.sort(descending=True)
-            scores = predicted_prob[:num_topk]
+            topk_scores = predicted_prob[:num_topk]
             topk_idxs = topk_idxs[:num_topk]
+
+            # filter out the proposals with low confidence score
+            keep_idxs = topk_scores > self.conf_thresh
+            scores = topk_scores[keep_idxs]
+            topk_idxs = topk_idxs[keep_idxs]
 
             anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
             labels = topk_idxs % self.num_classes
 
-            cur_reg_pred_i = cur_reg_pred_i[anchor_idxs]
-            anchors_i = anchors_i[anchor_idxs]
-
-            # decode box: [M, 4]
-            box_pred_i = self.decode_boxes(
-                anchors_i[None], cur_reg_pred_i[None], self.stride[level])
-            bboxes = box_pred_i[0]
+            bboxes = box_pred_i[anchor_idxs]
 
             all_scores.append(scores)
             all_labels.append(labels)
@@ -181,12 +121,6 @@ class YOLOv8(nn.Module):
         scores = torch.cat(all_scores)
         labels = torch.cat(all_labels)
         bboxes = torch.cat(all_bboxes)
-
-        # threshold
-        keep_idxs = scores.gt(self.conf_thresh)
-        scores = scores[keep_idxs]
-        labels = labels[keep_idxs]
-        bboxes = bboxes[keep_idxs]
 
         # to cpu & numpy
         scores = scores.cpu().numpy()
@@ -200,6 +134,7 @@ class YOLOv8(nn.Module):
         return bboxes, scores, labels
 
 
+    # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
         # backbone
@@ -213,7 +148,7 @@ class YOLOv8(nn.Module):
 
         # non-shared heads
         all_cls_preds = []
-        all_reg_preds = []
+        all_box_preds = []
         all_anchors = []
         for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
             cls_feat, reg_feat = head(feat)
@@ -231,17 +166,33 @@ class YOLOv8(nn.Module):
             cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
             reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
 
+            # decode bbox
+            if self.use_dfl:
+                B, M = reg_pred.shape[:2]
+                # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max] -> [B, 4, M, reg_max]
+                reg_pred = reg_pred.reshape([B, M, 4, self.reg_max])
+                # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
+                reg_pred = reg_pred.permute(0, 3, 2, 1).contiguous()
+                # [B, reg_max, 4, M] -> [B, 1, 4, M]
+                reg_pred = self.proj_conv(F.softmax(reg_pred, dim=1))
+                # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
+                reg_pred = reg_pred.view(B, 4, M).permute(0, 2, 1).contiguous()
+            pred_x1y1 = anchors - reg_pred[..., :2] * self.stride[level]
+            pred_x2y2 = anchors + reg_pred[..., 2:] * self.stride[level]
+            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
             all_cls_preds.append(cls_pred)
-            all_reg_preds.append(reg_pred)
+            all_box_preds.append(box_pred)
             all_anchors.append(anchors)
 
         # post process
         bboxes, scores, labels = self.post_process(
-            all_cls_preds, all_reg_preds, all_anchors)
+            all_cls_preds, all_box_preds, all_anchors)
         
         return bboxes, scores, labels
 
 
+    # ---------------------- Main Process for Training ----------------------
     def forward(self, x):
         if not self.trainable:
             return self.inference_single_image(x)
@@ -277,8 +228,22 @@ class YOLOv8(nn.Module):
                 cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
                 reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
 
-                # decode box: [B, M, 4]
-                box_pred = self.decode_boxes(anchors, reg_pred, self.stride[level])
+                # decode bbox
+                if self.use_dfl:
+                    B, M = reg_pred.shape[:2]
+                    # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max] -> [B, 4, M, reg_max]
+                    reg_pred_ = reg_pred.reshape([B, M, 4, self.reg_max]).clone()
+                    # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
+                    reg_pred_ = reg_pred_.permute(0, 3, 2, 1).contiguous()
+                    # [B, reg_max, 4, M] -> [B, 1, 4, M]
+                    reg_pred_ = self.proj_conv(F.softmax(reg_pred_, dim=1))
+                    # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
+                    reg_pred_ = reg_pred_.view(B, 4, M).permute(0, 2, 1).contiguous()
+                pred_x1y1 = anchors - reg_pred_[..., :2] * self.stride[level]
+                pred_x2y2 = anchors + reg_pred_[..., 2:] * self.stride[level]
+                box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
+                del reg_pred_
 
                 # stride tensor: [M, 1]
                 stride_tensor = torch.ones_like(anchors[..., :1]) * self.stride[level]

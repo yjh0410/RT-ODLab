@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from utils.nms import multiclass_nms
+from utils.misc import multiclass_nms
 
 from .yolov1_backbone import build_backbone
 from .yolov1_neck import build_neck
@@ -47,18 +47,6 @@ class YOLOv1(nn.Module):
         self.cls_pred = nn.Conv2d(head_dim, num_classes, kernel_size=1)
         self.reg_pred = nn.Conv2d(head_dim, 4, kernel_size=1)
     
-
-        if self.trainable:
-            self.init_bias()
-
-
-    def init_bias(self):
-        # init bias
-        init_prob = 0.01
-        bias_value = -torch.log(torch.tensor((1. - init_prob) / init_prob))
-        nn.init.constant_(self.obj_pred.bias, bias_value)
-        nn.init.constant_(self.cls_pred.bias, bias_value)
-
 
     def create_grid(self, fmp_size):
         """ 

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from utils.nms import multiclass_nms
+from utils.misc import multiclass_nms
 
 from .yolov2_backbone import build_backbone
 from .yolov2_neck import build_neck
@@ -14,16 +14,14 @@ class YOLOv2(nn.Module):
     def __init__(self,
                  cfg,
                  device,
-                 img_size=None,
                  num_classes=20,
                  conf_thresh=0.01,
-                 topk=100,
                  nms_thresh=0.5,
+                 topk=100,
                  trainable=False):
         super(YOLOv2, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
-        self.img_size = img_size                       # 输入图像大小
         self.device = device                           # cuda或者是cpu
         self.num_classes = num_classes                 # 类别的数量
         self.trainable = trainable                     # 训练的标记

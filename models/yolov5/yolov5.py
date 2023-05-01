@@ -5,7 +5,7 @@ from .yolov5_backbone import build_backbone
 from .yolov5_pafpn import build_fpn
 from .yolov5_head import build_head
 
-from utils.nms import multiclass_nms
+from utils.misc import multiclass_nms
 
 
 class YOLOv5(nn.Module):
@@ -140,6 +140,7 @@ class YOLOv5(nn.Module):
 
         return bboxes, scores, labels
 
+
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
@@ -188,6 +189,7 @@ class YOLOv5(nn.Module):
             all_obj_preds, all_cls_preds, all_box_preds)
         
         return bboxes, scores, labels
+
 
     # ---------------------- Main Process for Training ----------------------
     def forward(self, x):

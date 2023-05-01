@@ -14,7 +14,7 @@ from dataset.data_augment import build_transform
 
 # load some utils
 from utils.misc import load_weight
-from utils.com_flops_params import FLOPs_and_Params
+from utils.misc import compute_flops
 
 from models import build_model
 from config import build_model_config, build_trans_config
@@ -41,8 +41,6 @@ def parse_args():
                         help='topk candidates for testing')
     parser.add_argument("--no_decode", action="store_true", default=False,
                         help="not decode in inference or yes")
-    parser.add_argument('--fuse_repconv', action='store_true', default=False,
-                        help='fuse RepConv')
     parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
                         help='fuse Conv & BN')
 
@@ -140,14 +138,14 @@ if __name__ == '__main__':
     model = build_model(args, model_cfg, device, num_classes, False)
 
     # load trained weight
-    model = load_weight(model, args.weight, args.fuse_conv_bn, args.fuse_repconv)
+    model = load_weight(model, args.weight, args.fuse_conv_bn)
     model.to(device).eval()
 
     # compute FLOPs and Params
     model_copy = deepcopy(model)
     model_copy.trainable = False
     model_copy.eval()
-    FLOPs_and_Params(
+    compute_flops(
         model=model_copy,
         img_size=args.img_size, 
         device=device)

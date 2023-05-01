@@ -9,7 +9,7 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from utils import distributed_utils
-from utils.com_flops_params import FLOPs_and_Params
+from utils.misc import compute_flops
 from utils.misc import ModelEMA, CollateFunc, build_dataset, build_dataloader
 from utils.solver.optimizer import build_optimizer
 from utils.solver.lr_scheduler import build_lr_scheduler
@@ -161,7 +161,7 @@ def train():
         model_copy = deepcopy(model_without_ddp)
         model_copy.trainable = False
         model_copy.eval()
-        FLOPs_and_Params(model=model_copy, 
+        compute_flops(model=model_copy, 
                          img_size=args.img_size, 
                          device=device)
         del model_copy

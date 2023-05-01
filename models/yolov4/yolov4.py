@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from utils.nms import multiclass_nms
+from utils.misc import multiclass_nms
 
 from .yolov4_backbone import build_backbone
 from .yolov4_neck import build_neck
@@ -16,8 +16,8 @@ class YOLOv4(nn.Module):
                  device,
                  num_classes=20,
                  conf_thresh=0.01,
-                 topk=100,
                  nms_thresh=0.5,
+                 topk=100,
                  trainable=False):
         super(YOLOv4, self).__init__()
         # ------------------- Basic parameters -------------------
@@ -70,32 +70,8 @@ class YOLOv4(nn.Module):
                               ])                 
     
 
-        # --------- Network Initialization ----------
-        self.init_yolo()
-
-
-    def init_yolo(self): 
-        # Init yolo
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.eps = 1e-3
-                m.momentum = 0.03
-                
-        # Init bias
-        init_prob = 0.01
-        bias_value = -torch.log(torch.tensor((1. - init_prob) / init_prob))
-        # obj pred
-        for obj_pred in self.obj_preds:
-            b = obj_pred.bias.view(self.num_anchors, -1)
-            b.data.fill_(bias_value.item())
-            obj_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-        # cls pred
-        for cls_pred in self.cls_preds:
-            b = cls_pred.bias.view(self.num_anchors, -1)
-            b.data.fill_(bias_value.item())
-            cls_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-
-
+    # ---------------------- Basic Functions ----------------------
+    ## generate anchor points
     def generate_anchors(self, level, fmp_size):
         """
             fmp_size: (List) [H, W]
@@ -108,8 +84,8 @@ class YOLOv4(nn.Module):
         anchor_y, anchor_x = torch.meshgrid([torch.arange(fmp_h), torch.arange(fmp_w)])
         anchor_xy = torch.stack([anchor_x, anchor_y], dim=-1).float().view(-1, 2)
         # [HW, 2] -> [HW, KA, 2] -> [M, 2]
-        anchor_xy = anchor_xy.unsqueeze(1).repeat(1, self.num_anchors, 1)
-        anchor_xy = anchor_xy.view(-1, 2).to(self.device) + 0.5
+        anchor_xy = anchor_xy.unsqueeze(1).repeat(1, self.num_anchors, 1) + 0.5
+        anchor_xy = anchor_xy.view(-1, 2).to(self.device)
 
         # [KA, 2] -> [1, KA, 2] -> [HW, KA, 2] -> [M, 2]
         anchor_wh = anchor_size.unsqueeze(0).repeat(fmp_h*fmp_w, 1, 1)
@@ -119,43 +95,25 @@ class YOLOv4(nn.Module):
 
         return anchors
         
-
-    def decode_boxes(self, level, anchors, reg_pred):
-        """
-            将txtytwth转换为常用的x1y1x2y2形式。
-        """
-
-        # 计算预测边界框的中心点坐标和宽高
-        pred_ctr = (torch.sigmoid(reg_pred[..., :2]) * 3.0 - 1.5 + anchors[..., :2]) * self.stride[level]
-        pred_wh = torch.exp(reg_pred[..., 2:]) * anchors[..., 2:]
-
-        # 将所有bbox的中心带你坐标和宽高换算成x1y1x2y2形式
-        pred_x1y1 = pred_ctr - pred_wh * 0.5
-        pred_x2y2 = pred_ctr + pred_wh * 0.5
-        pred_box = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
-        return pred_box
-
-
-    def post_process(self, obj_preds, cls_preds, reg_preds, anchors):
+    ## post-process
+    def post_process(self, obj_preds, cls_preds, box_preds):
         """
         Input:
-            obj_preds: List(Tensor) [[H x W, 1], ...]
-            cls_preds: List(Tensor) [[H x W, C], ...]
-            reg_preds: List(Tensor) [[H x W, 4], ...]
-            anchors:  List(Tensor) [[H x W, 2], ...]
+            obj_preds: List(Tensor) [[H x W x A, 1], ...]
+            cls_preds: List(Tensor) [[H x W x A, C], ...]
+            box_preds: List(Tensor) [[H x W x A, 4], ...]
+            anchors:   List(Tensor) [[H x W x A, 2], ...]
         """
         all_scores = []
         all_labels = []
         all_bboxes = []
         
-        for level, (obj_pred_i, cls_pred_i, reg_pred_i, anchor_i) \
-                in enumerate(zip(obj_preds, cls_preds, reg_preds, anchors)):
+        for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
             # (H x W x KA x C,)
             scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
 
             # Keep top k top scoring indices only.
-            num_topk = min(self.topk, reg_pred_i.size(0))
+            num_topk = min(self.topk, box_pred_i.size(0))
 
             # torch.sort is actually faster than .topk (at least on GPUs)
             predicted_prob, topk_idxs = scores_i.sort(descending=True)
@@ -170,11 +128,7 @@ class YOLOv4(nn.Module):
             anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
             labels = topk_idxs % self.num_classes
 
-            reg_pred_i = reg_pred_i[anchor_idxs]
-            anchor_i = anchor_i[anchor_idxs]
-
-            # decode box: [M, 4]
-            bboxes = self.decode_boxes(level, anchor_i, reg_pred_i)
+            bboxes = box_pred_i[anchor_idxs]
 
             all_scores.append(scores)
             all_labels.append(labels)
@@ -196,6 +150,7 @@ class YOLOv4(nn.Module):
         return bboxes, scores, labels
 
 
+    # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference(self, x):
         # 主干网络
@@ -211,7 +166,7 @@ class YOLOv4(nn.Module):
         all_anchors = []
         all_obj_preds = []
         all_cls_preds = []
-        all_reg_preds = []
+        all_box_preds = []
         for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
             cls_feat, reg_feat = head(feat)
 
@@ -229,16 +184,24 @@ class YOLOv4(nn.Module):
             cls_pred = cls_pred[0].permute(1, 2, 0).contiguous().view(-1, self.num_classes)
             reg_pred = reg_pred[0].permute(1, 2, 0).contiguous().view(-1, 4)
 
+            # decode bbox
+            ctr_pred = (torch.sigmoid(reg_pred[..., :2]) * 3.0 - 1.5 + anchors[..., :2]) * self.stride[level]
+            wh_pred = torch.exp(reg_pred[..., 2:]) * anchors[..., 2:]
+            pred_x1y1 = ctr_pred - wh_pred * 0.5
+            pred_x2y2 = ctr_pred + wh_pred * 0.5
+            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
             all_obj_preds.append(obj_pred)
             all_cls_preds.append(cls_pred)
-            all_reg_preds.append(reg_pred)
+            all_box_preds.append(box_pred)
             all_anchors.append(anchors)
 
         # post process
         bboxes, scores, labels = self.post_process(
-            all_obj_preds, all_cls_preds, all_reg_preds, all_anchors)
-
+            all_obj_preds, all_cls_preds, all_box_preds)
+        
         return bboxes, scores, labels
+
 
 
     def forward(self, x):
@@ -279,7 +242,11 @@ class YOLOv4(nn.Module):
                 reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(bs, -1, 4)
 
                 # decode bbox
-                box_pred = self.decode_boxes(level, anchors, reg_pred)
+                ctr_pred = (torch.sigmoid(reg_pred[..., :2]) * 3.0 - 1.5 + anchors[..., :2]) * self.stride[level]
+                wh_pred = torch.exp(reg_pred[..., 2:]) * anchors[..., 2:]
+                pred_x1y1 = ctr_pred - wh_pred * 0.5
+                pred_x2y2 = ctr_pred + wh_pred * 0.5
+                box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
 
                 all_obj_preds.append(obj_pred)
                 all_cls_preds.append(cls_pred)
