@@ -1,7 +1,7 @@
 # yolov8 config
 
 yolov8_cfg = {
-    'yolov8_nano':{
+    'yolov8_n':{
         # input
         'trans_type': 'yolov5_weak',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
@@ -62,7 +62,7 @@ yolov8_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov8_small':{
+    'yolov8_s':{
         # input
         'trans_type': 'yolov5_strong',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
@@ -123,7 +123,7 @@ yolov8_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov8_medium':{
+    'yolov8_m':{
         # input
         'trans_type': 'yolov5_strong',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
@@ -184,7 +184,7 @@ yolov8_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov8_large':{
+    'yolov8_l':{
         # input
         'trans_type': 'yolov5_strong',
         'multi_scale': [0.5, 1.5],   # 320 -> 960
@@ -245,7 +245,7 @@ yolov8_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov8_huge':{
+    'yolov8_x':{
         # input
         'trans_type': 'yolov5_strong',
         'multi_scale': [0.5, 1.5],   # 320 -> 960

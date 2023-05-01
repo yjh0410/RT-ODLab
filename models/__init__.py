@@ -6,6 +6,7 @@ from .yolov1.build import build_yolov1
 from .yolov2.build import build_yolov2
 from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
+from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
@@ -33,12 +34,16 @@ def build_model(args,
     elif args.model == 'yolov4':
         model, criterion = build_yolov4(
             args, model_cfg, device, num_classes, trainable)
+    # YOLOv5   
+    elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
+        model, criterion = build_yolov5(
+            args, model_cfg, device, num_classes, trainable)
     # YOLOv7
-    elif args.model in ['yolov7_nano', 'yolov7_tiny', 'yolov7_large', 'yolov7_huge']:
+    elif args.model in ['yolov7_t', 'yolov7_l', 'yolov7_x']:
         model, criterion = build_yolov7(
             args, model_cfg, device, num_classes, trainable)
     # YOLOv8
-    elif args.model in ['yolov8_nano', 'yolov8_small', 'yolov8_medium', 'yolov8_large', 'yolov8_huge']:
+    elif args.model in ['yolov8_n', 'yolov8_s', 'yolov8_m', 'yolov8_l', 'yolov8_x']:
         model, criterion = build_yolov8(
             args, model_cfg, device, num_classes, trainable)
     # YOLOX   

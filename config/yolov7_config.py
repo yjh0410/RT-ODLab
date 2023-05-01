@@ -1,7 +1,7 @@
 # YOLOv7 Config
 
 yolov7_cfg = {
-    'yolov7_tiny':{
+    'yolov7_t':{
         # input
         'trans_type': 'yolov5_weak',
         'multi_scale': [0.5, 1.5], # 320 -> 640
@@ -59,7 +59,7 @@ yolov7_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov7_large':{
+    'yolov7_l':{
         # input
         'trans_type': 'yolov5_strong',
         'multi_scale': [0.5, 1.25], # 320 -> 640
@@ -117,7 +117,7 @@ yolov7_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov7_huge':{
+    'yolov7_x':{
         # input
         'trans_type': 'yolov5_strong',
         'multi_scale': [0.5, 1.25], # 320 -> 640
