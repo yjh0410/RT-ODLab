@@ -65,7 +65,10 @@ def build_model(args,
                 if 'reduce_layer_3' in k:
                     k_new = k.split('.')
                     k_new[1] = 'downsample_layer_1'
-                    k = k_new[0] + '.' + k_new[1] + '.' + k_new[2] + '.' + k_new[3] + '.' + k_new[4]
+                    k_ = k_new[0] + '.' + k_new[1] + '.' + k_new[2] + '.' + k_new[3] + '.' + k_new[4]
+                    checkpoint_state_dict[k_] = checkpoint_state_dict[k]
+                    checkpoint_state_dict.pop(k)
+
                 if k in model_state_dict:
                     shape_model = tuple(model_state_dict[k].shape)
                     shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
