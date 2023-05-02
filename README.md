@@ -120,7 +120,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 
 - *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
-- *The reproduced YOLOv5's head is the **Decoupled Head**, which is why the FLOPs and Params are higher than the official YOLOv5.*
+- *The reproduced YOLOv5's head is the **Decoupled Head**, which is why the FLOPs and Params are higher than the official YOLOv5. Due to my limited computing resources, I can not align the training configuration with the official YOLOv5, so I cannot fully replicate the official performance. The YOLOv5 I reproduce is for learning purposes only.*
 
 - *Due to my limited computing resources, I had to abandon training on other YOLO detectors, including YOLOv7-Huge and YOLOv8-Nano~Large. If you are interested in these models and have trained them using the code from this project, I would greatly appreciate it if you could share the trained weight files with me.*
 
