@@ -5,7 +5,7 @@ from .yolov4_basic import Conv, CSPBlock
 
 
 # PaFPN-CSP
-class YoloPaFPN(nn.Module):
+class Yolov4PaFPN(nn.Module):
     def __init__(self, 
                  in_dims=[256, 512, 1024],
                  out_dim=256,
@@ -14,7 +14,7 @@ class YoloPaFPN(nn.Module):
                  act_type='silu',
                  norm_type='BN',
                  depthwise=False):
-        super(YoloPaFPN, self).__init__()
+        super(Yolov4PaFPN, self).__init__()
         self.in_dims = in_dims
         self.out_dim = out_dim
         c3, c4, c5 = in_dims
@@ -123,8 +123,8 @@ class YoloPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
     # build neck
-    if model == 'yolo_pafpn':
-        fpn_net = YoloPaFPN(in_dims=in_dims,
+    if model == 'yolov4_pafpn':
+        fpn_net = Yolov4PaFPN(in_dims=in_dims,
                              out_dim=out_dim,
                              width=cfg['width'],
                              depth=cfg['depth'],

@@ -17,7 +17,7 @@ yolov3_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## FPN
-        'fpn': 'yolo_fpn',
+        'fpn': 'yolov3_fpn',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -78,7 +78,7 @@ yolov3_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## FPN
-        'fpn': 'yolo_fpn',
+        'fpn': 'yolov3_fpn',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,

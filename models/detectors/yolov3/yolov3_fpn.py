@@ -5,8 +5,8 @@ import torch.nn.functional as F
 from .yolov3_basic import Conv, ConvBlocks
 
 
-# YoloFPN
-class YoloFPN(nn.Module):
+# Yolov3FPN
+class Yolov3FPN(nn.Module):
     def __init__(self,
                  in_dims=[256, 512, 1024],
                  width=1.0,
@@ -14,7 +14,7 @@ class YoloFPN(nn.Module):
                  out_dim=None,
                  act_type='silu',
                  norm_type='BN'):
-        super(YoloFPN, self).__init__()
+        super(Yolov3FPN, self).__init__()
         self.in_dims = in_dims
         self.out_dim = out_dim
         c3, c4, c5 = in_dims
@@ -75,8 +75,8 @@ class YoloFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
     # build neck
-    if model == 'yolo_fpn':
-        fpn_net = YoloFPN(in_dims=in_dims,
+    if model == 'yolov3_fpn':
+        fpn_net = Yolov3FPN(in_dims=in_dims,
                             out_dim=out_dim,
                             width=cfg['width'],
                             depth=cfg['depth'],
