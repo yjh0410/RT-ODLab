@@ -27,7 +27,7 @@ def build_model(args,
         model, criterion = build_yolov2(
             args, model_cfg, device, num_classes, trainable)
     # YOLOv3   
-    elif args.model == 'yolov3':
+    elif args.model in ['yolov3', 'yolov3_t']:
         model, criterion = build_yolov3(
             args, model_cfg, device, num_classes, trainable)
     # YOLOv4   
