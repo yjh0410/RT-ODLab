@@ -44,7 +44,7 @@ yolov5_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None
@@ -104,7 +104,7 @@ yolov5_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None
@@ -164,7 +164,7 @@ yolov5_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None
@@ -224,7 +224,7 @@ yolov5_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None
@@ -284,7 +284,7 @@ yolov5_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None
