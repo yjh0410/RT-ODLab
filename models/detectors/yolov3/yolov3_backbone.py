@@ -8,7 +8,7 @@ except:
     
 
 model_urls = {
-    "darknet_tiny": None,
+    "darknet_tiny": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/darknet_tiny.pth",
     "darknet53": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/darknet53_silu.pth",
 }
 
@@ -148,7 +148,7 @@ def build_backbone(model_name='darknet53', pretrained=False):
 if __name__ == '__main__':
     import time
     from thop import profile
-    model, feats = build_backbone(pretrained=False)
+    model, feats = build_backbone(model_name='darknet_tiny', pretrained=True)
     x = torch.randn(1, 3, 224, 224)
     t0 = time.time()
     outputs = model(x)

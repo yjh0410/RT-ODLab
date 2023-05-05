@@ -203,7 +203,7 @@ class YOLOv3(nn.Module):
         return bboxes, scores, labels
 
 
-
+    # ---------------------- Main Process for Training ----------------------
     def forward(self, x):
         if not self.trainable:
             return self.inference(x)

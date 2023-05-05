@@ -11,7 +11,7 @@ except:
 model_urls = {
     "cspdarknet_nano": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_nano.pth",
     "cspdarknet_small": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_small.pth",
-    "cspdarknet_medium": None,
+    "cspdarknet_medium": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_medium.pth",
     "cspdarknet_large": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_large.pth",
     "cspdarknet_huge": None,
 }
