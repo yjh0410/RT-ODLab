@@ -8,7 +8,7 @@ except:
     
 
 model_urls = {
-    "cspdarknet_tiny": None,
+    "cspdarknet_tiny": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_tiny.pth",
     "cspdarknet53": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet53_silu.pth",
 }
 
