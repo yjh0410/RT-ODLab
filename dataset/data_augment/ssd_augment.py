@@ -78,7 +78,7 @@ class Resize(object):
     def __call__(self, image, boxes=None, labels=None):
         orig_h, orig_w = image.shape[:2]
         image = cv2.resize(image, (self.img_size, self.img_size))
-        # normalize
+        # rescale bbox
         if boxes is not None:
             img_h, img_w = image.shape[:2]
             boxes[..., [0, 2]] = boxes[..., [0, 2]] / orig_w * img_w
@@ -348,7 +348,7 @@ class PhotometricDistort(object):
         return im, boxes, labels
 
 
-# ----------------------- Main Functions
+# ----------------------- Main Functions -----------------------
 ## SSD-style Augmentation
 class SSDAugmentation(object):
     def __init__(self, img_size=640):
