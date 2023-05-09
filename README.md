@@ -115,7 +115,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 
 | Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv4-Tiny   | CSPDarkNet-Tiny    |  640  |  250  |       |                        |                   |                   |                    |  |
+| YOLOv4-Tiny   | CSPDarkNet-Tiny    |  640  |  250  |       |                        |                   |   8.1             |   2.9              |  |
 | YOLOv4        | CSPDarkNet-53      |  640  |  250  |       |        46.6            |       65.8        |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
 
 * YOLOv5:
@@ -126,6 +126,8 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 | YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |       |                        |                   |   27.1            |   9.0              |  |
 | YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |       |                        |                   |   74.3            |   25.4             |  |
 | YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |       |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
+
+*I attempted to reproduce the design philosophy of YOLOv5 but may have overlooked some details, leading to poor performance. However, I do not aim to fully replicate YOLOv5's performance, as it is too challenging and resource-intensive for me.*
 
 * YOLOX:
 
@@ -139,6 +141,10 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 |---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOv7-T      | ELANNet-Tiny       |  640  |  300  |       |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
 | YOLOv7-L      | ELANNet-Large      |  640  |  300  |       |                        |                   |   144.6           |   44.0             |  |
+
+*While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
+
+* Necessary instructions：
 
 - *All models are trained with ImageNet pretrained weight (IP). All FLOPs are measured with a 640x640 image size on COCO val2017. The FPS is measured with batch size 1 on 3090 GPU from the model inference to the NMS operation.*
 
