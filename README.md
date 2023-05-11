@@ -122,7 +122,7 @@ python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 
 
 | Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |       |                        |                   |   7.7             |   2.4              |  |
+| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |       |         29.8           |       47.1        |   7.7             |   2.4              |  |
 | YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |       |                        |                   |   27.1            |   9.0              |  |
 | YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |       |                        |                   |   74.3            |   25.4             |  |
 | YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |       |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |

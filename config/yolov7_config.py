@@ -4,7 +4,7 @@ yolov7_cfg = {
     'yolov7_t':{
         # input
         'trans_type': 'yolov5_tiny',
-        'multi_scale': [0.5, 1.5], # 320 -> 640
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         # model
         'backbone': 'elannet_tiny',
         'pretrained': True,
@@ -62,7 +62,7 @@ yolov7_cfg = {
     'yolov7_l':{
         # input
         'trans_type': 'yolov5_large',
-        'multi_scale': [0.5, 1.25], # 320 -> 640
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # model
         'backbone': 'elannet_large',
         'pretrained': True,
