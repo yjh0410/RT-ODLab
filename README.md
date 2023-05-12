@@ -104,48 +104,48 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 
 * Redesigned YOLOv1~v2:
 
-| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv1        | ResNet-18          |  640  |  150  |       |        27.9            |       47.5        |   37.8            |   21.3             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov1_coco.pth) |
-| YOLOv2        | DarkNet-19         |  640  |  150  |       |        32.7            |       50.9        |   53.9            |   30.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov2_coco.pth) |
+| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv1        | ResNet-18          |  640  |  150  |        27.9            |       47.5        |   37.8            |   21.3             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov1_coco.pth) |
+| YOLOv2        | DarkNet-19         |  640  |  150  |        32.7            |       50.9        |   53.9            |   30.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov2_coco.pth) |
 
 * YOLOv3:
 
-| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv3-Tiny   | DarkNet-Tiny       |  640  |  250  |       |                        |                   |   7.0             |   2.3              |  |
-| YOLOv3        | DarkNet-53         |  640  |  250  |       |        42.9            |       63.5        |   167.4           |   54.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
+| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv3-Tiny   | DarkNet-Tiny       |  640  |  250  |                        |                   |   7.0             |   2.3              |  |
+| YOLOv3        | DarkNet-53         |  640  |  250  |        42.9            |       63.5        |   167.4           |   54.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
 
 * YOLOv4:
 
-| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv4-Tiny   | CSPDarkNet-Tiny    |  640  |  250  |       |        31.0            |       49.1        |   8.1             |   2.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_t_coco.pth) |
-| YOLOv4        | CSPDarkNet-53      |  640  |  250  |       |        46.6            |       65.8        |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
+| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv4-Tiny   | CSPDarkNet-Tiny    |  640  |  250  |        31.0            |       49.1        |   8.1             |   2.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_t_coco.pth) |
+| YOLOv4        | CSPDarkNet-53      |  640  |  250  |        46.6            |       65.8        |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
 
 * YOLOv5:
 
-| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |       |         29.8           |       47.1        |   7.7             |   2.4              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_s_coco.pth) |
-| YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |       |                        |                   |   27.1            |   9.0              |  |
-| YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |       |                        |                   |   74.3            |   25.4             |  |
-| YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |       |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
+| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |         29.8           |       47.1        |   7.7             |   2.4              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_s_coco.pth) |
+| YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |                        |                   |   27.1            |   9.0              |  |
+| YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |                        |                   |   74.3            |   25.4             |  |
+| YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
 
 *I attempted to reproduce the design philosophy of YOLOv5 but may have overlooked some details, leading to poor performance. However, I do not aim to fully replicate YOLOv5's performance, as it is too challenging and resource-intensive for me.*
 
 * YOLOX:
 
-| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOX-L       | CSPDarkNet-L       |  640  |  300  |       |        46.6            |       66.1        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
+| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOX-L       | CSPDarkNet-L       |  640  |  300  |        46.6            |       66.1        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_coco.pth) |
 
 * YOLOv7:
 
-| Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv7-T      | ELANNet-Tiny       |  640  |  300  |       |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
-| YOLOv7-L      | ELANNet-Large      |  640  |  300  |       |                        |                   |   144.6           |   44.0             |  |
+| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv7-T      | ELANNet-Tiny       |  640  |  300  |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
+| YOLOv7-L      | ELANNet-Large      |  640  |  300  |                        |                   |   144.6           |   44.0             |  |
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
 
