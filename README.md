@@ -120,7 +120,7 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 
 | Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------------|--------------------|-------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv4-Tiny   | CSPDarkNet-Tiny    |  640  |  250  |       |                        |                   |   8.1             |   2.9              |  |
+| YOLOv4-Tiny   | CSPDarkNet-Tiny    |  640  |  250  |       |        31.0            |       49.1        |   8.1             |   2.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_t_coco.pth) |
 | YOLOv4        | CSPDarkNet-53      |  640  |  250  |       |        46.6            |       65.8        |   162.7           |   61.5             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov4_coco.pth) |
 
 * YOLOv5:
