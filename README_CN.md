@@ -100,6 +100,10 @@ For example:
 python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
+由于我的计算资源有限，我不得不在训练期间将batch size设置为16甚至更小。我发现，对于*-Nano或*-Tiny这样的小模型，它们的性能似乎对batch size不太敏感，比如我复制的YOLOv5-N和S，它们甚至比官方的YOLOv5-N和S略强。然而，对于*-Large这样的大模型，其性能明显低于官方的性能，这似乎表明大模型对batch size更敏感。
+
+我提供了启用DDP训练的bash文件`train_ddp.sh`，我希望有人可以使用更多的显卡和更大的batch size来训练我实现的大模型，如YOLOv5-L、YOLOX以及YOLOv7-L。如果使用更大的batch size所训练出来的性能更高，如果能将训练的模型分享给我，我会很感激的。
+
 * 本书所实现的YOLO检测的性能：
 
 | Model         |   Backbone         | Scale | Epoch |  FPS  | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
