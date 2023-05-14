@@ -113,7 +113,7 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 
 | Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv3-Tiny   | DarkNet-Tiny       |  640  |  250  |                        |                   |   7.0             |   2.3              |  |
+| YOLOv3-Tiny   | DarkNet-Tiny       |  640  |  250  |        25.4            |       43.4        |   7.0             |   2.3              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_t_coco.pth) |
 | YOLOv3        | DarkNet-53         |  640  |  250  |        42.9            |       63.5        |   167.4           |   54.9             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov3_coco.pth) |
 
 * YOLOv4:
