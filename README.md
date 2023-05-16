@@ -239,7 +239,7 @@ python demo.py --mode image \
                --path_to_img data/demo/images/ \
                --cuda \
                --img_size 640 \
-               -m yolov1 \
+               -m yolov2 \
                --weight path/to/weight \
                --show
 ```
@@ -248,10 +248,10 @@ If you want run a demo of streaming video detection, you need to set `--mode` to
 
 ```Shell
 python demo.py --mode video \
-               --path_to_img data/demo/videos/your_video \
+               --path_to_vid data/demo/videos/your_video \
                --cuda \
                --img_size 640 \
-               -m yolov1 \
+               -m yolov2 \
                --weight path/to/weight \
                --show \
                --gif
@@ -263,11 +263,31 @@ If you want run video detection with your camera, you need to set `--mode` to `c
 python demo.py --mode camera \
                --cuda \
                --img_size 640 \
-               -m yolov1 \
+               -m yolov2 \
                --weight path/to/weight \
                --show \
                --gif
 ```
+
+### Detection visualization
+* Detector: YOLOv2
+
+Command：
+
+```Shell
+python demo.py --mode video \
+                --path_to_vid ./dataset/demo/videos/000006.mp4 \
+               --cuda \
+               --img_size 640 \
+               -m yolov2 \
+               --weight path/to/weight \
+               --show \
+               --gif
+```
+
+Results:
+
+![image](./img_files/video_detection_demo.gif)
 
 ## Tracking
 Our project also supports **multi-object tracking** tasks. We use the YOLO of this project as the detector, following the "tracking-by-detection" framework, and use the simple and efficient **ByteTrack** as the tracker.

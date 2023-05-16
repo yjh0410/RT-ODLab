@@ -275,6 +275,26 @@ python demo.py --mode camera \
                --gif
 ```
 
+### 检测的例子
+* Detector: YOLOv2
+
+运行命令如下：
+
+```Shell
+python demo.py --mode video \
+                --path_to_vid ./dataset/demo/videos/000006.mp4 \
+               --cuda \
+               --img_size 640 \
+               -m yolov2 \
+               --weight path/to/weight \
+               --show \
+               --gif
+```
+
+结果如下：
+
+![image](./img_files/video_detection_demo.gif)
+
 
 ## 目标跟踪
 该项目也支持**多目标跟踪**任务。我们使用本项目的YOLO检测器作为“tracking-by-detection”的检测器，并使用简单高效的**ByteTrack**作为跟踪器。
