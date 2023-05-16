@@ -62,7 +62,7 @@ python dataset/voc.py
 
 For example:
 ```Shell
-python train.py --cuda -d voc --root path/to/VOCdevkit -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
+python train.py --cuda -d voc --root path/to/VOCdevkit -m yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
 | Model        |   Backbone          | Scale |  IP  | Epoch | AP<sup>val<br>0.5 | FPS<sup>3090<br>FP32-bs1 | Weight |
@@ -95,7 +95,7 @@ python dataset/coco.py
 
 For example:
 ```Shell
-python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
+python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
 Due to my limited computing resources, I had to set the batch size to 16 or even smaller during training. I found that for small models such as *-Nano or *-Tiny, their performance seems less sensitive to batch size, such as the YOLOv5-N and S I reproduced, which are even slightly stronger than the official YOLOv5-N and S. However, for large models such as *-Large, their performance is significantly lower than the official performance, which seems to indicate that the large model is more sensitive to batch size.
@@ -167,7 +167,7 @@ You can change the configurations of `train.sh`, according to your own situation
 
 You also can add `--vis_tgt`  to check the images and targets during the training stage. For example:
 ```Shell
-python train.py --cuda -d coco --root path/to/coco -v yolov1 --vis_tgt
+python train.py --cuda -d coco --root path/to/coco -m yolov1 --vis_tgt
 ```
 
 ### Multi GPUs
@@ -184,7 +184,7 @@ weight path (`None` by default) to resume training. For example:
 python train.py \
         --cuda \
         -d coco \
-        -v yolov1 \
+        -m yolov1 \
         -bs 16 \
         --max_epoch 300 \
         --wp_epoch 3 \
@@ -200,7 +200,7 @@ Then, training will continue from 151 epoch.
 ```Shell
 python test.py -d coco \
                --cuda \
-               -v yolov1 \
+               -m yolov1 \
                --img_size 640 \
                --weight path/to/weight \
                --root path/to/dataset/ \
@@ -211,7 +211,7 @@ For YOLOv7, since it uses the RepConv in PaFPN, you can add `--fuse_repconv` to 
 ```Shell
 python test.py -d coco \
                --cuda \
-               -v yolov7_large \
+               -m yolov7_large \
                --fuse_repconv \
                --img_size 640 \
                --weight path/to/weight \
@@ -224,7 +224,7 @@ python test.py -d coco \
 ```Shell
 python eval.py -d coco-val \
                --cuda \
-               -v yolov1 \
+               -m yolov1 \
                --img_size 640 \
                --weight path/to/weight \
                --root path/to/dataset/ \
@@ -237,10 +237,11 @@ I have provide some images in `data/demo/images/`, so you can run following comm
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
-               -v yolov1 \
-               --img_size 640 \
                --cuda \
-               --weight path/to/weight
+               --img_size 640 \
+               -m yolov1 \
+               --weight path/to/weight \
+               --show
 ```
 
 If you want run a demo of streaming video detection, you need to set `--mode` to `video`, and give the path to video `--path_to_vid`。
@@ -248,20 +249,24 @@ If you want run a demo of streaming video detection, you need to set `--mode` to
 ```Shell
 python demo.py --mode video \
                --path_to_img data/demo/videos/your_video \
-               -v yolov1 \
-               --img_size 640 \
                --cuda \
-               --weight path/to/weight
+               --img_size 640 \
+               -m yolov1 \
+               --weight path/to/weight \
+               --show \
+               --gif
 ```
 
 If you want run video detection with your camera, you need to set `--mode` to `camera`。
 
 ```Shell
 python demo.py --mode camera \
-               -v yolov1 \
-               --img_size 640 \
                --cuda \
-               --weight path/to/weight
+               --img_size 640 \
+               -m yolov1 \
+               --weight path/to/weight \
+               --show \
+               --gif
 ```
 
 ## Tracking
@@ -271,12 +276,13 @@ Our project also supports **multi-object tracking** tasks. We use the YOLO of th
 ```Shell
 python track.py --mode image \
                 --path_to_img path/to/images/ \
+                --cuda \
+                -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
                 --weight path/to/coco_pretrained/ \
-                -size 640 \
-                --cuda \
-                --show
+                --show \
+                --gif
 ```
 
 * video tracking
@@ -284,22 +290,46 @@ python track.py --mode image \
 ```Shell
 python track.py --mode video \
                 --path_to_img path/to/video/ \
+                --cuda \
+                -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
                 --weight path/to/coco_pretrained/ \
-                -size 640 \
-                --cuda \
-                --show
+                --show \
+                --gif
 ```
 
 * camera tracking
 
 ```Shell
 python track.py --mode camera \
+                --cuda \
+                -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
                 --weight path/to/coco_pretrained/ \
-                -size 640 \
-                --cuda \
-                --show
+                --show \
+                --gif
 ```
+
+### Tracking visualization
+* Detector: YOLOv2
+* Tracker: ByteTracker
+
+Command：
+
+```Shell
+python track.py --mode video \
+                --path_to_img ./dataset/demo/videos/000006.mp4 \
+                --cuda \
+                -size 640 \
+                -dt yolov2 \
+                -tk byte_tracker \
+                --weight path/to/coco_pretrained/ \
+                --show \
+                --gif
+```
+
+Results:
+
+![image](./img_files/video_tracking_demo.gif)

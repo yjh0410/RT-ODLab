@@ -243,10 +243,11 @@ python eval.py -d coco-val \
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
-               -v yolov1 \
-               --img_size 640 \
                --cuda \
-               --weight path/to/weight
+               --img_size 640 \
+               -m yolov2 \
+               --weight path/to/weight \
+               --show
 ```
 
 如果使用者想在本地的视频上去做测试，那么你需要将上述命令中的`--mode image`修改为`--mode video`，并给`--path_to_vid`传入视频所在的文件路径，例如：
@@ -254,20 +255,24 @@ python demo.py --mode image \
 ```Shell
 python demo.py --mode video \
                --path_to_img data/demo/videos/your_video \
-               -v yolov1 \
-               --img_size 640 \
                --cuda \
-               --weight path/to/weight
+               --img_size 640 \
+               -m yolov2 \
+               --weight path/to/weight \
+               --show \
+               --gif
 ```
 
 如果使用者想用本地的摄像头（如笔记本的摄像头）去做测试，那么你需要将上述命令中的`--mode image`修改为`--mode camera`，例如：
 
 ```Shell
 python demo.py --mode camera \
-               -v yolov1 \
-               --img_size 640 \
                --cuda \
-               --weight path/to/weight
+               --img_size 640 \
+               -m yolov2 \
+               --weight path/to/weight \
+               --show \
+               --gif
 ```
 
 
@@ -278,12 +283,13 @@ python demo.py --mode camera \
 ```Shell
 python track.py --mode image \
                 --path_to_img path/to/images/ \
+                --cuda \
+                -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
                 --weight path/to/coco_pretrained/ \
-                -size 640 \
-                --cuda \
-                --show
+                --show \
+                --gif
 ```
 
 * video tracking
@@ -291,22 +297,46 @@ python track.py --mode image \
 ```Shell
 python track.py --mode video \
                 --path_to_img path/to/video/ \
+                --cuda \
+                -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
                 --weight path/to/coco_pretrained/ \
-                -size 640 \
-                --cuda \
-                --show
+                --show \
+                --gif
 ```
 
 * camera tracking
 
 ```Shell
 python track.py --mode camera \
+                --cuda \
+                -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
                 --weight path/to/coco_pretrained/ \
-                -size 640 \
-                --cuda \
-                --show
+                --show \
+                --gif
 ```
+
+### 多目标跟踪的例子
+* Detector: YOLOv2
+* Tracker: ByteTracker
+
+运行命令如下：
+
+```Shell
+python track.py --mode video \
+                --path_to_img ./dataset/demo/videos/000006.mp4 \
+                --cuda \
+                -size 640 \
+                -dt yolov2 \
+                -tk byte_tracker \
+                --weight path/to/coco_pretrained/ \
+                --show \
+                --gif
+```
+
+结果如下：
+
+![image](./img_files/video_tracking_demo.gif)
