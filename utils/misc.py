@@ -238,6 +238,11 @@ def load_weight(model, path_to_ckpt, fuse_cbn=False):
         print('no weight file ...')
     else:
         checkpoint = torch.load(path_to_ckpt, map_location='cpu')
+        print('--------------------------------------')
+        print('Best model infor:')
+        print('Epoch: {}'.format(checkpoint.pop("epoch")))
+        print('mAP: {}'.format(checkpoint.pop("mAP")))
+        print('--------------------------------------')
         checkpoint_state_dict = checkpoint.pop("model")
         model.load_state_dict(checkpoint_state_dict)
 
