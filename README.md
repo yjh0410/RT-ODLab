@@ -132,7 +132,7 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 | YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |                        |                   |   74.3            |   25.4             |  |
 | YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
 
-*For **YOLOv5-L**, increasing the batch size should improve performance. Due to my computing resources, I can only set the batch size to 16.*
+*For **YOLOv5-L**, increasing the batch size may improve performance. Due to my computing resources, I can only set the batch size to 16.*
 
 * YOLOX:
 
