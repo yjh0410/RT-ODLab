@@ -175,12 +175,12 @@ def val_one_epoch(args,
                   epoch,
                   best_map,
                   path_to_save):
-    # check evaluator
     if distributed_utils.is_main_process():
+        # check evaluator
         if evaluator is None:
             print('No evaluator ... save model and go on training.')
             print('Saving state, epoch: {}'.format(epoch + 1))
-            weight_name = '{}_epoch_{}.pth'.format(args.model, epoch + 1)
+            weight_name = '{}_no_eval.pth'.format(args.model)
             checkpoint_path = os.path.join(path_to_save, weight_name)
             torch.save({'model': model.state_dict(),
                         'mAP': -1.,
@@ -204,7 +204,7 @@ def val_one_epoch(args,
                 best_map = cur_map
                 # save model
                 print('Saving state, epoch:', epoch + 1)
-                weight_name = '{}_epoch_{}_{:.2f}.pth'.format(args.model, epoch + 1, best_map*100)
+                weight_name = '{}_best.pth'.format(args.model)
                 checkpoint_path = os.path.join(path_to_save, weight_name)
                 torch.save({'model': model.state_dict(),
                             'mAP': round(best_map*100, 1),
