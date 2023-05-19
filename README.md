@@ -132,7 +132,7 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 | YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |                        |                   |   74.3            |   25.4             |  |
 | YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
 
-*I attempted to reproduce the design philosophy of YOLOv5 but may have overlooked some details, leading to poor performance. However, I do not aim to fully replicate YOLOv5's performance, as it is too challenging and resource-intensive for me.*
+*For **YOLOv5-L**, increasing the batch size should improve performance. Due to my computing resources, I can only set the batch size to 16.*
 
 * YOLOX:
 
@@ -156,6 +156,8 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 - *The reproduced YOLOv5's head is the **Decoupled Head**, which is why the FLOPs and Params are higher than the official YOLOv5. Due to my limited computing resources, I can not align the training configuration with the official YOLOv5, so I cannot fully replicate the official performance. The YOLOv5 I reproduce is for learning purposes only.*
 
 - *Due to my limited computing resources, I had to abandon training on other YOLO detectors, including YOLOv7-Huge and YOLOv8-Nano~Large. If you are interested in these models and have trained them using the code from this project, I would greatly appreciate it if you could share the trained weight files with me.*
+
+- *Using a larger batch size may improve the performance of large models, such as YOLOv5-L, YOLOX-L and YOLOv7-L. Due to my computing resources, I can only set the batch size to 16.*
 
 ## Train
 ### Single GPU
