@@ -5,11 +5,11 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .yolov8 import YOLOv8
+from .yolov7_plus import YOLOv7_Plus
 
 
 # build object detector
-def build_yolov8(args, cfg, device, num_classes=80, trainable=False):
+def build_yolov7_plus(args, cfg, device, num_classes=80, trainable=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
     
@@ -17,7 +17,7 @@ def build_yolov8(args, cfg, device, num_classes=80, trainable=False):
     print('Model Configuration: \n', cfg)
     
     # -------------- Build YOLO --------------
-    model = YOLOv8(
+    model = YOLOv7_Plus(
         cfg=cfg,
         device=device, 
         num_classes=num_classes,
@@ -54,5 +54,5 @@ def build_yolov8(args, cfg, device, num_classes=80, trainable=False):
     criterion = None
     if trainable:
         # build criterion for training
-        criterion = build_criterion(cfg, device, num_classes)
+        criterion = build_criterion(cfg, device, num_classes, warmup_epoch=args.wp_epoch)
     return model, criterion

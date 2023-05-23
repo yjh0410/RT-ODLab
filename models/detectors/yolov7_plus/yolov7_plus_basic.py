@@ -130,3 +130,34 @@ class ELAN_CSP_Block(nn.Module):
         out = self.cv3(torch.cat(out, dim=1))
 
         return out
+
+
+# ---------------------------- FPN Modules ----------------------------
+## build fpn's core block
+def build_fpn_block(cfg, in_dim, out_dim):
+    if cfg['fpn_core_block'] == 'ELAN_CSPBlock':
+        layer = ELAN_CSP_Block(in_dim=in_dim,
+                               out_dim=out_dim,
+                               expand_ratio=cfg['expand_ratio'],
+                               nblocks=round(3*cfg['depth']),
+                               shortcut=False,
+                               act_type=cfg['fpn_act'],
+                               norm_type=cfg['fpn_norm'],
+                               depthwise=cfg['fpn_depthwise']
+                               )
+        
+    return layer
+
+## build fpn's reduce layer
+def build_reduce_layer(cfg, in_dim, out_dim):
+    if cfg['fpn_reduce_layer'] == 'Conv':
+        layer = Conv(in_dim, out_dim, k=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        
+    return layer
+
+## build fpn's downsample layer
+def build_downsample_layer(cfg, in_dim, out_dim):
+    if cfg['fpn_downsample_layer'] == 'Conv':
+        layer = Conv(in_dim, out_dim, k=3, s=2, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        
+    return layer

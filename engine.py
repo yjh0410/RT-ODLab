@@ -11,6 +11,22 @@ from utils import distributed_utils
 from utils.vis_tools import vis_data
 
 
+def refine_targets(targets, min_box_size):
+    # rescale targets
+    for tgt in targets:
+        boxes = tgt["boxes"].clone()
+        labels = tgt["labels"].clone()
+        # refine tgt
+        tgt_boxes_wh = boxes[..., 2:] - boxes[..., :2]
+        min_tgt_size = torch.min(tgt_boxes_wh, dim=-1)[0]
+        keep = (min_tgt_size >= min_box_size)
+
+        tgt["boxes"] = boxes[keep]
+        tgt["labels"] = labels[keep]
+    
+    return targets
+
+
 def rescale_image_targets(images, targets, stride, min_box_size, multi_scale_range=[0.5, 1.5]):
     """
         Deployed for Multi scale trick.
@@ -84,10 +100,6 @@ def train_one_epoch(epoch,
                 if 'momentum' in x:
                     x['momentum'] = np.interp(ni, xi, [cfg['warmup_momentum'], cfg['momentum']])
                             
-        # visualize train targets
-        if args.vis_tgt:
-            vis_data(images, targets)
-
         # to device
         images = images.to(device, non_blocking=True).float() / 255.
 
@@ -95,12 +107,18 @@ def train_one_epoch(epoch,
         if args.multi_scale:
             images, targets, img_size = rescale_image_targets(
                 images, targets, model.stride, args.min_box_size, cfg['multi_scale'])
+        else:
+            targets = refine_targets(targets, args.min_box_size)
             
+        # visualize train targets
+        if args.vis_tgt:
+            vis_data(images*255, targets)
+
         # inference
         with torch.cuda.amp.autocast(enabled=args.fp16):
             outputs = model(images)
             # loss
-            loss_dict = criterion(outputs=outputs, targets=targets)
+            loss_dict = criterion(outputs, targets, epoch)
             losses = loss_dict['losses']
             losses *= images.shape[0]  # loss * bs
 

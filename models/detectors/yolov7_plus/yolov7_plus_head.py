@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
 try:
-    from .yolov8_basic import Conv
+    from .yolov7_plus_basic import Conv
 except:
-    from yolov8_basic import Conv
+    from yolov7_plus_basic import Conv
 
 
 class DecoupledHead(nn.Module):
-    def __init__(self, cfg, in_dim, fpn_dims, num_classes=80):
+    def __init__(self, cfg, in_dim, out_dim, num_classes=80):
         super().__init__()
         print('==============================')
         print('Head: Decoupled Head')
@@ -19,7 +19,7 @@ class DecoupledHead(nn.Module):
 
         # cls head
         cls_feats = []
-        self.cls_out_dim = max(fpn_dims[0], num_classes)
+        self.cls_out_dim = max(out_dim, num_classes)
         for i in range(cfg['num_cls_head']):
             if i == 0:
                 cls_feats.append(
@@ -38,7 +38,7 @@ class DecoupledHead(nn.Module):
                 
         # reg head
         reg_feats = []
-        self.reg_out_dim = max(16, fpn_dims[0]//4, 4*cfg['reg_max'])
+        self.reg_out_dim = out_dim
         for i in range(cfg['num_reg_head']):
             if i == 0:
                 reg_feats.append(

@@ -8,7 +8,7 @@ from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
-from .yolov8.build import build_yolov8
+from .yolov7_plus.build import build_yolov7_plus
 from .yolox.build import build_yolox
 
 
@@ -42,9 +42,9 @@ def build_model(args,
     elif args.model in ['yolov7_t', 'yolov7_l', 'yolov7_x']:
         model, criterion = build_yolov7(
             args, model_cfg, device, num_classes, trainable)
-    # YOLOv8
-    elif args.model in ['yolov8_n', 'yolov8_s', 'yolov8_m', 'yolov8_l', 'yolov8_x']:
-        model, criterion = build_yolov8(
+    # YOLOv7-Plus
+    elif args.model in ['yolov7_plus_n', 'yolov7_plus_s', 'yolov7_plus_m', 'yolov7_plus_l', 'yolov7_plus_x']:
+        model, criterion = build_yolov7_plus(
             args, model_cfg, device, num_classes, trainable)
     # YOLOX   
     elif args.model == 'yolox':

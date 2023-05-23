@@ -2,16 +2,16 @@ import torch
 import torch.nn as nn
 
 try:
-    from .yolov8_basic import Conv, ELAN_CSP_Block
+    from .yolov7_plus_basic import Conv, ELAN_CSP_Block
 except:
-    from yolov8_basic import Conv, ELAN_CSP_Block
+    from yolov7_plus_basic import Conv, ELAN_CSP_Block
 
 
 # ---------------------------- ImageNet pretrained weights ----------------------------
 model_urls = {
     'elan_cspnet_nano': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_nano.pth",
-    'elan_cspnet_small': None,
-    'elan_cspnet_medium': None,
+    'elan_cspnet_small': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_small.pth",
+    'elan_cspnet_medium': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_medium.pth",
     'elan_cspnet_large': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_large.pth",
     'elan_cspnet_huge': None,
 }

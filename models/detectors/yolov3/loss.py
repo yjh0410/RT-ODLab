@@ -42,7 +42,7 @@ class Criterion(object):
         return loss_box, ious
 
 
-    def __call__(self, outputs, targets):
+    def __call__(self, outputs, targets, epoch=0):
         device = outputs['pred_cls'][0].device
         fpn_strides = outputs['strides']
         fmp_sizes = outputs['fmp_sizes']

@@ -41,7 +41,7 @@ class Criterion(object):
         return loss_box
 
 
-    def __call__(self, outputs, targets):
+    def __call__(self, outputs, targets, epoch=0):
         device = outputs['pred_cls'][0].device
         stride = outputs['stride']
         fmp_size = outputs['fmp_size']

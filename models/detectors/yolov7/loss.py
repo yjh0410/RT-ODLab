@@ -51,7 +51,7 @@ class Criterion(object):
         return loss_box
 
 
-    def __call__(self, outputs, targets):        
+    def __call__(self, outputs, targets, epoch=0):        
         """
             outputs['pred_obj']: List(Tensor) [B, M, 1]
             outputs['pred_cls']: List(Tensor) [B, M, C]
