@@ -18,7 +18,6 @@ class Criterion(object):
         self.device = device
         self.num_classes = num_classes
         self.warmup_epoch = warmup_epoch
-        self.warmup_stage = True
         # ------------------ Loss Parameters ------------------
         ## loss function
         self.cls_lossf = ClassificationLoss(cfg, reduction='none')
