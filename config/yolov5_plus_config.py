@@ -1,7 +1,7 @@
 # yolov8 config
 
-yolov7_plus_cfg = {
-    'yolov7_plus_n':{
+yolov5_plus_cfg = {
+    'yolov5_plus_n':{
         # input
         'trans_type': 'yolov5_tiny',
         'multi_scale': [0.5, 1.0],   # 320 -> 640
@@ -24,7 +24,7 @@ yolov7_plus_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: FPN
-        'fpn': 'yolov7_plus_pafpn',
+        'fpn': 'yolov5_plus_pafpn',
         'fpn_reduce_layer': 'Conv',
         'fpn_downsample_layer': 'Conv',
         'fpn_core_block': 'ELAN_CSPBlock',
@@ -73,7 +73,7 @@ yolov7_plus_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov7_plus_s':{
+    'yolov5_plus_s':{
         # input
         'trans_type': 'yolov5_small',
         'multi_scale': [0.5, 1.0],   # 320 -> 640
@@ -96,7 +96,7 @@ yolov7_plus_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         # Neck: FPN
-        'fpn': 'yolov7_plus_pafpn',
+        'fpn': 'yolov5_plus_pafpn',
         'fpn_reduce_layer': 'Conv',
         'fpn_downsample_layer': 'Conv',
         'fpn_core_block': 'ELAN_CSPBlock',
@@ -145,7 +145,7 @@ yolov7_plus_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov7_plus_m':{
+    'yolov5_plus_m':{
         # input
         'trans_type': 'yolov5_medium',
         'multi_scale': [0.5, 1.0],   # 320 -> 640
@@ -168,7 +168,7 @@ yolov7_plus_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         # Neck: FPN
-        'fpn': 'yolov7_plus_pafpn',
+        'fpn': 'yolov5_plus_pafpn',
         'fpn_reduce_layer': 'Conv',
         'fpn_downsample_layer': 'Conv',
         'fpn_core_block': 'ELAN_CSPBlock',
@@ -217,7 +217,7 @@ yolov7_plus_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov7_plus_l':{
+    'yolov5_plus_l':{
         # input
         'trans_type': 'yolov5_large',
         'multi_scale': [0.5, 1.0],   # 320 -> 640
@@ -240,7 +240,7 @@ yolov7_plus_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         # Neck: FPN
-        'fpn': 'yolov7_plus_pafpn',
+        'fpn': 'yolov5_plus_pafpn',
         'fpn_reduce_layer': 'Conv',
         'fpn_downsample_layer': 'Conv',
         'fpn_core_block': 'ELAN_CSPBlock',
@@ -289,14 +289,14 @@ yolov7_plus_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolov7_plus_x':{
+    'yolov5_plus_x':{
         # input
         'trans_type': 'yolov5_huge',
         'multi_scale': [0.5, 1.0],   # 320 -> 640
         # ----------------- Model config 
         # Backbone
         'backbone': 'elan_cspnet',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -312,7 +312,7 @@ yolov7_plus_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         # Neck: FPN
-        'fpn': 'yolov7_plus_pafpn',
+        'fpn': 'yolov5_plus_pafpn',
         'fpn_reduce_layer': 'Conv',
         'fpn_downsample_layer': 'Conv',
         'fpn_core_block': 'ELAN_CSPBlock',

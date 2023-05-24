@@ -194,12 +194,14 @@ class Criterion(object):
                                  'labels': [...], 
                                  'orig_size': ...}, ...]
         """
-        if epoch >= self.warmup_epoch:
-            print('Switch to Dynamic Label Assignment.')
-            self.warmup_stage = False
-
-        if self.warmup_stage:
+        # Fixed LA stage
+        if epoch < self.warmup_epoch:
             return self.fixed_assignment_loss(outputs, targets)
+        # Switch to Dynamic LA stage
+        elif epoch == self.warmup_epoch:
+            print('Switch to Dynamic Label Assignment.')
+            return self.dynamic_assignment_loss(outputs, targets)
+        # Dynamic LA stage
         else:
             return self.dynamic_assignment_loss(outputs, targets)
     

@@ -2,16 +2,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .yolov7_plus_backbone import build_backbone
-from .yolov7_plus_neck import build_neck
-from .yolov7_plus_pafpn import build_fpn
-from .yolov7_plus_head import build_head
+from .yolov5_plus_backbone import build_backbone
+from .yolov5_plus_neck import build_neck
+from .yolov5_plus_pafpn import build_fpn
+from .yolov5_plus_head import build_head
 
 from utils.misc import multiclass_nms
 
 
-# Anchor-free YOLO
-class YOLOv7_Plus(nn.Module):
+# Stronger YOLOv5
+class YOLOv5_Plus(nn.Module):
     def __init__(self, 
                  cfg,
                  device, 
@@ -20,7 +20,7 @@ class YOLOv7_Plus(nn.Module):
                  nms_thresh = 0.6,
                  trainable = False, 
                  topk = 1000):
-        super(YOLOv7_Plus, self).__init__()
+        super(YOLOv5_Plus, self).__init__()
         # --------- Basic Parameters ----------
         self.cfg = cfg
         self.device = device

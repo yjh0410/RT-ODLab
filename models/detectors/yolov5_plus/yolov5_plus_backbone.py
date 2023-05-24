@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 try:
-    from .yolov7_plus_basic import Conv, ELAN_CSP_Block
+    from .yolov5_plus_basic import Conv, ELAN_CSP_Block
 except:
-    from yolov7_plus_basic import Conv, ELAN_CSP_Block
+    from yolov5_plus_basic import Conv, ELAN_CSP_Block
 
 
 # ---------------------------- ImageNet pretrained weights ----------------------------

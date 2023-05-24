@@ -2,17 +2,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .yolov7_plus_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .yolov5_plus_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
 # YOLO-Style PaFPN
-class Yolov7PlusPaFPN(nn.Module):
+class Yolov5PlusPaFPN(nn.Module):
     def __init__(self, cfg, in_dims=[256, 512, 1024], out_dim=None):
-        super(Yolov7PlusPaFPN, self).__init__()
+        super(Yolov5PlusPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
         c3, c4, c5 = in_dims
         width = cfg['width']
+        ratio = cfg['ratio']
 
         # --------------------------- Network Parameters ---------------------------
         ## top dwon
@@ -31,19 +32,19 @@ class Yolov7PlusPaFPN(nn.Module):
 
         ### P4 -> P5
         self.downsample_layer_2 = build_downsample_layer(cfg, round(512*width), round(512*width))
-        self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*width) + round(512*width), round(1024*width))
+        self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*width) + round(512*width), round(512*width*ratio))
                 
         ## output proj layers
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
                 Conv(in_dim, out_dim, k=1,
                      act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-                     for in_dim in [round(256*width), round(512*width), round(1024*width)]
+                     for in_dim in [round(256*width), round(512*width), round(512*width*ratio)]
                      ])
             self.out_dim = [out_dim] * 3
         else:
             self.out_layers = None
-            self.out_dim = [round(256*width), round(512*width), round(1024*width)]
+            self.out_dim = [round(256*width), round(512*width), round(512*width*ratio)]
 
 
     def forward(self, features):
@@ -86,7 +87,7 @@ class Yolov7PlusPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
     # build pafpn
-    if model == 'yolov7_plus_pafpn':
-        fpn_net = Yolov7PlusPaFPN(cfg, in_dims, out_dim)
+    if model == 'yolov5_plus_pafpn':
+        fpn_net = Yolov5PlusPaFPN(cfg, in_dims, out_dim)
 
     return fpn_net
