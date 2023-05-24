@@ -18,6 +18,7 @@ class Criterion(object):
         self.device = device
         self.num_classes = num_classes
         self.warmup_epoch = warmup_epoch
+        self.warmup_stage = True
         # ------------------ Loss Parameters ------------------
         ## loss function
         self.cls_lossf = ClassificationLoss(cfg, reduction='none')
@@ -197,11 +198,10 @@ class Criterion(object):
         if epoch < self.warmup_epoch:
             return self.fixed_assignment_loss(outputs, targets)
         # Switch to Dynamic LA stage
-        elif epoch == self.warmup_epoch:
-            print('Switch to Dynamic Label Assignment.')
-            return self.dynamic_assignment_loss(outputs, targets)
-        # Dynamic LA stage
-        else:
+        elif epoch >= self.warmup_epoch:
+            if self.warmup_stage:
+                print('Switch to Dynamic Label Assignment.')
+                self.warmup_stage = False
             return self.dynamic_assignment_loss(outputs, targets)
     
 
