@@ -337,13 +337,13 @@ python track.py --mode camera \
 ### Tracking visualization
 * Detector: YOLOv2
 * Tracker: ByteTracker
+* Device: i5-12500H CPU
 
 Command：
 
 ```Shell
 python track.py --mode video \
                 --path_to_img ./dataset/demo/videos/000006.mp4 \
-                --cuda \
                 -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \

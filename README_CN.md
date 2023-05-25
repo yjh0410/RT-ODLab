@@ -342,13 +342,13 @@ python track.py --mode camera \
 ### 多目标跟踪的例子
 * Detector: YOLOv2
 * Tracker: ByteTracker
+* Device: i5-12500H CPU
 
 运行命令如下：
 
 ```Shell
 python track.py --mode video \
                 --path_to_img ./dataset/demo/videos/000006.mp4 \
-                --cuda \
                 -size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
