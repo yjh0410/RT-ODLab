@@ -5,7 +5,6 @@ from .yolov3_config import yolov3_cfg
 from .yolov4_config import yolov4_cfg
 from .yolov5_config import yolov5_cfg
 from .yolov7_config import yolov7_cfg
-from .yolov5_plus_config import yolov5_plus_cfg
 from .yolox_config import yolox_cfg
 
 
@@ -27,15 +26,12 @@ def build_model_config(args):
     # YOLOv5
     elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
         cfg = yolov5_cfg[args.model]
-    # YOLOv5-Plus
-    elif args.model in ['yolov5_plus_n', 'yolov5_plus_s', 'yolov5_plus_m', 'yolov5_plus_l', 'yolov5_plus_x']:
-        cfg = yolov5_plus_cfg[args.model]
     # YOLOv7
     elif args.model in ['yolov7_t', 'yolov7_l', 'yolov7_x']:
         cfg = yolov7_cfg[args.model]
     # YOLOX
-    elif args.model == 'yolox':
-        cfg = yolox_cfg
+    elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
+        cfg = yolox_cfg[args.model]
 
     return cfg
 

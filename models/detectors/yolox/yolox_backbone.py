@@ -9,7 +9,11 @@ except:
     from yolox_neck import SPPF
 
 model_urls = {
+    "cspdarknet_nano": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_nano.pth",
+    "cspdarknet_small": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_small.pth",
+    "cspdarknet_medium": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_medium.pth",
     "cspdarknet_large": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_large.pth",
+    "cspdarknet_huge": None,
 }
 
 # CSPDarkNet
@@ -42,7 +46,7 @@ class CSPDarkNet(nn.Module):
         # P5
         self.layer_5 = nn.Sequential(
             Conv(int(512*width), int(1024*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise),
-            SPPF(int(1024*width), int(1024*width), expand_ratio=0.5, act_type=act_type, norm_type=norm_type),
+            SPPF(int(1024*width), int(1024*width), expand_ratio=0.5),
             CSPBlock(int(1024*width), int(1024*width), expand_ratio=0.5, nblocks=int(3*depth),
                      shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         )
@@ -61,6 +65,37 @@ class CSPDarkNet(nn.Module):
 
 
 # ---------------------------- Functions ----------------------------
+## load pretrained weight
+def load_weight(model, model_name):
+    # load weight
+    print('Loading pretrained weight ...')
+    url = model_urls[model_name]
+    if url is not None:
+        checkpoint = torch.hub.load_state_dict_from_url(
+            url=url, map_location="cpu", check_hash=True)
+        # checkpoint state dict
+        checkpoint_state_dict = checkpoint.pop("model")
+        # model state dict
+        model_state_dict = model.state_dict()
+        # check
+        for k in list(checkpoint_state_dict.keys()):
+            if k in model_state_dict:
+                shape_model = tuple(model_state_dict[k].shape)
+                shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
+                if shape_model != shape_checkpoint:
+                    checkpoint_state_dict.pop(k)
+            else:
+                checkpoint_state_dict.pop(k)
+                print(k)
+
+        model.load_state_dict(checkpoint_state_dict)
+    else:
+        print('No pretrained for {}'.format(model_name))
+
+    return model
+
+
+## build CSPDarkNet
 def build_backbone(cfg, pretrained=False): 
     """Constructs a darknet-53 model.
     Args:
@@ -69,31 +104,18 @@ def build_backbone(cfg, pretrained=False):
     backbone = CSPDarkNet(cfg['depth'], cfg['width'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_dpw'])
     feat_dims = backbone.feat_dims
 
+    # check whether to load imagenet pretrained weight
     if pretrained:
-        if cfg['width'] == 1.0 and cfg['depth'] == 1.0:
-            url = model_urls['cspdarknet_large']
-        if url is not None:
-            print('Loading pretrained weight ...')
-            checkpoint = torch.hub.load_state_dict_from_url(
-                url=url, map_location="cpu", check_hash=True)
-            # checkpoint state dict
-            checkpoint_state_dict = checkpoint.pop("model")
-            # model state dict
-            model_state_dict = backbone.state_dict()
-            # check
-            for k in list(checkpoint_state_dict.keys()):
-                if k in model_state_dict:
-                    shape_model = tuple(model_state_dict[k].shape)
-                    shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
-                    if shape_model != shape_checkpoint:
-                        checkpoint_state_dict.pop(k)
-                else:
-                    checkpoint_state_dict.pop(k)
-                    print(k)
-
-            backbone.load_state_dict(checkpoint_state_dict)
-        else:
-            print('No backbone pretrained: CSPDarkNet53')        
+        if cfg['width'] == 0.25 and cfg['depth'] == 0.34:
+            backbone = load_weight(backbone, model_name='cspdarknet_nano')
+        elif cfg['width'] == 0.5 and cfg['depth'] == 0.34:
+            backbone = load_weight(backbone, model_name='cspdarknet_small')
+        elif cfg['width'] == 0.75 and cfg['depth'] == 0.67:
+            backbone = load_weight(backbone, model_name='cspdarknet_medium')
+        elif cfg['width'] == 1.0 and cfg['depth'] == 1.0:
+            backbone = load_weight(backbone, model_name='cspdarknet_large')
+        elif cfg['width'] == 1.25 and cfg['depth'] == 1.34:
+            backbone = load_weight(backbone, model_name='cspdarknet_huge')
 
     return backbone, feat_dims
 
