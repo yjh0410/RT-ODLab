@@ -31,7 +31,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolov5_tiny',
+        'trans_type': 'yolox_tiny',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -43,10 +43,10 @@ yolox_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
-        'momentum': 0.937,         # SGD: 0.937;    AdamW: None
+        'momentum': 0.9,           # SGD: 0.9;    AdamW: None
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         ## model EMA
@@ -89,7 +89,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolov5_small',
+        'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -101,10 +101,10 @@ yolox_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
-        'momentum': 0.937,         # SGD: 0.937;    AdamW: None
+        'momentum': 0.9,           # SGD: 0.9;    AdamW: None
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         ## model EMA
@@ -147,7 +147,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolov5_medium',
+        'trans_type': 'yolox_medium',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -159,10 +159,10 @@ yolox_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
-        'momentum': 0.937,         # SGD: 0.937;    AdamW: None
+        'momentum': 0.9,           # SGD: 0.9;    AdamW: None
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         ## model EMA
@@ -205,7 +205,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolov5_large',
+        'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -217,10 +217,10 @@ yolox_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
-        'momentum': 0.937,         # SGD: 0.937;    AdamW: None
+        'momentum': 0.9,           # SGD: 0.9;    AdamW: None
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         ## model EMA
@@ -263,7 +263,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolov5_huge',
+        'trans_type': 'yolox_huge',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -275,10 +275,10 @@ yolox_cfg = {
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
-        'no_aug_epoch': 10,
+        'no_aug_epoch': 20,
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
-        'momentum': 0.937,         # SGD: 0.937;    AdamW: None
+        'momentum': 0.9,           # SGD: 0.9;    AdamW: None
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         ## model EMA

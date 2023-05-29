@@ -44,6 +44,12 @@ from .transform_config import (
     yolov5_medium_trans_config,
     yolov5_large_trans_config,
     yolov5_huge_trans_config,
+    yolox_nano_trans_config,
+    yolox_tiny_trans_config,
+    yolox_small_trans_config,
+    yolox_medium_trans_config,
+    yolox_large_trans_config,
+    yolox_huge_trans_config,
     ssd_trans_config
 )
 
@@ -67,5 +73,19 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolov5_large_trans_config
     elif trans_config == 'yolov5_huge':
         cfg = yolov5_huge_trans_config
+        
+    # YOLOX-style transform 
+    elif trans_config == 'yolox_nano':
+        cfg = yolox_nano_trans_config
+    elif trans_config == 'yolox_tiny':
+        cfg = yolox_tiny_trans_config
+    elif trans_config == 'yolox_small':
+        cfg = yolox_small_trans_config
+    elif trans_config == 'yolox_medium':
+        cfg = yolox_medium_trans_config
+    elif trans_config == 'yolox_large':
+        cfg = yolox_large_trans_config
+    elif trans_config == 'yolox_huge':
+        cfg = yolox_huge_trans_config
         
     return cfg
