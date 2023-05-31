@@ -28,19 +28,18 @@ class COCOAPIEvaluator():
             nmsthre (float):
                 IoU threshold of non-max supression ranging from 0 to 1.
         """
-        self.testset = testset
-        if self.testset:
-            image_set = 'test2017'
-        else:
-            image_set = 'val2017'
-
-        self.dataset = COCODataset(data_dir=data_dir, image_set=image_set, is_train=False)
+        # ----------------- Basic parameters -----------------
+        self.image_set = 'test2017' if testset else 'val2017'
         self.transform = transform
         self.device = device
-
+        self.testset = testset
+        # ----------------- Metrics -----------------
         self.map = 0.
         self.ap50_95 = 0.
         self.ap50 = 0.
+        # ----------------- Dataset -----------------
+        self.dataset = COCODataset(data_dir=data_dir, image_set=self.image_set)
+
 
     @torch.no_grad()
     def evaluate(self, model):

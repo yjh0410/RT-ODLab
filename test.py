@@ -7,15 +7,14 @@ from copy import deepcopy
 import torch
 
 # load transform
-from dataset.data_augment import build_transform
+from dataset.build import build_dataset, build_transform
 
 # load some utils
-from utils.misc import build_dataset, load_weight
-from utils.misc import compute_flops
+from utils.misc import load_weight, compute_flops
 from utils.box_ops import rescale_bboxes
 
+from config import build_dataset_config, build_model_config, build_trans_config
 from models.detectors import build_model
-from config import build_model_config, build_trans_config
 
 
 def parse_args():
@@ -175,13 +174,18 @@ if __name__ == '__main__':
     else:
         device = torch.device("cpu")
 
-    # config
+    # Dataset & Model Config
+    data_cfg = build_dataset_config(args)
     model_cfg = build_model_config(args)
     trans_cfg = build_trans_config(model_cfg['trans_type'])
 
-    # dataset and evaluator
-    dataset, dataset_info, evaluator = build_dataset(args, trans_cfg, device, is_train=False)
-    num_classes, class_names, class_indexs = dataset_info
+    # Transform
+    val_transform, trans_cfg = build_transform(
+        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
+
+    # Dataset
+    dataset, dataset_info = build_dataset(args, data_cfg, trans_cfg, val_transform, is_train=False)
+    num_classes = dataset_info['num_classes']
 
     np.random.seed(0)
     class_colors = [(np.random.randint(255),
@@ -205,17 +209,14 @@ if __name__ == '__main__':
         device=device)
     del model_copy
 
-    # transform
-    transform = build_transform(args.img_size, trans_cfg, is_train=False)
-
     print("================= DETECT =================")
     # run
     test(args=args,
          model=model, 
          device=device, 
          dataset=dataset,
-         transform=transform,
+         transform=val_transform,
          class_colors=class_colors,
-         class_names=class_names,
-         class_indexs=class_indexs
+         class_names=dataset_info['class_names'],
+         class_indexs=dataset_info['class_indexs'],
          )

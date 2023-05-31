@@ -12,6 +12,7 @@ yolov7_cfg = {
         'bk_norm': 'BN',
         'bk_dpw': False,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         # neck
         'neck': 'csp_sppf',
         'expand_ratio': 0.5,
@@ -70,6 +71,7 @@ yolov7_cfg = {
         'bk_norm': 'BN',
         'bk_dpw': False,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         # neck
         'neck': 'csp_sppf',
         'expand_ratio': 0.5,
@@ -128,6 +130,7 @@ yolov7_cfg = {
         'bk_norm': 'BN',
         'bk_dpw': False,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         # neck
         'neck': 'csp_sppf',
         'expand_ratio': 0.5,

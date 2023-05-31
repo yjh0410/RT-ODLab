@@ -9,15 +9,14 @@ from evaluator.coco_evaluator import COCOAPIEvaluator
 from evaluator.ourdataset_evaluator import OurDatasetEvaluator
 
 # load transform
-from dataset.ourdataset import our_class_labels
-from dataset.data_augment import build_transform
+from dataset.build import build_transform
 
 # load some utils
 from utils.misc import load_weight
 from utils.misc import compute_flops
 
+from config import build_dataset_config, build_model_config, build_trans_config
 from models.detectors import build_model
-from config import build_model_config, build_trans_config
 
 
 def parse_args():
@@ -49,6 +48,11 @@ def parse_args():
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc.')
+    parser.add_argument('--mosaic', default=None, type=float,
+                        help='mosaic augmentation.')
+    parser.add_argument('--mixup', default=None, type=float,
+                        help='mixup augmentation.')
+
     # TTA
     parser.add_argument('-tta', '--test_aug', action='store_true', default=False,
                         help='use test augmentation.')
@@ -109,30 +113,13 @@ if __name__ == '__main__':
     else:
         device = torch.device("cpu")
 
-    # dataset
-    if args.dataset == 'voc':
-        print('eval on voc ...')
-        num_classes = 20
-        data_dir = os.path.join(args.root, 'VOCdevkit')
-    elif args.dataset == 'coco-val':
-        print('eval on coco-val ...')
-        num_classes = 80
-        data_dir = os.path.join(args.root, 'COCO')
-    elif args.dataset == 'coco-test':
-        print('eval on coco-test-dev ...')
-        num_classes = 80
-        data_dir = os.path.join(args.root, 'COCO')
-    elif args.dataset == 'ourdataset':
-        print('eval on crowdhuman ...')
-        num_classes = len(our_class_labels)
-        data_dir = os.path.join(args.root, 'OurDataset')
-    else:
-        print('unknow dataset !! we only support voc, coco-val, coco-test !!!')
-        exit(0)
-
-    # config
+    # Dataset & Model Config
+    data_cfg = build_dataset_config(args)
     model_cfg = build_model_config(args)
     trans_cfg = build_trans_config(model_cfg['trans_type'])
+    
+    data_dir = os.path.join(args.root, data_cfg['data_name'])
+    num_classes = data_cfg['num_classes']
 
     # build model
     model = build_model(args, model_cfg, device, num_classes, False)
@@ -152,15 +139,16 @@ if __name__ == '__main__':
     del model_copy
 
     # transform
-    transform = build_transform(args.img_size, trans_cfg, is_train=False)
+    val_transform, trans_cfg = build_transform(
+        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
 
     # evaluation
     with torch.no_grad():
         if args.dataset == 'voc':
-            voc_test(model, data_dir, device, transform)
+            voc_test(model, data_dir, device, val_transform)
         elif args.dataset == 'coco-val':
-            coco_test(model, data_dir, device, transform, test=False)
+            coco_test(model, data_dir, device, val_transform, test=False)
         elif args.dataset == 'coco-test':
-            coco_test(model, data_dir, device, transform, test=True)
+            coco_test(model, data_dir, device, val_transform, test=True)
         elif args.dataset == 'ourdataset':
-            our_test(model, data_dir, device, transform)
+            our_test(model, data_dir, device, val_transform)

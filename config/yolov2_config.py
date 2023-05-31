@@ -8,6 +8,7 @@ yolov2_cfg = {
     'backbone': 'darknet19',
     'pretrained': True,
     'stride': 32,  # P5
+    'max_stride': 32,
     # neck
     'neck': 'sppf',
     'expand_ratio': 0.5,

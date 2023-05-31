@@ -1,3 +1,19 @@
+# ------------------------ Dataset Config ------------------------
+from .dataset_config import dataset_cfg
+
+
+def build_dataset_config(args):
+    if args.dataset in ['coco', 'coco-val', 'coco-test']:
+        cfg = dataset_cfg['coco']
+    else:
+        cfg = dataset_cfg[args.dataset]
+
+    print('==============================')
+    print('Dataset Config: {} \n'.format(cfg))
+
+    return cfg
+
+
 # ------------------ Model Config ----------------------
 from .yolov1_config import yolov1_cfg
 from .yolov2_config import yolov2_cfg

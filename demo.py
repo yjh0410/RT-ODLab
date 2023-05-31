@@ -8,7 +8,7 @@ import imageio
 import torch
 
 # load transform
-from dataset.data_augment import build_transform
+from dataset.build import build_transform
 
 # load some utils
 from utils.misc import load_weight
@@ -26,6 +26,10 @@ def parse_args():
     # basic
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')
+    parser.add_argument('--mosaic', default=None, type=float,
+                        help='mosaic augmentation.')
+    parser.add_argument('--mixup', default=None, type=float,
+                        help='mixup augmentation.')
     parser.add_argument('--mode', default='image',
                         type=str, help='Use the data from image, video or camera')
     parser.add_argument('--cuda', action='store_true', default=False,
@@ -271,14 +275,15 @@ def run():
     model.to(device).eval()
 
     # transform
-    transform = build_transform(args.img_size, trans_cfg, is_train=False)
+    val_transform, trans_cfg = build_transform(
+        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
 
     print("================= DETECT =================")
     # run
     detect(args=args,
            model=model, 
             device=device,
-            transform=transform,
+            transform=val_transform,
             mode=args.mode,
             vis_thresh=args.vis_thresh)
 

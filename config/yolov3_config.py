@@ -9,6 +9,7 @@ yolov3_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'width': 1.0,
         'depth': 1.0,
+        'max_stride': 32,
         ## Neck
         'neck': 'sppf',
         'expand_ratio': 0.5,
@@ -70,6 +71,7 @@ yolov3_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'width': 0.25,
         'depth': 0.34,
+        'max_stride': 32,
         ## Neck
         'neck': 'sppf',
         'expand_ratio': 0.5,

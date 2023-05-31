@@ -4,19 +4,31 @@ import os
 import argparse
 from copy import deepcopy
 
+# ----------------- Torch Components -----------------
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+# ----------------- Extra Components -----------------
 from utils import distributed_utils
 from utils.misc import compute_flops
 from utils.misc import ModelEMA, CollateFunc, build_dataset, build_dataloader
+
+# ----------------- Evaluator Components -----------------
+from evaluator.build import build_evluator
+
+# ----------------- Optimizer & LrScheduler Components -----------------
 from utils.solver.optimizer import build_optimizer
 from utils.solver.lr_scheduler import build_lr_scheduler
 
 from engine import train_one_epoch, val_one_epoch
+# ----------------- Config Components -----------------
+from config import build_dataset_config, build_model_config, build_trans_config
 
-from config import build_model_config, build_trans_config
+# ----------------- Dataset Components -----------------
+from dataset.build import build_dataset, build_transform
+
+# ----------------- Model Components -----------------
 from models.detectors import build_model
 
 
@@ -124,23 +136,32 @@ def train():
     else:
         device = torch.device("cpu")
 
-    # config
+    # Dataset & Model & Trans Config
+    data_cfg = build_dataset_config(args)
     model_cfg = build_model_config(args)
     trans_cfg = build_trans_config(model_cfg['trans_type'])
 
-    # dataset and evaluator
-    dataset, dataset_info, evaluator = build_dataset(args, trans_cfg, device, is_train=True)
-    num_classes = dataset_info[0]
+    # Transform
+    train_transform, trans_config = build_transform(
+        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=True)
+    val_transform, _ = build_transform(
+        args=args, max_stride=model_cfg['max_stride'], is_train=False)
 
-    # dataloader
+    # Dataset
+    dataset, dataset_info = build_dataset(args, data_cfg, trans_config, train_transform, is_train=True)
+
+    # Dataloader
     dataloader = build_dataloader(args, dataset, per_gpu_batch, CollateFunc())
 
-    # build model
+    # Evaluator
+    evaluator = build_evluator(args, data_cfg, val_transform, device)
+
+    # Build model
     model, criterion = build_model(
         args=args, 
         model_cfg=model_cfg,
         device=device,
-        num_classes=num_classes,
+        num_classes=dataset_info['num_classes'],
         trainable=True,
         )
     model = model.to(device).train()

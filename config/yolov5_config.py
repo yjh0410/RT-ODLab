@@ -12,6 +12,7 @@ yolov5_cfg = {
         'width': 0.25,
         'depth': 0.34,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         ## FPN
         'fpn': 'yolov5_pafpn',
         'fpn_reduce_layer': 'Conv',
@@ -72,6 +73,7 @@ yolov5_cfg = {
         'width': 0.50,
         'depth': 0.34,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         ## FPN
         'fpn': 'yolov5_pafpn',
         'fpn_reduce_layer': 'Conv',
@@ -132,6 +134,7 @@ yolov5_cfg = {
         'width': 0.75,
         'depth': 0.67,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         ## FPN
         'fpn': 'yolov5_pafpn',
         'fpn_reduce_layer': 'Conv',
@@ -192,6 +195,7 @@ yolov5_cfg = {
         'width': 1.0,
         'depth': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         ## FPN
         'fpn': 'yolov5_pafpn',
         'fpn_reduce_layer': 'Conv',
@@ -252,6 +256,7 @@ yolov5_cfg = {
         'width': 1.25,
         'depth': 1.34,
         'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
         ## FPN
         'fpn': 'yolov5_pafpn',
         'fpn_reduce_layer': 'Conv',

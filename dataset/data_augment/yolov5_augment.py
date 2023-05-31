@@ -302,12 +302,10 @@ def yolox_mixup_augment(origin_img, origin_target, new_img, new_target, img_size
 # YOLOv5-style TrainTransform
 class YOLOv5Augmentation(object):
     def __init__(self, 
-                 trans_config=None,
-                 img_size=640, 
-                 min_box_size=8):
+                 img_size=640,
+                 trans_config=None):
         self.trans_config = trans_config
         self.img_size = img_size
-        self.min_box_size = min_box_size
 
 
     def __call__(self, image, target, mosaic=False):

@@ -28,14 +28,17 @@ class OurDatasetEvaluator():
             nmsthre (float):
                 IoU threshold of non-max supression ranging from 0 to 1.
         """
-        self.dataset = OurDataset(data_dir=data_dir, image_set=image_set, is_train=False)
+        # ----------------- Basic parameters -----------------
         self.image_set = image_set
         self.transform = transform
         self.device = device
-
+        # ----------------- Metrics -----------------
         self.map = 0.
         self.ap50_95 = 0.
         self.ap50 = 0.
+        # ----------------- Dataset -----------------
+        self.dataset = OurDataset(data_dir=data_dir, image_set=image_set)
+
 
     @torch.no_grad()
     def evaluate(self, model):
