@@ -64,16 +64,17 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
 # ------------------------------ Transform ------------------------------
 def build_transform(args, trans_config, max_stride=32, is_train=False):
     # Modify trans_config
-    ## mosaic prob.
-    if args.mosaic is not None:
-        trans_config['mosaic_prob']=args.mosaic if is_train else 0.0
-    else:
-        trans_config['mosaic_prob']=trans_config['mosaic_prob'] if is_train else 0.0
-    ## mixup prob.
-    if args.mixup is not None:
-        trans_config['mixup_prob']=args.mixup if is_train else 0.0
-    else:
-        trans_config['mixup_prob']=trans_config['mixup_prob']  if is_train else 0.0
+    if is_train:
+        ## mosaic prob.
+        if args.mosaic is not None:
+            trans_config['mosaic_prob']=args.mosaic if is_train else 0.0
+        else:
+            trans_config['mosaic_prob']=trans_config['mosaic_prob'] if is_train else 0.0
+        ## mixup prob.
+        if args.mixup is not None:
+            trans_config['mixup_prob']=args.mixup if is_train else 0.0
+        else:
+            trans_config['mixup_prob']=trans_config['mixup_prob']  if is_train else 0.0
 
     # Transform
     if trans_config['aug_type'] == 'ssd':

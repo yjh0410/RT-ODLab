@@ -12,7 +12,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 # ----------------- Extra Components -----------------
 from utils import distributed_utils
 from utils.misc import compute_flops
-from utils.misc import ModelEMA, CollateFunc, build_dataset, build_dataloader
+from utils.misc import ModelEMA, CollateFunc, build_dataloader
 
 # ----------------- Evaluator Components -----------------
 from evaluator.build import build_evluator
@@ -145,7 +145,7 @@ def train():
     train_transform, trans_config = build_transform(
         args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=True)
     val_transform, _ = build_transform(
-        args=args, max_stride=model_cfg['max_stride'], is_train=False)
+        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
 
     # Dataset
     dataset, dataset_info = build_dataset(args, data_cfg, trans_config, train_transform, is_train=True)

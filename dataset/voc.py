@@ -13,10 +13,8 @@ import numpy as np
 import xml.etree.ElementTree as ET
 
 try:
-    from .data_augment import build_transform
     from .data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 except:
-    from data_augment import build_transform
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
 
@@ -246,7 +244,7 @@ class VOCDetection(data.Dataset):
 
 if __name__ == "__main__":
     import argparse
-    from data_augment import build_transform
+    from build import build_transform
     
     parser = argparse.ArgumentParser(description='VOC-Dataset')
 

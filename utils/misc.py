@@ -3,111 +3,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, DistributedSampler
 
-import os
 import cv2
 import math
 import numpy as np
 from copy import deepcopy
 from thop import profile
 
-from evaluator.coco_evaluator import COCOAPIEvaluator
-from evaluator.voc_evaluator import VOCAPIEvaluator
-from evaluator.ourdataset_evaluator import OurDatasetEvaluator
-
-from dataset.voc import VOCDetection, VOC_CLASSES
-from dataset.coco import COCODataset, coco_class_index, coco_class_labels
-from dataset.ourdataset import OurDataset, our_class_labels
-from dataset.data_augment import build_transform
-
 
 # ---------------------------- For Dataset ----------------------------
-## build dataset
-def build_dataset(args, trans_config, device, is_train=False):
-    # transform
-    print('==============================')
-    print('Transform Config: {}'.format(trans_config))
-    train_transform = build_transform(args.img_size, trans_config, True)
-    val_transform = build_transform(args.img_size, trans_config, False)
-
-    # dataset
-    if args.dataset == 'voc':
-        data_dir = os.path.join(args.root, 'VOCdevkit')
-        num_classes = 20
-        class_names = VOC_CLASSES
-        class_indexs = None
-
-        # dataset
-        dataset = VOCDetection(
-            img_size=args.img_size,
-            data_dir=data_dir,
-            image_sets=[('2007', 'trainval'), ('2012', 'trainval')] if is_train else [('2007', 'test')],
-            transform=train_transform,
-            trans_config=trans_config,
-            is_train=is_train
-            )
-        
-        # evaluator
-        evaluator = VOCAPIEvaluator(
-            data_dir=data_dir,
-            device=device,  
-            transform=val_transform
-            )
-
-    elif args.dataset == 'coco':
-        data_dir = os.path.join(args.root, 'COCO')
-        num_classes = 80
-        class_names = coco_class_labels
-        class_indexs = coco_class_index
-
-        # dataset
-        dataset = COCODataset(
-            img_size=args.img_size,
-            data_dir=data_dir,
-            image_set='train2017' if is_train else 'val2017',
-            transform=train_transform,
-            trans_config=trans_config,
-            is_train=is_train
-            )
-        # evaluator
-        evaluator = COCOAPIEvaluator(
-            data_dir=data_dir,
-            device=device,
-            transform=val_transform
-            )
-
-    elif args.dataset == 'ourdataset':
-        data_dir = os.path.join(args.root, 'OurDataset')
-        class_names = our_class_labels
-        num_classes = len(our_class_labels)
-        class_indexs = None
-
-        # dataset
-        dataset = OurDataset(
-            data_dir=data_dir,
-            img_size=args.img_size,
-            image_set='train' if is_train else 'val',
-            transform=train_transform,
-            trans_config=trans_config,
-            is_train=is_train
-            )
-        # evaluator
-        evaluator = OurDatasetEvaluator(
-            data_dir=data_dir,
-            device=device,
-            image_set='val',
-            transform=val_transform
-        )
-
-    else:
-        print('unknow dataset !! Only support voc, coco !!')
-        exit(0)
-
-    print('==============================')
-    print('Training model on:', args.dataset)
-    print('The dataset size:', len(dataset))
-
-    return dataset, (num_classes, class_names, class_indexs), evaluator
-
 ## build dataloader
 def build_dataloader(args, dataset, batch_size, collate_fn=None):
     # distributed

@@ -12,10 +12,8 @@ except:
     print("It seems that the COCOAPI is not installed.")
 
 try:
-    from .data_augment import build_transform
     from .data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 except:
-    from data_augment import build_transform
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
 # please define our class labels
@@ -191,8 +189,7 @@ class OurDataset(Dataset):
 if __name__ == "__main__":
     import argparse
     import sys
-    from data_augment import build_transform
-    sys.path.append('.')
+    from build import build_transform
     
     parser = argparse.ArgumentParser(description='Our-Dataset')
 
