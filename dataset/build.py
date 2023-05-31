@@ -8,13 +8,12 @@ try:
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
 except:
-    import sys
-    sys.path.append('.')
     from voc import VOCDetection
     from coco import COCODataset
     from ourdataset import OurDataset
     from data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
+
 
 # ------------------------------ Dataset ------------------------------
 def build_dataset(args, data_cfg, trans_config, transform, is_train=False):

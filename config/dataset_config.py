@@ -1,5 +1,4 @@
 # Dataset config
-import os
 
 dataset_cfg = {
     'voc': {
