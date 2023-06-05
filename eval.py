@@ -139,8 +139,7 @@ if __name__ == '__main__':
     del model_copy
 
     # transform
-    val_transform, trans_cfg = build_transform(
-        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
+    val_transform, trans_cfg = build_transform(args, trans_cfg, model_cfg['max_stride'], is_train=False)
 
     # evaluation
     with torch.no_grad():

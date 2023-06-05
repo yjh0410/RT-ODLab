@@ -275,8 +275,7 @@ def run():
     model.to(device).eval()
 
     # transform
-    val_transform, trans_cfg = build_transform(
-        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
+    val_transform, trans_cfg = build_transform(args, trans_cfg, model_cfg['max_stride'], is_train=False)
 
     print("================= DETECT =================")
     # run

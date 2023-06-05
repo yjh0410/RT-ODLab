@@ -180,8 +180,7 @@ if __name__ == '__main__':
     trans_cfg = build_trans_config(model_cfg['trans_type'])
 
     # Transform
-    val_transform, trans_cfg = build_transform(
-        args=args, trans_config=trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
+    val_transform, trans_cfg = build_transform(args, trans_cfg, model_cfg['max_stride'], is_train=False)
 
     # Dataset
     dataset, dataset_info = build_dataset(args, data_cfg, trans_cfg, val_transform, is_train=False)
