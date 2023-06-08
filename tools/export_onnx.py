@@ -41,8 +41,6 @@ def make_parser():
     parser.add_argument("-expn", "--experiment-name", type=str, default=None)
     parser.add_argument("opts", default=None, nargs=argparse.REMAINDER,
                         help="Modify config options using the command-line")
-    parser.add_argument("--decode_in_inference", action="store_true", default=False,
-                        help="decode in inference or not")
     parser.add_argument('--save_dir', default='../weights/onnx/', type=str,
                         help='Dir to save onnx file')
 
