@@ -9,7 +9,7 @@ from .yolox import YOLOX
 
 
 # build object detector
-def build_yolox(args, cfg, device, num_classes=80, trainable=False):
+def build_yolox(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
     
@@ -25,6 +25,7 @@ def build_yolox(args, cfg, device, num_classes=80, trainable=False):
         conf_thresh=args.conf_thresh,
         nms_thresh=args.nms_thresh,
         topk=args.topk,
+        deploy=deploy
         )
 
     # -------------- Initialize YOLO --------------

@@ -18,7 +18,8 @@ class YOLOv4(nn.Module):
                  conf_thresh=0.01,
                  nms_thresh=0.5,
                  topk=100,
-                 trainable=False):
+                 trainable=False,
+                 deploy=False):
         super(YOLOv4, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
@@ -29,12 +30,13 @@ class YOLOv4(nn.Module):
         self.nms_thresh = nms_thresh                   # NMS阈值
         self.topk = topk                               # topk
         self.stride = [8, 16, 32]                      # 网络的输出步长
+        self.deploy = deploy
         # ------------------- Anchor box -------------------
         self.num_levels = 3
         self.num_anchors = len(cfg['anchor_size']) // self.num_levels
         self.anchor_size = torch.as_tensor(
             cfg['anchor_size']
-            ).view(self.num_levels, self.num_anchors, 2) # [S, A, 2]
+            ).float().view(self.num_levels, self.num_anchors, 2) # [S, A, 2]
         
         # ------------------- Network Structure -------------------
         ## 主干网络
@@ -196,11 +198,22 @@ class YOLOv4(nn.Module):
             all_box_preds.append(box_pred)
             all_anchors.append(anchors)
 
-        # post process
-        bboxes, scores, labels = self.post_process(
-            all_obj_preds, all_cls_preds, all_box_preds)
+        if self.deploy:
+            obj_preds = torch.cat(all_obj_preds, dim=0)
+            cls_preds = torch.cat(all_cls_preds, dim=0)
+            box_preds = torch.cat(all_box_preds, dim=0)
+            scores = torch.sqrt(obj_preds.sigmoid() * cls_preds.sigmoid())
+            bboxes = box_preds
+            # [n_anchors_all, 4 + C]
+            outputs = torch.cat([bboxes, scores], dim=-1)
+
+            return outputs
+        else:
+            # post process
+            bboxes, scores, labels = self.post_process(
+                all_obj_preds, all_cls_preds, all_box_preds)
         
-        return bboxes, scores, labels
+            return bboxes, scores, labels
 
 
     # ---------------------- Main Process for Training ----------------------

@@ -18,7 +18,8 @@ class YOLOv2(nn.Module):
                  conf_thresh=0.01,
                  nms_thresh=0.5,
                  topk=100,
-                 trainable=False):
+                 trainable=False,
+                 deploy=False):
         super(YOLOv2, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
@@ -29,8 +30,9 @@ class YOLOv2(nn.Module):
         self.nms_thresh = nms_thresh                   # NMS阈值
         self.topk = topk                               # topk
         self.stride = 32                               # 网络的最大步长
+        self.deploy = deploy
         # ------------------- Anchor box -------------------
-        self.anchor_size = torch.as_tensor(cfg['anchor_size']).view(-1, 2) # [A, 2]
+        self.anchor_size = torch.as_tensor(cfg['anchor_size']).float().view(-1, 2) # [A, 2]
         self.num_anchors = self.anchor_size.shape[0]
         
         # ------------------- Network Structure -------------------
@@ -179,11 +181,19 @@ class YOLOv2(nn.Module):
         cls_pred = cls_pred[0]       # [H*W*A, NC]
         reg_pred = reg_pred[0]       # [H*W*A, 4]
 
-        # post process
-        bboxes, scores, labels = self.postprocess(
-            obj_pred, cls_pred, reg_pred, anchors)
+        if self.deploy:
+            scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid())
+            bboxes = self.decode_boxes(anchors, reg_pred)
+            # [n_anchors_all, 4 + C]
+            outputs = torch.cat([bboxes, scores], dim=-1)
 
-        return bboxes, scores, labels
+            return outputs
+        else:
+            # post process
+            bboxes, scores, labels = self.postprocess(
+                obj_pred, cls_pred, reg_pred, anchors)
+
+            return bboxes, scores, labels
 
 
     def forward(self, x):

@@ -18,7 +18,8 @@ class YOLOv1(nn.Module):
                  num_classes=20,
                  conf_thresh=0.01,
                  nms_thresh=0.5,
-                 trainable=False):
+                 trainable=False,
+                 deploy=False):
         super(YOLOv1, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
@@ -29,6 +30,7 @@ class YOLOv1(nn.Module):
         self.conf_thresh = conf_thresh                 # 得分阈值
         self.nms_thresh = nms_thresh                   # NMS阈值
         self.stride = 32                               # 网络的最大步长
+        self.deploy = deploy
         
         # ------------------- Network Structure -------------------
         ## 主干网络
@@ -148,12 +150,18 @@ class YOLOv1(nn.Module):
         # 解算边界框, 并归一化边界框: [H*W, 4]
         bboxes = self.decode_boxes(reg_pred, fmp_size)
         
-        # 将预测放在cpu处理上，以便进行后处理
-        scores = scores.cpu().numpy()
-        bboxes = bboxes.cpu().numpy()
-        
-        # 后处理
-        bboxes, scores, labels = self.postprocess(bboxes, scores)
+        if self.deploy:
+            # [n_anchors_all, 4 + C]
+            outputs = torch.cat([bboxes, scores], dim=-1)
+
+            return outputs
+        else:
+            # 将预测放在cpu处理上，以便进行后处理
+            scores = scores.cpu().numpy()
+            bboxes = bboxes.cpu().numpy()
+            
+            # 后处理
+            bboxes, scores, labels = self.postprocess(bboxes, scores)
 
         return bboxes, scores, labels
 

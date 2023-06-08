@@ -323,16 +323,14 @@ class PreProcessor(object):
         
         # [H, W, C] -> [C, H, W]
         padded_img = padded_img.transpose(swap)
-        padded_img = np.ascontiguousarray(padded_img, dtype=np.float32)
+        padded_img = np.ascontiguousarray(padded_img, dtype=np.float32) / 255.
 
 
         return padded_img, r
 
 ## Post-processer
 class PostProcessor(object):
-    def __init__(self, img_size, strides, num_classes, conf_thresh=0.15, nms_thresh=0.5):
-        self.img_size = img_size
-        self.strides = strides
+    def __init__(self, num_classes, conf_thresh=0.15, nms_thresh=0.5):
         self.num_classes = num_classes
         self.conf_thresh = conf_thresh
         self.nms_thresh = nms_thresh
@@ -344,9 +342,7 @@ class PostProcessor(object):
             predictions: (ndarray) [n_anchors_all, 4+1+C]
         """
         bboxes = predictions[..., :4]
-        obj_preds = predictions[..., 4:5]
-        cls_preds = predictions[..., 5:]
-        scores = np.sqrt(obj_preds * cls_preds)
+        scores = predictions[..., 4:]
 
         # scores & labels
         labels = np.argmax(scores, axis=1)                      # [M,]

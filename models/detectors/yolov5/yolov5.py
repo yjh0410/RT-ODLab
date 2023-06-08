@@ -16,7 +16,8 @@ class YOLOv5(nn.Module):
                  conf_thresh = 0.05,
                  nms_thresh = 0.6,
                  trainable = False, 
-                 topk = 1000):
+                 topk = 1000,
+                 deploy = False):
         super(YOLOv5, self).__init__()
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
@@ -27,13 +28,14 @@ class YOLOv5(nn.Module):
         self.conf_thresh = conf_thresh
         self.nms_thresh = nms_thresh
         self.topk = topk
+        self.deploy = deploy
         
         # ------------------- Anchor box -------------------
         self.num_levels = 3
         self.num_anchors = len(cfg['anchor_size']) // self.num_levels
         self.anchor_size = torch.as_tensor(
             cfg['anchor_size']
-            ).view(self.num_levels, self.num_anchors, 2) # [S, A, 2]
+            ).float().view(self.num_levels, self.num_anchors, 2) # [S, A, 2]
         
         # ------------------- Network Structure -------------------
         ## Backbone
@@ -184,11 +186,22 @@ class YOLOv5(nn.Module):
             all_box_preds.append(box_pred)
             all_anchors.append(anchors)
 
-        # post process
-        bboxes, scores, labels = self.post_process(
-            all_obj_preds, all_cls_preds, all_box_preds)
+        if self.deploy:
+            obj_preds = torch.cat(all_obj_preds, dim=0)
+            cls_preds = torch.cat(all_cls_preds, dim=0)
+            box_preds = torch.cat(all_box_preds, dim=0)
+            scores = torch.sqrt(obj_preds.sigmoid() * cls_preds.sigmoid())
+            bboxes = box_preds
+            # [n_anchors_all, 4 + C]
+            outputs = torch.cat([bboxes, scores], dim=-1)
+
+            return outputs
+        else:
+            # post process
+            bboxes, scores, labels = self.post_process(
+                all_obj_preds, all_cls_preds, all_box_preds)
         
-        return bboxes, scores, labels
+            return bboxes, scores, labels
 
 
     # ---------------------- Main Process for Training ----------------------

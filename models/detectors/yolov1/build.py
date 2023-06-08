@@ -9,7 +9,7 @@ from .yolov1 import YOLOv1
 
 
 # build object detector
-def build_yolov1(args, cfg, device, num_classes=80, trainable=False):
+def build_yolov1(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
     
@@ -24,7 +24,8 @@ def build_yolov1(args, cfg, device, num_classes=80, trainable=False):
         num_classes = num_classes,
         conf_thresh = args.conf_thresh,
         nms_thresh = args.nms_thresh,
-        trainable = trainable
+        trainable = trainable,
+        deploy = deploy
         )
 
     # -------------- Initialize YOLO --------------

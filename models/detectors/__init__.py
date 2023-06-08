@@ -16,35 +16,36 @@ def build_model(args,
                 model_cfg,
                 device, 
                 num_classes=80, 
-                trainable=False):
+                trainable=False,
+                deploy=False):
     # YOLOv1    
     if args.model == 'yolov1':
         model, criterion = build_yolov1(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv2   
     elif args.model == 'yolov2':
         model, criterion = build_yolov2(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv3   
     elif args.model in ['yolov3', 'yolov3_t']:
         model, criterion = build_yolov3(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv4   
     elif args.model in ['yolov4', 'yolov4_t']:
         model, criterion = build_yolov4(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv5   
     elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
         model, criterion = build_yolov5(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv7
     elif args.model in ['yolov7_t', 'yolov7_l', 'yolov7_x']:
         model, criterion = build_yolov7(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
-            args, model_cfg, device, num_classes, trainable)
+            args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:
         # Load pretrained weight
