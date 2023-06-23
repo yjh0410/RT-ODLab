@@ -3,7 +3,7 @@ python train.py \
         --cuda \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolox_s \
+        -m artdet_n \
         -bs 16 \
         -size 640 \
         --wp_epoch 3 \
@@ -12,7 +12,7 @@ python train.py \
         --ema \
         --fp16 \
         --multi_scale \
-        --resume weights/coco/yolox_s/yolox_s_best.pth \
+        # --resume weights/coco/yolox_s/yolox_s_best.pth \
         # --pretrained weights/coco/yolo_free_medium/yolo_free_medium_39.46.pth \
         # --eval_first
 
