@@ -9,7 +9,6 @@ from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolox.build import build_yolox
-from .artdet.build import build_artdet
 
 
 # build object detector
@@ -46,10 +45,6 @@ def build_model(args,
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
-            args, model_cfg, device, num_classes, trainable, deploy)
-    # ARTDet  
-    elif args.model in ['artdet_n', 'artdet_s', 'artdet_m', 'artdet_l', 'artdet_x']:
-        model, criterion = build_artdet(
             args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:
