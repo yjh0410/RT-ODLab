@@ -183,7 +183,7 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': False,
+        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
