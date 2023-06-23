@@ -59,7 +59,7 @@ class DecoupledHead(nn.Module):
 
         ## Pred
         self.cls_pred = nn.Conv2d(self.cls_out_dim, num_classes, kernel_size=1) 
-        self.reg_pred = nn.Conv2d(self.reg_out_dim, 4, kernel_size=1) 
+        self.reg_pred = nn.Conv2d(self.reg_out_dim, 4*cfg['reg_max'], kernel_size=1) 
 
 
     def forward(self, x):

@@ -36,6 +36,7 @@ yolox_plus_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
+        'reg_max': 16,
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
@@ -47,9 +48,10 @@ yolox_plus_cfg = {
                     'beta': 6.0},
         # ---------------- Loss config ----------------
         ## loss weight
-        'cls_loss': 'qfl',
+        'cls_loss': 'vfl',
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
+        'loss_iou_weight': 2.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
