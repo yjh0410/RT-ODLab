@@ -1,9 +1,11 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
 try:
-    from .yolox_plus_basic import Conv
+    from .artdet_basic import Conv
 except:
-    from yolox_plus_basic import Conv
+    from artdet_basic import Conv
 
 
 class DecoupledHead(nn.Module):
@@ -14,6 +16,7 @@ class DecoupledHead(nn.Module):
         # --------- Basic Parameters ----------
         self.in_dim = in_dim
         self.num_classes = num_classes
+        self.reg_max = cfg['reg_max']
         self.num_cls_head=cfg['num_cls_head']
         self.num_reg_head=cfg['num_reg_head']
 
@@ -61,8 +64,13 @@ class DecoupledHead(nn.Module):
         self.cls_pred = nn.Conv2d(self.cls_out_dim, num_classes, kernel_size=1) 
         self.reg_pred = nn.Conv2d(self.reg_out_dim, 4*cfg['reg_max'], kernel_size=1) 
 
+        ## ----------- proj_conv ------------
+        self.proj = nn.Parameter(torch.linspace(0, cfg['reg_max'], cfg['reg_max']), requires_grad=False)
+        self.proj_conv = nn.Conv2d(self.reg_max, 1, kernel_size=1, bias=False)
+        self.proj_conv.weight = nn.Parameter(self.proj.view([1, cfg['reg_max'], 1, 1]).clone().detach(), requires_grad=False)
 
-    def forward(self, x):
+
+    def forward(self, x, anchors, stride):
         """
             in_feats: (Tensor) [B, C, H, W]
         """
@@ -72,7 +80,27 @@ class DecoupledHead(nn.Module):
         cls_pred = self.cls_pred(cls_feats)
         reg_pred = self.reg_pred(reg_feats)
 
-        return cls_pred, reg_pred
+        # process preds
+        B = x.shape[0]
+        cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
+        reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
+
+        # ----------------------- Decode bbox -----------------------
+        M = reg_pred.shape[1]
+        # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max] -> [B, 4, M, reg_max]
+        reg_pred_ = reg_pred.reshape([B, M, 4, self.reg_max])
+        # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
+        reg_pred_ = reg_pred_.permute(0, 3, 2, 1).contiguous()
+        # [B, reg_max, 4, M] -> [B, 1, 4, M]
+        reg_pred_ = self.proj_conv(F.softmax(reg_pred_, dim=1))
+        # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
+        reg_pred_ = reg_pred_.view(B, 4, M).permute(0, 2, 1).contiguous()
+        ## tlbr -> xyxy
+        x1y1_pred = anchors[None] - reg_pred_[..., :2] * stride
+        x2y2_pred = anchors[None] + reg_pred_[..., 2:] * stride
+        box_pred = torch.cat([x1y1_pred, x2y2_pred], dim=-1)
+
+        return cls_pred, reg_pred, box_pred
     
 
 # build detection head

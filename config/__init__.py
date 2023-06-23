@@ -22,7 +22,7 @@ from .yolov4_config import yolov4_cfg
 from .yolov5_config import yolov5_cfg
 from .yolov7_config import yolov7_cfg
 from .yolox_config import yolox_cfg
-from .yolox_plus_config import yolox_plus_cfg
+from .artdet_config import artdet_cfg
 
 
 def build_model_config(args):
@@ -49,9 +49,9 @@ def build_model_config(args):
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
-    # YOLOX-Plus
-    elif args.model in ['yolox_plus_n', 'yolox_plus_s', 'yolox_plus_m', 'yolox_plus_l', 'yolox_plus_x']:
-        cfg = yolox_plus_cfg[args.model]
+    # ARTDet
+    elif args.model in ['artdet_n', 'artdet_s', 'artdet_m', 'artdet_l', 'artdet_x']:
+        cfg = artdet_cfg[args.model]
     return cfg
 
 

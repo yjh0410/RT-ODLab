@@ -1,8 +1,8 @@
 # YOLOX-Plus Config
 
 
-yolox_plus_cfg = {
-    'yolox_plus_n':{
+artdet_cfg = {
+    'artdet_n':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',

@@ -5,16 +5,16 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .yolox_plus import YoloxPlus
+from .artdet import ARTDet
 
 
 # build object detector
-def build_yolox_plus(args, cfg, device, num_classes=80, trainable=False, deploy=False):
+def build_artdet(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
         
-    # -------------- Build YOLO --------------
-    model = YoloxPlus(
+    # -------------- Build ARTDet --------------
+    model = ARTDet(
         cfg=cfg,
         device=device, 
         num_classes=num_classes,
@@ -25,7 +25,7 @@ def build_yolox_plus(args, cfg, device, num_classes=80, trainable=False, deploy=
         deploy=deploy
         )
 
-    # -------------- Initialize YOLO --------------
+    # -------------- Initialize ARTDet --------------
     for m in model.modules():
         if isinstance(m, nn.BatchNorm2d):
             m.eps = 1e-3
