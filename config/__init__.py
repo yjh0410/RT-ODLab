@@ -22,6 +22,7 @@ from .yolov4_config import yolov4_cfg
 from .yolov5_config import yolov5_cfg
 from .yolov7_config import yolov7_cfg
 from .yolox_config import yolox_cfg
+from .yolox2_config import yolox2_cfg
 
 
 def build_model_config(args):
@@ -48,38 +49,46 @@ def build_model_config(args):
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
+    # YOLOX2
+    elif args.model in ['yolox2_n', 'yolox2_s', 'yolox2_m', 'yolox2_l', 'yolox2_x']:
+        cfg = yolox2_cfg[args.model]
+
     return cfg
 
 
 # ------------------ Transform Config ----------------------
 from .transform_config import (
+    # YOLOv5-Style
+    yolov5_pico_trans_config,
     yolov5_nano_trans_config,
-    yolov5_tiny_trans_config,
     yolov5_small_trans_config,
     yolov5_medium_trans_config,
     yolov5_large_trans_config,
     yolov5_huge_trans_config,
+    # YOLOX-Style
+    yolox_pico_trans_config,
     yolox_nano_trans_config,
-    yolox_tiny_trans_config,
     yolox_small_trans_config,
     yolox_medium_trans_config,
     yolox_large_trans_config,
     yolox_huge_trans_config,
+    # SSD-Style
     ssd_trans_config
 )
 
 def build_trans_config(trans_config='ssd'):
     print('==============================')
     print('Transform: {}-Style ...'.format(trans_config))
+    
     # SSD-style transform 
     if trans_config == 'ssd':
         cfg = ssd_trans_config
 
     # YOLOv5-style transform 
+    elif trans_config == 'yolov5_pico':
+        cfg = yolov5_pico_trans_config
     elif trans_config == 'yolov5_nano':
         cfg = yolov5_nano_trans_config
-    elif trans_config == 'yolov5_tiny':
-        cfg = yolov5_tiny_trans_config
     elif trans_config == 'yolov5_small':
         cfg = yolov5_small_trans_config
     elif trans_config == 'yolov5_medium':
@@ -90,10 +99,10 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolov5_huge_trans_config
         
     # YOLOX-style transform 
+    elif trans_config == 'yolox_pico':
+        cfg = yolox_pico_trans_config
     elif trans_config == 'yolox_nano':
         cfg = yolox_nano_trans_config
-    elif trans_config == 'yolox_tiny':
-        cfg = yolox_tiny_trans_config
     elif trans_config == 'yolox_small':
         cfg = yolox_small_trans_config
     elif trans_config == 'yolox_medium':

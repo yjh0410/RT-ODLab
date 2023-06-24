@@ -1,29 +1,34 @@
+# --------------- Torch components ---------------
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
-from .yolox_backbone import build_backbone
-from .yolox_pafpn import build_fpn
-from .yolox_head import build_head
+# --------------- Model components ---------------
+from .yolox2_backbone import build_backbone
+from .yolox2_neck import build_neck
+from .yolox2_pafpn import build_fpn
+from .yolox2_head import build_head
 
+# --------------- External components ---------------
 from utils.misc import multiclass_nms
 
 
-# YOLOX
-class YOLOX(nn.Module):
-    def __init__(self,
+# YOLOX-2
+class YOLOX2(nn.Module):
+    def __init__(self, 
                  cfg,
-                 device,
-                 num_classes=20,
-                 conf_thresh=0.01,
-                 nms_thresh=0.5,
-                 topk=100,
-                 trainable=False,
+                 device, 
+                 num_classes = 20, 
+                 conf_thresh = 0.05,
+                 nms_thresh = 0.6,
+                 trainable = False, 
+                 topk = 1000,
                  deploy = False):
-        super(YOLOX, self).__init__()
-        # --------- Basic Parameters ----------
+        super(YOLOX2, self).__init__()
+        # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device
-        self.stride = [8, 16, 32]
+        self.stride = cfg['stride']
         self.num_classes = num_classes
         self.trainable = trainable
         self.conf_thresh = conf_thresh
@@ -31,33 +36,24 @@ class YOLOX(nn.Module):
         self.topk = topk
         self.deploy = deploy
         
-        # ------------------- Network Structure -------------------
-        ## 主干网络
+        # ---------------------- Network Parameters ----------------------
+        ## ----------- Backbone -----------
         self.backbone, feats_dim = build_backbone(cfg, trainable&cfg['pretrained'])
+
+        ## ----------- Neck: SPP -----------
+        self.neck = build_neck(cfg=cfg, in_dim=feats_dim[-1], out_dim=feats_dim[-1])
+        feats_dim[-1] = self.neck.out_dim
         
-        ## 颈部网络: 特征金字塔
-        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=int(256*cfg['width']))
+        ## ----------- Neck: FPN -----------
+        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))
         self.head_dim = self.fpn.out_dim
 
-        ## 检测头
-        self.non_shared_heads = nn.ModuleList(
+        ## ----------- Heads -----------
+        self.det_heads = nn.ModuleList(
             [build_head(cfg, head_dim, head_dim, num_classes) 
             for head_dim in self.head_dim
             ])
 
-        ## 预测层
-        self.obj_preds = nn.ModuleList(
-                            [nn.Conv2d(head.reg_out_dim, 1, kernel_size=1) 
-                                for head in self.non_shared_heads
-                              ]) 
-        self.cls_preds = nn.ModuleList(
-                            [nn.Conv2d(head.cls_out_dim, self.num_classes, kernel_size=1) 
-                                for head in self.non_shared_heads
-                              ]) 
-        self.reg_preds = nn.ModuleList(
-                            [nn.Conv2d(head.reg_out_dim, 4, kernel_size=1) 
-                                for head in self.non_shared_heads
-                              ])                 
 
     # ---------------------- Basic Functions ----------------------
     ## generate anchor points
@@ -130,27 +126,26 @@ class YOLOX(nn.Module):
 
         return bboxes, scores, labels
 
-
+    
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
-        # backbone
+        # ---------------- Backbone ----------------
         pyramid_feats = self.backbone(x)
 
-        # fpn
+        # ---------------- Neck: SPP ----------------
+        pyramid_feats[-1] = self.neck(pyramid_feats[-1])
+
+        # ---------------- Neck: PaFPN ----------------
         pyramid_feats = self.fpn(pyramid_feats)
 
-        # non-shared heads
+        # ---------------- Heads ----------------
         all_obj_preds = []
         all_cls_preds = []
         all_box_preds = []
-        for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
-            cls_feat, reg_feat = head(feat)
-
-            # [1, C, H, W]
-            obj_pred = self.obj_preds[level](reg_feat)
-            cls_pred = self.cls_preds[level](cls_feat)
-            reg_pred = self.reg_preds[level](reg_feat)
+        for level, (feat, head) in enumerate(zip(pyramid_feats, self.det_heads)):
+            # ---------------- Pred ----------------
+            obj_pred, cls_pred, reg_pred = head(feat)
 
             # anchors: [M, 2]
             fmp_size = cls_pred.shape[-2:]
@@ -190,28 +185,29 @@ class YOLOX(nn.Module):
             return bboxes, scores, labels
 
 
+    # ---------------------- Main Process for Training ----------------------
     def forward(self, x):
         if not self.trainable:
             return self.inference_single_image(x)
         else:
-            # backbone
+            # ---------------- Backbone ----------------
             pyramid_feats = self.backbone(x)
 
-            # fpn
+            # ---------------- Neck: SPP ----------------
+            pyramid_feats[-1] = self.neck(pyramid_feats[-1])
+
+            # ---------------- Neck: PaFPN ----------------
             pyramid_feats = self.fpn(pyramid_feats)
 
-            # non-shared heads
+            # ---------------- Heads ----------------
             all_anchors = []
             all_obj_preds = []
             all_cls_preds = []
             all_box_preds = []
-            for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
-                cls_feat, reg_feat = head(feat)
-
-                # [B, C, H, W]
-                obj_pred = self.obj_preds[level](reg_feat)
-                cls_pred = self.cls_preds[level](cls_feat)
-                reg_pred = self.reg_preds[level](reg_feat)
+            all_strides = []
+            for level, (feat, head) in enumerate(zip(pyramid_feats, self.det_heads)):
+                # ---------------- Pred ----------------
+                obj_pred, cls_pred, reg_pred = head(feat)
 
                 B, _, H, W = cls_pred.size()
                 fmp_size = [H, W]
