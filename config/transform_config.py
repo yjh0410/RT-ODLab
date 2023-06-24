@@ -1,6 +1,6 @@
 # transform config
 
-# ----------------------- YOLOv5-Style -----------------------
+# ----------------------- YOLOv5-Style Transform -----------------------
 yolov5_huge_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
@@ -115,7 +115,7 @@ yolov5_pico_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-# ----------------------- YOLOv5-Style -----------------------
+# ----------------------- YOLOX-Style Transform -----------------------
 yolox_huge_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
@@ -230,7 +230,7 @@ yolox_pico_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-# ----------------------- SSD-Style -----------------------
+# ----------------------- SSD-Style Transform -----------------------
 ssd_trans_config = {
     'aug_type': 'ssd',
     # Mosaic & Mixup are not used for SSD-style augmentation
