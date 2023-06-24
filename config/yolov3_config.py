@@ -96,7 +96,7 @@ yolov3_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolov5_tiny',
+        'trans_type': 'yolov5_nano',
         'multi_scale': [0.5, 1.0],
         # ---------------- Assignment config ----------------
         ## matcher

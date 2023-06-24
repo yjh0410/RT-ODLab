@@ -32,7 +32,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolox_tiny',
+        'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,

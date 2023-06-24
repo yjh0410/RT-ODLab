@@ -34,7 +34,7 @@ yolov5_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.0],   # 320 -> 640
-        'trans_type': 'yolov5_tiny',
+        'trans_type': 'yolov5_nano',
         # ---------------- Assignment config ----------------
         ## matcher
         'anchor_thresh': 4.0,

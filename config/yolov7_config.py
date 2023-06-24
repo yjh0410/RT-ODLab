@@ -3,7 +3,7 @@
 yolov7_cfg = {
     'yolov7_t':{
         # input
-        'trans_type': 'yolov5_tiny',
+        'trans_type': 'yolov5_nano',
         'multi_scale': [0.5, 1.5], # 320 -> 960
         # model
         'backbone': 'elannet_tiny',
