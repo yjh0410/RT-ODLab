@@ -41,35 +41,35 @@ class YoloTrainer(object):
 
         # ---------------------------- Build Transform ----------------------------
         self.train_transform, self.trans_cfg = build_transform(
-            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
         self.val_transform, _ = build_transform(
-            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
-        self.dataset, self.dataset_info = build_dataset(args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
+        self.dataset, self.dataset_info = build_dataset(self.args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
         world_size = distributed_utils.get_world_size()
-        self.train_loader = build_dataloader(args, self.dataset, self.args.batch_size // world_size, CollateFunc())
+        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // world_size, CollateFunc())
 
         # ---------------------------- Build Evaluator ----------------------------
-        self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
+        self.evaluator = build_evluator(self.args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        accumulate = max(1, round(64 / args.batch_size))
-        self.model_cfg['weight_decay'] *= args.batch_size * accumulate / 64
-        self.optimizer, self.start_epoch = build_yolo_optimizer(self.model_cfg, model, self.model_cfg['lr0'], args.resume)
+        accumulate = max(1, round(64 / self.args.batch_size))
+        self.model_cfg['weight_decay'] *= self.args.batch_size * accumulate / 64
+        self.optimizer, self.start_epoch = build_yolo_optimizer(self.model_cfg, model, self.model_cfg['lr0'], self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        args.max_epoch += args.wp_epoch
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, args.max_epoch)
+        self.args.max_epoch += self.args.wp_epoch
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, self.args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
-        if args.resume:
+        if self.args.resume:
             self.lr_scheduler.step()
 
         # ---------------------------- Build Model-EMA ----------------------------
-        if args.ema and distributed_utils.get_rank() in [-1, 0]:
+        if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
             print('Build ModelEMA ...')
             self.model_ema = ModelEMA(
                 model,
@@ -104,11 +104,67 @@ class YoloTrainer(object):
             # eval one epoch
             if self.heavy_eval:
                 model_eval = model.module if self.args.distributed else model
-                self.eval_one_epoch(model_eval)
+                self.eval(model_eval)
             else:
                 model_eval = model.module if self.args.distributed else model
                 if (epoch % self.args.eval_epoch) == 0 or (epoch == self.args.max_epoch - 1):
-                    self.eval_one_epoch(model_eval)
+                    self.eval(model_eval)
+
+
+    def eval(self, model):
+        # chech model
+        model_eval = model if self.model_ema is None else self.model_ema.ema
+
+        # path to save model
+        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
+        os.makedirs(path_to_save, exist_ok=True)
+
+        if distributed_utils.is_main_process():
+            # check evaluator
+            if self.evaluator is None:
+                print('No evaluator ... save model and go on training.')
+                print('Saving state, epoch: {}'.format(self.epoch + 1))
+                weight_name = '{}_no_eval.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(path_to_save, weight_name)
+                torch.save({'model': model_eval.state_dict(),
+                            'mAP': -1.,
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)               
+            else:
+                print('eval ...')
+                # set eval mode
+                model_eval.trainable = False
+                model_eval.eval()
+
+                # evaluate
+                with torch.no_grad():
+                    self.evaluator.evaluate(model_eval)
+
+                # save model
+                cur_map = self.evaluator.map
+                if cur_map > self.best_map:
+                    # update best-map
+                    self.best_map = cur_map
+                    # save model
+                    print('Saving state, epoch:', self.epoch + 1)
+                    weight_name = '{}_best.pth'.format(self.args.model)
+                    checkpoint_path = os.path.join(path_to_save, weight_name)
+                    torch.save({'model': model_eval.state_dict(),
+                                'mAP': round(self.best_map*100, 1),
+                                'optimizer': self.optimizer.state_dict(),
+                                'epoch': self.epoch,
+                                'args': self.args}, 
+                                checkpoint_path)                      
+
+                # set train mode.
+                model_eval.trainable = True
+                model_eval.train()
+
+        if self.args.distributed:
+            # wait for all processes to synchronize
+            dist.barrier()
 
 
     def train_one_epoch(self, model):
@@ -210,63 +266,6 @@ class YoloTrainer(object):
         self.epoch += 1
         
 
-    def eval(self, model):
-        # chech model
-        model_eval = model if self.model_ema is None else self.model_ema.ema
-
-        # path to save model
-        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
-        os.makedirs(path_to_save, exist_ok=True)
-
-        if distributed_utils.is_main_process():
-            # check evaluator
-            if self.evaluator is None:
-                print('No evaluator ... save model and go on training.')
-                print('Saving state, epoch: {}'.format(self.epoch + 1))
-                weight_name = '{}_no_eval.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(path_to_save, weight_name)
-                torch.save({'model': model_eval.state_dict(),
-                            'mAP': -1.,
-                            'optimizer': self.optimizer.state_dict(),
-                            'epoch': self.epoch,
-                            'args': self.args}, 
-                            checkpoint_path)                      
-                
-            else:
-                print('eval ...')
-                # set eval mode
-                model_eval.trainable = False
-                model_eval.eval()
-
-                # evaluate
-                with torch.no_grad():
-                    self.evaluator.evaluate(model_eval)
-
-                # save model
-                cur_map = self.evaluator.map
-                if cur_map > self.best_map:
-                    # update best-map
-                    self.best_map = cur_map
-                    # save model
-                    print('Saving state, epoch:', self.epoch + 1)
-                    weight_name = '{}_best.pth'.format(self.args.model)
-                    checkpoint_path = os.path.join(path_to_save, weight_name)
-                    torch.save({'model': model_eval.state_dict(),
-                                'mAP': round(self.best_map*100, 1),
-                                'optimizer': self.optimizer.state_dict(),
-                                'epoch': self.epoch,
-                                'args': self.args}, 
-                                checkpoint_path)                      
-
-                # set train mode.
-                model_eval.trainable = True
-                model_eval.train()
-
-        if self.args.distributed:
-            # wait for all processes to synchronize
-            dist.barrier()
-
-
     def refine_targets(self, targets, min_box_size):
         # rescale targets
         for tgt in targets:
@@ -341,34 +340,34 @@ class DetrTrainer(object):
 
         # ---------------------------- Build Transform ----------------------------
         self.train_transform, self.trans_cfg = build_transform(
-            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
         self.val_transform, _ = build_transform(
-            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
-        self.dataset, self.dataset_info = build_dataset(args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
+        self.dataset, self.dataset_info = build_dataset(self.args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
         world_size = distributed_utils.get_world_size()
-        self.train_loader = build_dataloader(args, self.dataset, self.args.batch_size // world_size, CollateFunc())
+        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // world_size, CollateFunc())
 
         # ---------------------------- Build Evaluator ----------------------------
-        self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
+        self.evaluator = build_evluator(self.args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.model_cfg['lr0'] *= args.batch_size / 16.
-        self.optimizer, self.start_epoch = build_detr_optimizer(model_cfg, model, args.resume)
+        self.model_cfg['lr0'] *= self.args.batch_size / 16.
+        self.optimizer, self.start_epoch = build_detr_optimizer(model_cfg, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        args.max_epoch += args.wp_epoch
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, args.max_epoch)
+        self.args.max_epoch += self.args.wp_epoch
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, self.args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
-        if args.resume:
+        if self.args.resume:
             self.lr_scheduler.step()
 
         # ---------------------------- Build Model-EMA ----------------------------
-        if args.ema and distributed_utils.get_rank() in [-1, 0]:
+        if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
             print('Build ModelEMA ...')
             self.model_ema = ModelEMA(
                 model,
@@ -403,11 +402,67 @@ class DetrTrainer(object):
             # eval one epoch
             if self.heavy_eval:
                 model_eval = model.module if self.args.distributed else model
-                self.eval_one_epoch(model_eval)
+                self.eval(model_eval)
             else:
                 model_eval = model.module if self.args.distributed else model
                 if (epoch % self.args.eval_epoch) == 0 or (epoch == self.args.max_epoch - 1):
-                    self.eval_one_epoch(model_eval)
+                    self.eval(model_eval)
+
+
+    def eval(self, model):
+        # chech model
+        model_eval = model if self.model_ema is None else self.model_ema.ema
+
+        # path to save model
+        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
+        os.makedirs(path_to_save, exist_ok=True)
+
+        if distributed_utils.is_main_process():
+            # check evaluator
+            if self.evaluator is None:
+                print('No evaluator ... save model and go on training.')
+                print('Saving state, epoch: {}'.format(self.epoch + 1))
+                weight_name = '{}_no_eval.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(path_to_save, weight_name)
+                torch.save({'model': model_eval.state_dict(),
+                            'mAP': -1.,
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)  
+            else:
+                print('eval ...')
+                # set eval mode
+                model_eval.trainable = False
+                model_eval.eval()
+
+                # evaluate
+                with torch.no_grad():
+                    self.evaluator.evaluate(model_eval)
+
+                # save model
+                cur_map = self.evaluator.map
+                if cur_map > self.best_map:
+                    # update best-map
+                    self.best_map = cur_map
+                    # save model
+                    print('Saving state, epoch:', self.epoch + 1)
+                    weight_name = '{}_best.pth'.format(self.args.model)
+                    checkpoint_path = os.path.join(path_to_save, weight_name)
+                    torch.save({'model': model_eval.state_dict(),
+                                'mAP': round(self.best_map*100, 1),
+                                'optimizer': self.optimizer.state_dict(),
+                                'epoch': self.epoch,
+                                'args': self.args}, 
+                                checkpoint_path)                      
+
+                # set train mode.
+                model_eval.trainable = True
+                model_eval.train()
+
+        if self.args.distributed:
+            # wait for all processes to synchronize
+            dist.barrier()
 
 
     def train_one_epoch(self, model):
@@ -500,63 +555,6 @@ class DetrTrainer(object):
         self.lr_scheduler.step()
         self.epoch += 1
         
-
-    def eval(self, model):
-        # chech model
-        model_eval = model if self.model_ema is None else self.model_ema.ema
-
-        # path to save model
-        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
-        os.makedirs(path_to_save, exist_ok=True)
-
-        if distributed_utils.is_main_process():
-            # check evaluator
-            if self.evaluator is None:
-                print('No evaluator ... save model and go on training.')
-                print('Saving state, epoch: {}'.format(self.epoch + 1))
-                weight_name = '{}_no_eval.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(path_to_save, weight_name)
-                torch.save({'model': model_eval.state_dict(),
-                            'mAP': -1.,
-                            'optimizer': self.optimizer.state_dict(),
-                            'epoch': self.epoch,
-                            'args': self.args}, 
-                            checkpoint_path)                      
-                
-            else:
-                print('eval ...')
-                # set eval mode
-                model_eval.trainable = False
-                model_eval.eval()
-
-                # evaluate
-                with torch.no_grad():
-                    self.evaluator.evaluate(model_eval)
-
-                # save model
-                cur_map = self.evaluator.map
-                if cur_map > self.best_map:
-                    # update best-map
-                    self.best_map = cur_map
-                    # save model
-                    print('Saving state, epoch:', self.epoch + 1)
-                    weight_name = '{}_best.pth'.format(self.args.model)
-                    checkpoint_path = os.path.join(path_to_save, weight_name)
-                    torch.save({'model': model_eval.state_dict(),
-                                'mAP': round(self.best_map*100, 1),
-                                'optimizer': self.optimizer.state_dict(),
-                                'epoch': self.epoch,
-                                'args': self.args}, 
-                                checkpoint_path)                      
-
-                # set train mode.
-                model_eval.trainable = True
-                model_eval.train()
-
-        if self.args.distributed:
-            # wait for all processes to synchronize
-            dist.barrier()
-
 
     def refine_targets(self, targets, min_box_size, img_size):
         # rescale targets
