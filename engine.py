@@ -59,7 +59,7 @@ class YoloTrainer(object):
         # ---------------------------- Build Optimizer ----------------------------
         accumulate = max(1, round(64 / self.args.batch_size))
         self.model_cfg['weight_decay'] *= self.args.batch_size * accumulate / 64
-        self.optimizer, self.start_epoch = build_yolo_optimizer(self.model_cfg, model, self.model_cfg['lr0'], self.args.resume)
+        self.optimizer, self.start_epoch = build_yolo_optimizer(self.model_cfg, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
         self.args.max_epoch += self.args.wp_epoch
