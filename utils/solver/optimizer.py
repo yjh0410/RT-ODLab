@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-def build_optimizer(cfg, model, base_lr=0.01, resume=None):
+def build_yolo_optimizer(cfg, model, base_lr=0.01, resume=None):
     print('==============================')
     print('Optimizer: {}'.format(cfg['optimizer']))
     print('--base lr: {}'.format(base_lr))
@@ -30,6 +30,39 @@ def build_optimizer(cfg, model, base_lr=0.01, resume=None):
 
     optimizer.add_param_group({'params': g[0], 'weight_decay': cfg['weight_decay']})  # add g0 with weight_decay
     optimizer.add_param_group({'params': g[1], 'weight_decay': 0.0})                  # add g1 (BatchNorm2d weights)
+
+    start_epoch = 0
+    if resume is not None:
+        print('keep training: ', resume)
+        checkpoint = torch.load(resume)
+        # checkpoint state dict
+        checkpoint_state_dict = checkpoint.pop("optimizer")
+        optimizer.load_state_dict(checkpoint_state_dict)
+        start_epoch = checkpoint.pop("epoch")
+                                                        
+    return optimizer, start_epoch
+
+
+def build_detr_optimizer(cfg, model, resume=None):
+    print('==============================')
+    print('Optimizer: {}'.format(cfg['optimizer']))
+    print('--base lr: {}'.format(cfg['lr0']))
+    print('--weight_decay: {}'.format(cfg['weight_decay']))
+
+    param_dicts = [
+        {"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},
+        {
+            "params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],
+            "lr": cfg['lr0'] * 0.1,
+        },
+    ]
+
+    if cfg['optimizer'] == 'adam':
+        optimizer = torch.optim.Adam(param_dicts, lr=cfg['lr0'], weight_decay=cfg['weight_decay'])
+    elif cfg['optimizer'] == 'adamw':
+        optimizer = torch.optim.AdamW(param_dicts, lr=cfg['lr0'], weight_decay=cfg['weight_decay'])
+    else:
+        raise NotImplementedError('Optimizer {} not implemented.'.format(cfg['optimizer']))
 
     start_epoch = 0
     if resume is not None:

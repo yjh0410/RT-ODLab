@@ -7,7 +7,7 @@ import numpy as np
 
 import torch
 
-from dataset.data_augment import build_transform
+from dataset.build import build_transform
 from utils.vis_tools import plot_tracking
 from utils.misc import load_weight
 from utils.box_ops import rescale_bboxes
@@ -15,7 +15,7 @@ from utils.box_ops import rescale_bboxes
 from config import build_model_config, build_trans_config
 
 from models.detectors import build_model
-from models.tracker import build_tracker
+from models.trackers import build_tracker
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]

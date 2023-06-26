@@ -47,6 +47,7 @@ yolov3_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 10,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None
@@ -109,6 +110,7 @@ yolov3_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 10,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.937,         # SGD: 0.937;    AdamW: None

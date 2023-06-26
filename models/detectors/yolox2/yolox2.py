@@ -1,7 +1,6 @@
 # --------------- Torch components ---------------
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 # --------------- Model components ---------------
 from .yolox2_backbone import build_backbone

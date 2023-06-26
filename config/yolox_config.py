@@ -45,6 +45,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.9,           # SGD: 0.9;    AdamW: None
@@ -104,6 +105,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.9,           # SGD: 0.9;    AdamW: None
@@ -163,6 +165,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.9,           # SGD: 0.9;    AdamW: None
@@ -222,6 +225,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.9,           # SGD: 0.9;    AdamW: None
@@ -281,6 +285,7 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
+        'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
         'momentum': 0.9,           # SGD: 0.9;    AdamW: None
