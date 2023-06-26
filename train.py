@@ -24,7 +24,7 @@ from engine import build_trainer
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOLO-Tutorial')
-    # basic
+    # Basic
     parser.add_argument('--cuda', action='store_true', default=False,
                         help='use cuda.')
     parser.add_argument('-size', '--img_size', default=640, type=int, 
@@ -56,7 +56,7 @@ def parse_args():
     parser.add_argument('--eval_epoch', default=10, type=int, 
                         help='after eval epoch, the model is evaluated on val dataset.')
 
-    # model
+    # Model
     parser.add_argument('-m', '--model', default='yolov1', type=str,
                         help='build yolo')
     parser.add_argument('-ct', '--conf_thresh', default=0.005, type=float,
@@ -70,13 +70,13 @@ def parse_args():
     parser.add_argument('-r', '--resume', default=None, type=str,
                         help='keep training')
 
-    # dataset
+    # Dataset
     parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc, widerface, crowdhuman')
     
-    # train trick
+    # Train trick
     parser.add_argument('-ms', '--multi_scale', action='store_true', default=False,
                         help='Multi scale')
     parser.add_argument('--ema', action='store_true', default=False,
