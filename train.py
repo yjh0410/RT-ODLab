@@ -153,7 +153,7 @@ def train():
     # Build Trainer
     trainer = build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model_without_ddp, criterion)
 
-    # --------------------------------- Start ---------------------------------
+    # --------------------------------- Train: Start ---------------------------------
     ## Eval before training
     if args.eval_first and distributed_utils.is_main_process():
         # to check whether the evaluator can work
@@ -162,7 +162,7 @@ def train():
 
     ## Satrt Training
     trainer.train(model)
-    # --------------------------------- End ---------------------------------
+    # --------------------------------- Train: End ---------------------------------
 
     # Empty cache after train loop
     del trainer

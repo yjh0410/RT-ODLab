@@ -1,5 +1,5 @@
 # ------------------------ Dataset Config ------------------------
-from .dataset_config import dataset_cfg
+from .data_config.dataset_config import dataset_cfg
 
 
 def build_dataset_config(args):
@@ -15,7 +15,7 @@ def build_dataset_config(args):
 
 
 # ------------------ Transform Config ----------------------
-from .transform_config import (
+from .data_config.transform_config import (
     # YOLOv5-Style
     yolov5_pico_trans_config,
     yolov5_nano_trans_config,
@@ -74,15 +74,15 @@ def build_trans_config(trans_config='ssd'):
 
 
 # ------------------ Model Config ----------------------
-from .yolov1_config import yolov1_cfg
-from .yolov2_config import yolov2_cfg
-from .yolov3_config import yolov3_cfg
-from .yolov4_config import yolov4_cfg
-from .yolov5_config import yolov5_cfg
-from .yolov7_config import yolov7_cfg
-from .yolox_config import yolox_cfg
-from .yolox2_config import yolox2_cfg
-from .rtdetr_config import rtdetr_cfg
+from .model_config.yolov1_config import yolov1_cfg
+from .model_config.yolov2_config import yolov2_cfg
+from .model_config.yolov3_config import yolov3_cfg
+from .model_config.yolov4_config import yolov4_cfg
+from .model_config.yolov5_config import yolov5_cfg
+from .model_config.yolov7_config import yolov7_cfg
+from .model_config.yolox_config import yolox_cfg
+from .model_config.yolox2_config import yolox2_cfg
+from .model_config.rtdetr_config import rtdetr_cfg
 
 
 def build_model_config(args):
