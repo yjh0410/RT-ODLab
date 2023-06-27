@@ -56,7 +56,7 @@ yolox2_cfg = {
         'trainer_type': 'yolo',
         ## optimizer
         'optimizer': 'sgd',        # optional: sgd, AdamW
-        'momentum': 0.9,           # SGD: 0.9;    AdamW: None
+        'momentum': 0.9,           # SGD: 0.9;      AdamW: None
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         ## model EMA
@@ -64,7 +64,7 @@ yolox2_cfg = {
         'ema_tau': 2000,
         ## lr schedule
         'scheduler': 'linear',
-        'lr0': 0.01,              # SGD: 0.01;     AdamW: 0.001
+        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
         'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
