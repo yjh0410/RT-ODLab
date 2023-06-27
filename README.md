@@ -155,19 +155,19 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 | Model    |  Backbone   | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOX2-N | ELLANNet-N  |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOX2-S | ELLANNet-S  |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOX2-M | ELLANNet-M  |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOX2-L | ELLANNet-L  |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-N | ELANNet-N   |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-S | ELANNet-S   |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-M | ELANNet-M   |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-L | ELANNet-L   |  640  |  300  |                        |                   |                   |                    |  |
 
 * ETE-YOLO (End-to-End YOLO without NMS):
 
 | Model      |  Backbone   | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |------------|-------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| ETE-YOLO-N | ELLANNet-N  |  640  |  300  |                        |                   |                   |                    |  |
-| ETE-YOLO-S | ELLANNet-S  |  640  |  300  |                        |                   |                   |                    |  |
-| ETE-YOLO-M | ELLANNet-M  |  640  |  300  |                        |                   |                   |                    |  |
-| ETE-YOLO-L | ELLANNet-L  |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-N | ELANNet-N   |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-S | ELANNet-S   |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-M | ELANNet-M   |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-L | ELANNet-L   |  640  |  300  |                        |                   |                   |                    |  |
 
 * Redesigned RT-DETR:
 
