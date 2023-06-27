@@ -78,6 +78,7 @@ python train.py --cuda -d voc --root path/to/VOCdevkit -m yolov1 -bs 16 --max_ep
 
 
 ### COCO
+
 - Download COCO.
 ```Shell
 cd <PyTorch_YOLO_Tutorial>
@@ -97,10 +98,6 @@ For example:
 ```Shell
 python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
-
-Due to my limited computing resources, I had to set the batch size to 16 or even smaller during training. I found that for small models such as *-Nano or *-Tiny, their performance seems less sensitive to batch size, such as the YOLOv5-N and S I reproduced, which are even slightly stronger than the official YOLOv5-N and S. However, for large models such as *-Large, their performance is significantly lower than the official performance, which seems to indicate that the large model is more sensitive to batch size.
-
-I have provided a bash file `train_ddp.sh` that enables DDP training. I hope someone could use more GPUs to train the large models with a larger batch size, such as YOLOv5-L, YOLOX, and YOLOv7-L. If the performance trained with a larger batch size is higher, I would be grateful if you could share the trained model with me.
 
 * Redesigned YOLOv1~v2:
 
@@ -153,6 +150,33 @@ I have provided a bash file `train_ddp.sh` that enables DDP training. I hope som
 | YOLOv7-L      | ELANNet-Large      |  640  |  300  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
+
+* YOLOX2:
+
+| Model    |  Backbone   | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|----------|-------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOX2-N | ELLANNet-N  |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-S | ELLANNet-S  |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-M | ELLANNet-M  |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOX2-L | ELLANNet-L  |  640  |  300  |                        |                   |                   |                    |  |
+
+* ETE-YOLO:
+
+| Model      |  Backbone   | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|------------|-------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| ETE-YOLO-N | ELLANNet-N  |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-S | ELLANNet-S  |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-M | ELLANNet-M  |  640  |  300  |                        |                   |                   |                    |  |
+| ETE-YOLO-L | ELLANNet-L  |  640  |  300  |                        |                   |                   |                    |  |
+
+* Redesigned RT-DETR:
+
+| Model     | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|-----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| RT-DETR-N |  640  |  300  |                        |                   |                   |                    |  |
+| RT-DETR-S |  640  |  300  |                        |                   |                   |                    |  |
+| RT-DETR-M |  640  |  300  |                        |                   |                   |                    |  |
+| RT-DETR-L |  640  |  300  |                        |                   |                   |                    |  |
 
 #### Necessary instructions：
 

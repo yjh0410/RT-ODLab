@@ -17,7 +17,7 @@ except:
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
 # please define our class labels
-our_class_labels = ('cat',)
+our_class_labels = ('bird', 'butterfly', 'cat', 'cow', 'dog', 'lion', 'person', 'pig', 'tiger', )
 
 
 
@@ -51,10 +51,16 @@ class OurDataset(Dataset):
 
         # augmentation
         self.transform = transform
-        self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
-        self.mixup_prob = trans_config['mixup_prob'] if trans_config else 0.0
+        self.mosaic_prob = 0
+        self.mixup_prob = 0
         self.trans_config = trans_config
+        if trans_config is not None:
+            self.mosaic_prob = trans_config['mosaic_prob']
+            self.mixup_prob = trans_config['mixup_prob']
+
         print('==============================')
+        print('Image Set: {}'.format(image_set))
+        print('Json file: {}'.format(self.json_file))
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
         print('==============================')
@@ -100,14 +106,14 @@ class OurDataset(Dataset):
             image_list.append(img_i)
             target_list.append(target_i)
 
-        # Mosaic Augment
+        # Mosaic
         if self.trans_config['mosaic_type'] == 'yolov5_mosaic':
             image, target = yolov5_mosaic_augment(
-                image_list, target_list, self.img_size, self.trans_config)
-                
+                image_list, target_list, self.img_size, self.trans_config, self.is_train)
+
         return image, target
 
-        
+
     def load_mixup(self, origin_image, origin_target):
         # YOLOv5 type Mixup
         if self.trans_config['mixup_type'] == 'yolov5_mixup':
@@ -156,10 +162,14 @@ class OurDataset(Dataset):
 
 
     def pull_anno(self, index):
-        id_ = self.ids[index]
-
-        anno_ids = self.coco.getAnnIds(imgIds=[int(id_)], iscrowd=None)
+        img_id = self.ids[index]
+        im_ann = self.coco.loadImgs(img_id)[0]
+        anno_ids = self.coco.getAnnIds(imgIds=[int(img_id)], iscrowd=0)
         annotations = self.coco.loadAnns(anno_ids)
+        
+        # image infor
+        width = im_ann['width']
+        height = im_ann['height']
         
         #load a target
         bboxes = []
@@ -169,9 +179,9 @@ class OurDataset(Dataset):
                 # bbox
                 x1 = np.max((0, anno['bbox'][0]))
                 y1 = np.max((0, anno['bbox'][1]))
-                x2 = x1 + anno['bbox'][2]
-                y2 = y1 + anno['bbox'][3]
-                if x2 < x1 or y2 < y1:
+                x2 = np.min((width - 1, x1 + np.max((0, anno['bbox'][2] - 1))))
+                y2 = np.min((height - 1, y1 + np.max((0, anno['bbox'][3] - 1))))
+                if x2 <= x1 or y2 <= y1:
                     continue
                 # class label
                 cls_id = self.class_ids.index(anno['category_id'])
@@ -188,22 +198,29 @@ class OurDataset(Dataset):
 
 if __name__ == "__main__":
     import argparse
-    import sys
     from build import build_transform
     
-    parser = argparse.ArgumentParser(description='Our-Dataset')
+    parser = argparse.ArgumentParser(description='FreeYOLOv2')
 
     # opt
-    parser.add_argument('--root', default='OurDataset',
+    parser.add_argument('--root', default='AnimalDataset',
                         help='data root')
     parser.add_argument('--split', default='train',
                         help='data split')
+    parser.add_argument('-size', '--img_size', default=640, type=int, 
+                        help='input image size')
+    parser.add_argument('--min_box_size', default=8.0, type=float,
+                        help='min size of target bounding box.')
+    parser.add_argument('--mosaic', default=None, type=float,
+                        help='mosaic augmentation.')
+    parser.add_argument('--mixup', default=None, type=float,
+                        help='mixup augmentation.')
 
     args = parser.parse_args()
     
-    is_train = False
     img_size = 640
-    yolov5_trans_config = {
+    is_train = True
+    trans_config = {
         'aug_type': 'yolov5',
         # Basic Augment
         'degrees': 0.0,
@@ -216,26 +233,20 @@ if __name__ == "__main__":
         'hsv_v': 0.4,
         # Mosaic & Mixup
         'mosaic_prob': 1.0,
+        'mosaic_9x_prob': 0.2,
         'mixup_prob': 0.15,
         'mosaic_type': 'yolov5_mosaic',
         'mixup_type': 'yolov5_mixup',
         'mixup_scale': [0.5, 1.5]
     }
-    ssd_trans_config = {
-        'aug_type': 'ssd',
-        'mosaic_prob': 0.0,
-        'mixup_prob': 0.0
-    }
-
-    transform = build_transform(img_size, yolov5_trans_config, is_train)
+    transform, trans_config = build_transform(args, trans_config, max_stride=32, is_train=is_train)
 
     dataset = OurDataset(
         img_size=img_size,
         data_dir=args.root,
-        image_set='train',
-        trans_config=yolov5_trans_config,
+        image_set=args.split,
         transform=transform,
-        is_train=is_train
+        trans_config=trans_config,
         )
     
     np.random.seed(0)
@@ -248,7 +259,6 @@ if __name__ == "__main__":
         image, target, deltas = dataset.pull_item(i)
         # to numpy
         image = image.permute(1, 2, 0).numpy()
-        # to uint8
         image = image.astype(np.uint8)
         image = image.copy()
         img_h, img_w = image.shape[:2]
@@ -262,9 +272,11 @@ if __name__ == "__main__":
             color = class_colors[cls_id]
             # class name
             label = our_class_labels[cls_id]
-            image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
-            # put the test on the bbox
-            cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
+            if x2 - x1 > 0. and y2 - y1 > 0.:
+                # draw bbox
+                image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
+                # put the test on the bbox
+                cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
         cv2.imshow('gt', image)
         # cv2.imwrite(str(i)+'.jpg', img)
         cv2.waitKey(0)

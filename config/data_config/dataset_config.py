@@ -38,9 +38,9 @@ dataset_cfg = {
 
     'ourdataset':{
         'data_name': 'AnimalDataset',
-        'num_classes': 4,
+        'num_classes': 9,
         'class_indexs': None,
-        'class_names': ('butterfly', 'cat', 'dog', 'person'),
+        'class_names': ('bird', 'butterfly', 'cat', 'cow', 'dog', 'lion', 'person', 'pig', 'tiger', ),
     },
 
 }
