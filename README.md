@@ -151,7 +151,7 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
 
-* YOLOX2:
+* YOLOX2 (Incremental Improced YOLOX):
 
 | Model    |  Backbone   | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
@@ -160,7 +160,7 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 | YOLOX2-M | ELLANNet-M  |  640  |  300  |                        |                   |                   |                    |  |
 | YOLOX2-L | ELLANNet-L  |  640  |  300  |                        |                   |                   |                    |  |
 
-* ETE-YOLO:
+* ETE-YOLO (End-to-End YOLO without NMS):
 
 | Model      |  Backbone   | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |------------|-------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
