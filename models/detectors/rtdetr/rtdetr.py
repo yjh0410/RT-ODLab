@@ -64,18 +64,7 @@ class RTDETR(nn.Module):
 
         # -------------------- DetHead --------------------
         out_logits, out_bbox = self.dethead(hs, reference, False)
-
-        # -------------------- Decode bbox --------------------
-        cls_pred = out_logits[0]
-        box_pred = out_bbox[0]
-        ## cxcywh -> xyxy
-        x1y1_pred = box_pred[..., :2] - box_pred[..., 2:] * 0.5
-        x2y2_pred = box_pred[..., :2] + box_pred[..., 2:] * 0.5
-        box_pred = torch.cat([x1y1_pred, x2y2_pred], dim=-1)
-        ## denormalize bbox
-        img_h, img_w = x.shape[-2:]
-        box_pred[..., 0::2] *= img_w
-        box_pred[..., 1::2] *= img_h
+        cls_pred, box_pred = out_logits[0], out_bbox[0]
 
         # -------------------- Top-k --------------------
         cls_pred = cls_pred.flatten().sigmoid_()
@@ -86,6 +75,11 @@ class RTDETR(nn.Module):
         topk_scores = predicted_prob[:num_topk]
         topk_labels = topk_idxs % self.num_classes
         topk_bboxes = box_pred[topk_box_idxs]
+
+        # denormalize bbox
+        img_h, img_w = x.shape[-2:]
+        box_pred[..., 0::2] *= img_w
+        box_pred[..., 1::2] *= img_h
 
         if self.deploy:
             return topk_bboxes, topk_scores, topk_labels
