@@ -60,8 +60,7 @@ class DetectHead(nn.Module):
             outputs_coords = []
             for dec_lid, (layer_ref_sig, layer_bbox_embed, layer_hs) in enumerate(zip(reference[:-1], self.bbox_embed, hs)):
                 layer_delta_unsig = layer_bbox_embed(layer_hs)
-                layer_ref_sig = self.inverse_sigmoid(layer_ref_sig)
-                layer_outputs_unsig = layer_delta_unsig + layer_ref_sig
+                layer_outputs_unsig = layer_delta_unsig + self.inverse_sigmoid(layer_ref_sig)
                 layer_outputs_unsig = layer_outputs_unsig.sigmoid()
                 outputs_coords.append(layer_outputs_unsig)
         else:

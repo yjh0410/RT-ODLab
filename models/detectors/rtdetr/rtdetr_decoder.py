@@ -27,17 +27,20 @@ class TransformerDecoder(nn.Module):
         self.decoder_layers = get_clones(decoder_layer, cfg['num_decoder_layers'])
         ## RefPoint Embed
         self.refpoint_embed = nn.Embedding(cfg['num_queries'], 4)
+        self.ref_point_head = MLP(self.query_dim // 2 * in_dim, in_dim, in_dim, 2)
         ## Object Query Embed
         self.object_query = nn.Embedding(cfg['num_queries'], in_dim)
         nn.init.normal_(self.object_query.weight.data)
         ## TODO: Group queries
 
-        self.ref_point_head = MLP(self.query_dim // 2 * in_dim, in_dim, in_dim, 2)
-        self.query_pos_sine_scale = MLP(in_dim, in_dim, in_dim, 2)
-        self.ref_anchor_head = MLP(in_dim, in_dim, 2, 2)
 
         self.bbox_embed = None
         self.class_embed = None
+
+
+    def inverse_sigmoid(self, x):
+        x = x.clamp(min=0, max=1)
+        return torch.log(x.clamp(min=1e-5)/(1 - x).clamp(min=1e-5))
 
 
     def query_sine_embed(self, num_feats, reference_points):
@@ -96,15 +99,8 @@ class TransformerDecoder(nn.Module):
 
             # iter update
             if self.bbox_embed is not None:
-                # --------------- Start inverse_sigmoid ---------------
-                reference_points = reference_points.clamp(min=0, max=1)
-                reference_points_1 = reference_points.clamp(min=1e-5)
-                reference_points_2 = (1 - reference_points).clamp(min=1e-5)
-                reference_before_sigmoid = torch.log(reference_points_1/reference_points_2)
-                # --------------- End inverse_sigmoid ---------------
-
                 delta_unsig = self.bbox_embed[layer_id](output)
-                outputs_unsig = delta_unsig + reference_before_sigmoid
+                outputs_unsig = delta_unsig + self.inverse_sigmoid(reference_points)
                 new_reference_points = outputs_unsig.sigmoid()
 
                 reference_points = new_reference_points.detach()
