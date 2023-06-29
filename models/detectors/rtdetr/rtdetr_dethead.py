@@ -56,7 +56,7 @@ class DetectHead(nn.Module):
             # class embed
             outputs_class = torch.stack([
                 layer_cls_embed(layer_hs) for layer_cls_embed, layer_hs in zip(self.class_embed, hs)])
-            # Bbox embed
+            # bbox embed
             outputs_coords = []
             for dec_lid, (layer_ref_sig, layer_bbox_embed, layer_hs) in enumerate(zip(reference[:-1], self.bbox_embed, hs)):
                 layer_delta_unsig = layer_bbox_embed(layer_hs)
