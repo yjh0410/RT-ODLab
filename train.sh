@@ -1,7 +1,7 @@
 # Train YOLO
 python train.py \
         --cuda \
-        -d coco \
+        -d voc \
         --root /mnt/share/ssd2/dataset/ \
         -m rtdetr_n \
         -bs 16 \
