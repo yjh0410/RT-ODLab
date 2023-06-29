@@ -6,7 +6,7 @@ python train.py \
         -m rtdetr_n \
         -bs 16 \
         -size 640 \
-        --wp_epoch 3 \
+        --wp_epoch 1 \
         --max_epoch 150 \
         --eval_epoch 10 \
         --ema \
