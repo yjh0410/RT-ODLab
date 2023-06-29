@@ -134,7 +134,6 @@ def test(args,
         t0 = time.time()
         # inference
         bboxes, scores, labels = model(x)
-        print(bboxes, scores, labels)
         print("detection time used ", time.time() - t0, "s")
         
         # rescale bboxes
