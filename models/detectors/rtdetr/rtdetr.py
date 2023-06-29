@@ -78,8 +78,8 @@ class RTDETR(nn.Module):
 
         # denormalize bbox
         img_h, img_w = x.shape[-2:]
-        box_pred[..., 0::2] *= img_w
-        box_pred[..., 1::2] *= img_h
+        topk_bboxes[..., 0::2] *= img_w
+        topk_bboxes[..., 1::2] *= img_h
 
         if self.deploy:
             return topk_bboxes, topk_scores, topk_labels
