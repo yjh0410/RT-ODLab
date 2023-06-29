@@ -83,6 +83,7 @@ from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolox_config import yolox_cfg
 from .model_config.yolox2_config import yolox2_cfg
 from .model_config.rtdetr_config import rtdetr_cfg
+from .model_config.e2eyolo_config import e2eyolo_cfg
 
 
 def build_model_config(args):
@@ -115,6 +116,9 @@ def build_model_config(args):
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:
         cfg = rtdetr_cfg[args.model]
+    # E2E-YOLO
+    elif args.model in ['e2eyolo_n', 'e2eyolo_s', 'e2eyolo_m', 'e2eyolo_l', 'e2eyolo_x']:
+        cfg = e2eyolo_cfg[args.model]
 
     return cfg
 

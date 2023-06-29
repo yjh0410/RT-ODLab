@@ -11,6 +11,7 @@ from .yolov7.build import build_yolov7
 from .yolox.build import build_yolox
 from .yolox2.build import build_yolox2
 from .rtdetr.build import build_rtdetr
+from .e2eyolo.build import build_e2eyolo
 
 
 # build object detector
@@ -55,6 +56,10 @@ def build_model(args,
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:
         model, criterion = build_rtdetr(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # E2E-YOLO
+    elif args.model in ['e2eyolo_n', 'e2eyolo_s', 'e2eyolo_m', 'e2eyolo_l', 'e2eyolo_x']:
+        model, criterion = build_e2eyolo(
             args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:

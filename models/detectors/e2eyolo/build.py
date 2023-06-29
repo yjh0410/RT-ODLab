@@ -5,16 +5,16 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .yolox2 import YOLOX2
+from .e2eyolo import E2EYOLO
 
 
 # build object detector
-def build_yolox2(args, cfg, device, num_classes=80, trainable=False, deploy=False):
+def build_e2eyolo(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
         
     # -------------- Build YOLO --------------
-    model = YOLOX2(
+    model = E2EYOLO(
         cfg=cfg,
         device=device, 
         num_classes=num_classes,
@@ -51,6 +51,7 @@ def build_yolox2(args, cfg, device, num_classes=80, trainable=False, deploy=Fals
         w = reg_pred.weight
         w.data.fill_(0.)
         reg_pred.weight = torch.nn.Parameter(w, requires_grad=True)
+
 
     # -------------- Build criterion --------------
     criterion = None

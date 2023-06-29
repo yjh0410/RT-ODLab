@@ -3,17 +3,17 @@ import torch
 import torch.nn as nn
 
 # --------------- Model components ---------------
-from .yolox2_backbone import build_backbone
-from .yolox2_neck import build_neck
-from .yolox2_pafpn import build_fpn
-from .yolox2_head import build_head
+from .e2eyolo_backbone import build_backbone
+from .e2eyolo_neck import build_neck
+from .e2eyolo_pafpn import build_fpn
+from .e2eyolo_head import build_head
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
 
 
-# YOLOX-2
-class YOLOX2(nn.Module):
+# E2E-YOLO
+class E2EYOLO(nn.Module):
     def __init__(self, 
                  cfg,
                  device, 
@@ -23,7 +23,7 @@ class YOLOX2(nn.Module):
                  trainable = False, 
                  topk = 1000,
                  deploy = False):
-        super(YOLOX2, self).__init__()
+        super(E2EYOLO, self).__init__()
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device
@@ -64,7 +64,6 @@ class YOLOX2(nn.Module):
                             [nn.Conv2d(self.head_dim, 4, kernel_size=1) 
                                 for _ in range(len(self.stride))
                               ])                 
-
 
     # ---------------------- Basic Functions ----------------------
     ## generate anchor points
