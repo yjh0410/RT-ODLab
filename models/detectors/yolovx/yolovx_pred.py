@@ -51,7 +51,7 @@ class SingleLevelPredLayer(nn.Module):
         return obj_pred, cls_pred, reg_pred
     
 
-class MultiLevelHead(nn.Module):
+class MultiLevelPredLayer(nn.Module):
     def __init__(self, cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3):
         super().__init__()
         # --------- Basic Parameters ----------
@@ -138,6 +138,6 @@ class MultiLevelHead(nn.Module):
 
 # build detection head
 def build_pred_layer(cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3):
-    pred_layers = MultiLevelHead(cls_dim, reg_dim, strides, num_classes, num_coords, num_levels) 
+    pred_layers = MultiLevelPredLayer(cls_dim, reg_dim, strides, num_classes, num_coords, num_levels) 
 
     return pred_layers

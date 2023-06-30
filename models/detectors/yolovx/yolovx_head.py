@@ -75,7 +75,7 @@ class MultiLevelHead(nn.Module):
         self.num_classes = num_classes
 
         ## ----------- Network Parameters -----------
-        self.det_heads = nn.ModuleList(
+        self.multi_level_heads = nn.ModuleList(
             [SingleLevelHead(
                 in_dim,
                 out_dim,
@@ -95,7 +95,7 @@ class MultiLevelHead(nn.Module):
         """
         cls_feats = []
         reg_feats = []
-        for feat, head in zip(feats, self.det_heads):
+        for feat, head in zip(feats, self.multi_level_heads):
             # ---------------- Pred ----------------
             cls_feat, reg_feat = head(feat)
 
