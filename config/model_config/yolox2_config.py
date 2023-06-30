@@ -41,30 +41,28 @@ yolox2_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
-        ## matcher
-        'matcher': {'topk': 10,
-                    'alpha': 0.5,
-                    'beta': 6.0},
+        'matcher': {'soft_center_radius': 3.0,
+                    'topk_candicate': 13,
+                    'iou_weight': 3.0},
         # ---------------- Loss config ----------------
         ## loss weight
-        'loss_obj_weight': 1.0,
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         ## close strong augmentation
         'no_aug_epoch': 20,
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolo',
         ## optimizer
-        'optimizer': 'adamw',      # optional: sgd, AdamW
-        'momentum': None,          # SGD: 0.9;      AdamW: None
-        'weight_decay': 5e-2,      # SGD: 5e-4;     AdamW: 5e-2
-        'clip_grad': 15,           # SGD: 10.0;     AdamW: -1
+        'optimizer': 'sgd',        # optional: sgd, AdamW
+        'momentum': 0.9,           # SGD: 0.9;      AdamW: None
+        'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
+        'clip_grad': 10.0,         # SGD: 10.0;     AdamW: -1
         ## model EMA
-        'ema_decay': 0.9998,       # SGD: 0.9999;   AdamW: 0.9998
+        'ema_decay': 0.9999,       # SGD: 0.9999;   AdamW: 0.9998
         'ema_tau': 2000,
         ## lr schedule
-        'scheduler': 'linear',
-        'lr0': 0.001,               # SGD: 0.01;     AdamW: 0.001
+        'scheduler': 'cos_linear',
+        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
         'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,

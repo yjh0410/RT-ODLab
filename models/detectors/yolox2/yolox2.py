@@ -49,13 +49,9 @@ class YOLOX2(nn.Module):
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
-        self.group_heads = build_head(cfg, self.fpn_dims, self.head_dim, num_classes) 
+        self.heads = build_head(cfg, self.fpn_dims, self.head_dim, num_classes) 
 
         ## ----------- Preds -----------
-        self.obj_preds = nn.ModuleList(
-                            [nn.Conv2d(self.head_dim, 1, kernel_size=1) 
-                                for _ in range(len(self.stride))
-                              ]) 
         self.cls_preds = nn.ModuleList(
                             [nn.Conv2d(self.head_dim, num_classes, kernel_size=1) 
                                 for _ in range(len(self.stride))
@@ -84,21 +80,19 @@ class YOLOX2(nn.Module):
         return anchors
         
     ## post-process
-    def post_process(self, obj_preds, cls_preds, box_preds):
+    def post_process(self, cls_preds, box_preds):
         """
         Input:
-            obj_preds: List(Tensor) [[H x W, 1], ...]
             cls_preds: List(Tensor) [[H x W, C], ...]
             box_preds: List(Tensor) [[H x W, 4], ...]
-            anchors:   List(Tensor) [[H x W, 2], ...]
         """
         all_scores = []
         all_labels = []
         all_bboxes = []
         
-        for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
-            # (H x W x KA x C,)
-            scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
+        for cls_pred_i, box_pred_i in zip(cls_preds, box_preds):
+            # (H x W x C,)
+            scores_i = cls_pred_i.sigmoid().flatten()
 
             # Keep top k top scoring indices only.
             num_topk = min(self.topk, box_pred_i.size(0))
@@ -151,15 +145,13 @@ class YOLOX2(nn.Module):
         pyramid_feats = self.fpn(pyramid_feats)
 
         # ---------------- Heads ----------------
-        cls_feats, reg_feats = self.group_heads(pyramid_feats)
+        cls_feats, reg_feats = self.heads(pyramid_feats)
 
         # ---------------- Preds ----------------
-        all_obj_preds = []
         all_cls_preds = []
         all_box_preds = []
         for level, (cls_feat, reg_feat) in enumerate(zip(cls_feats, reg_feats)):
             # prediction
-            obj_pred = self.obj_preds[level](reg_feat)
             cls_pred = self.cls_preds[level](cls_feat)
             reg_pred = self.reg_preds[level](reg_feat)
             
@@ -168,7 +160,6 @@ class YOLOX2(nn.Module):
             anchors = self.generate_anchors(level, fmp_size)
             
             # [1, C, H, W] -> [H, W, C] -> [M, C]
-            obj_pred = obj_pred[0].permute(1, 2, 0).contiguous().view(-1, 1)
             cls_pred = cls_pred[0].permute(1, 2, 0).contiguous().view(-1, self.num_classes)
             reg_pred = reg_pred[0].permute(1, 2, 0).contiguous().view(-1, 4)
 
@@ -179,15 +170,13 @@ class YOLOX2(nn.Module):
             pred_x2y2 = ctr_pred + wh_pred * 0.5
             box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
 
-            all_obj_preds.append(obj_pred)
             all_cls_preds.append(cls_pred)
             all_box_preds.append(box_pred)
 
         if self.deploy:
-            obj_preds = torch.cat(all_obj_preds, dim=0)
             cls_preds = torch.cat(all_cls_preds, dim=0)
             box_preds = torch.cat(all_box_preds, dim=0)
-            scores = torch.sqrt(obj_preds.sigmoid() * cls_preds.sigmoid())
+            scores = cls_preds.sigmoid()
             bboxes = box_preds
             # [n_anchors_all, 4 + C]
             outputs = torch.cat([bboxes, scores], dim=-1)
@@ -195,8 +184,7 @@ class YOLOX2(nn.Module):
             return outputs
         else:
             # post process
-            bboxes, scores, labels = self.post_process(
-                all_obj_preds, all_cls_preds, all_box_preds)
+            bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
         
             return bboxes, scores, labels
 
@@ -216,16 +204,14 @@ class YOLOX2(nn.Module):
             pyramid_feats = self.fpn(pyramid_feats)
 
             # ---------------- Heads ----------------
-            cls_feats, reg_feats = self.group_heads(pyramid_feats)
+            cls_feats, reg_feats = self.heads(pyramid_feats)
 
             # ---------------- Preds ----------------
             all_anchors = []
-            all_obj_preds = []
             all_cls_preds = []
             all_box_preds = []
             for level, (cls_feat, reg_feat) in enumerate(zip(cls_feats, reg_feats)):
                 # prediction
-                obj_pred = self.obj_preds[level](reg_feat)
                 cls_pred = self.cls_preds[level](cls_feat)
                 reg_pred = self.reg_preds[level](reg_feat)
 
@@ -235,7 +221,6 @@ class YOLOX2(nn.Module):
                 anchors = self.generate_anchors(level, fmp_size)
                 
                 # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
-                obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 1)
                 cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
                 reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
 
@@ -246,14 +231,12 @@ class YOLOX2(nn.Module):
                 pred_x2y2 = ctr_pred + wh_pred * 0.5
                 box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
 
-                all_obj_preds.append(obj_pred)
                 all_cls_preds.append(cls_pred)
                 all_box_preds.append(box_pred)
                 all_anchors.append(anchors)
             
             # output dict
-            outputs = {"pred_obj": all_obj_preds,        # List(Tensor) [B, M, 1]
-                       "pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
+            outputs = {"pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
                        "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
                        "anchors": all_anchors,           # List(Tensor) [B, M, 2]
                        'strides': self.stride}           # List(Int) [8, 16, 32]
