@@ -7,7 +7,8 @@ import torch.nn.functional as F
 from .yolovx_backbone import build_backbone
 from .yolovx_neck import build_neck
 from .yolovx_pafpn import build_fpn
-from .yolovx_head import build_head
+from .yolovx_head import build_det_head
+from .yolovx_pred import build_pred_layer
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
@@ -50,43 +51,13 @@ class YOLOvx(nn.Module):
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
-        self.heads = nn.ModuleList(
-            [build_head(cfg, fpn_dim, self.head_dim, num_classes) 
-            for fpn_dim in self.fpn_dims
-            ])
+        self.det_heads = build_det_head(cfg, self.fpn_dims, self.head_dim, num_classes)
 
         ## ----------- Preds -----------
-        self.obj_preds = nn.ModuleList(
-                            [nn.Conv2d(head.reg_out_dim, 1, kernel_size=1) 
-                                for head in self.heads
-                              ]) 
-        self.cls_preds = nn.ModuleList(
-                            [nn.Conv2d(head.cls_out_dim, self.num_classes, kernel_size=1) 
-                                for head in self.heads
-                              ]) 
-        self.reg_preds = nn.ModuleList(
-                            [nn.Conv2d(head.reg_out_dim, 4, kernel_size=1) 
-                                for head in self.heads
-                              ])                 
+        self.pred_layers = build_pred_layer(
+            self.head_dim, self.head_dim, self.stride, num_classes, num_coords=4, num_levels=len(self.stride))
 
 
-    # ---------------------- Basic Functions ----------------------
-    ## generate anchor points
-    def generate_anchors(self, level, fmp_size):
-        """
-            fmp_size: (List) [H, W]
-        """
-        # generate grid cells
-        fmp_h, fmp_w = fmp_size
-        anchor_y, anchor_x = torch.meshgrid([torch.arange(fmp_h), torch.arange(fmp_w)])
-        # [H, W, 2] -> [HW, 2]
-        anchor_xy = torch.stack([anchor_x, anchor_y], dim=-1).float().view(-1, 2)
-        anchor_xy += 0.5  # add center offset
-        anchor_xy *= self.stride[level]
-        anchors = anchor_xy.to(self.device)
-
-        return anchors
-        
     ## post-process
     def post_process(self, obj_preds, cls_preds, box_preds):
         """
@@ -101,6 +72,10 @@ class YOLOvx(nn.Module):
         all_bboxes = []
         
         for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
+            obj_pred_i = obj_pred_i[0]
+            cls_pred_i = cls_pred_i[0]
+            box_pred_i = box_pred_i[0]
+            
             # (H x W x KA x C,)
             scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
 
@@ -145,48 +120,29 @@ class YOLOvx(nn.Module):
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
-        # backbone
+        # ---------------- Backbone ----------------
         pyramid_feats = self.backbone(x)
 
-        # fpn
+        # ---------------- Neck: SPP ----------------
+        pyramid_feats[-1] = self.neck(pyramid_feats[-1])
+
+        # ---------------- Neck: PaFPN ----------------
         pyramid_feats = self.fpn(pyramid_feats)
 
-        # non-shared heads
-        all_obj_preds = []
-        all_cls_preds = []
-        all_box_preds = []
-        for level, (feat, head) in enumerate(zip(pyramid_feats, self.heads)):
-            cls_feat, reg_feat = head(feat)
+        # ---------------- Heads ----------------
+        cls_feats, reg_feats = self.det_heads(pyramid_feats)
 
-            # [1, C, H, W]
-            obj_pred = self.obj_preds[level](reg_feat)
-            cls_pred = self.cls_preds[level](cls_feat)
-            reg_pred = self.reg_preds[level](reg_feat)
+        # ---------------- Preds ----------------
+        outputs = self.pred_layers(cls_feats, reg_feats)
 
-            # anchors: [M, 2]
-            fmp_size = cls_pred.shape[-2:]
-            anchors = self.generate_anchors(level, fmp_size)
-
-            # [1, C, H, W] -> [H, W, C] -> [M, C]
-            obj_pred = obj_pred[0].permute(1, 2, 0).contiguous().view(-1, 1)
-            cls_pred = cls_pred[0].permute(1, 2, 0).contiguous().view(-1, self.num_classes)
-            reg_pred = reg_pred[0].permute(1, 2, 0).contiguous().view(-1, 4)
-
-            # decode bbox
-            ctr_pred = reg_pred[..., :2] * self.stride[level] + anchors[..., :2]
-            wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride[level]
-            pred_x1y1 = ctr_pred - wh_pred * 0.5
-            pred_x2y2 = ctr_pred + wh_pred * 0.5
-            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
-            all_obj_preds.append(obj_pred)
-            all_cls_preds.append(cls_pred)
-            all_box_preds.append(box_pred)
+        all_obj_preds = outputs['pred_obj']
+        all_cls_preds = outputs['pred_cls']
+        all_box_preds = outputs['pred_box']
 
         if self.deploy:
-            obj_preds = torch.cat(all_obj_preds, dim=0)
-            cls_preds = torch.cat(all_cls_preds, dim=0)
-            box_preds = torch.cat(all_box_preds, dim=0)
+            obj_preds = torch.cat(all_obj_preds, dim=1)[0]
+            cls_preds = torch.cat(all_cls_preds, dim=1)[0]
+            box_preds = torch.cat(all_box_preds, dim=1)[0]
             scores = torch.sqrt(obj_preds.sigmoid() * cls_preds.sigmoid())
             bboxes = box_preds
             # [n_anchors_all, 4 + C]
@@ -205,52 +161,19 @@ class YOLOvx(nn.Module):
         if not self.trainable:
             return self.inference_single_image(x)
         else:
-            # backbone
+            # ---------------- Backbone ----------------
             pyramid_feats = self.backbone(x)
 
-            # fpn
+            # ---------------- Neck: SPP ----------------
+            pyramid_feats[-1] = self.neck(pyramid_feats[-1])
+
+            # ---------------- Neck: PaFPN ----------------
             pyramid_feats = self.fpn(pyramid_feats)
 
-            # non-shared heads
-            all_anchors = []
-            all_obj_preds = []
-            all_cls_preds = []
-            all_box_preds = []
-            for level, (feat, head) in enumerate(zip(pyramid_feats, self.heads)):
-                cls_feat, reg_feat = head(feat)
+            # ---------------- Heads ----------------
+            cls_feats, reg_feats = self.det_heads(pyramid_feats)
 
-                # [B, C, H, W]
-                obj_pred = self.obj_preds[level](reg_feat)
-                cls_pred = self.cls_preds[level](cls_feat)
-                reg_pred = self.reg_preds[level](reg_feat)
-
-                B, _, H, W = cls_pred.size()
-                fmp_size = [H, W]
-                # generate anchor boxes: [M, 4]
-                anchors = self.generate_anchors(level, fmp_size)
-                
-                # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
-                obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 1)
-                cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
-                reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
-
-                # decode bbox
-                ctr_pred = reg_pred[..., :2] * self.stride[level] + anchors[..., :2]
-                wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride[level]
-                pred_x1y1 = ctr_pred - wh_pred * 0.5
-                pred_x2y2 = ctr_pred + wh_pred * 0.5
-                box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
-                all_obj_preds.append(obj_pred)
-                all_cls_preds.append(cls_pred)
-                all_box_preds.append(box_pred)
-                all_anchors.append(anchors)
+            # ---------------- Preds ----------------
+            outputs = self.pred_layers(cls_feats, reg_feats)
             
-            # output dict
-            outputs = {"pred_obj": all_obj_preds,        # List(Tensor) [B, M, 1]
-                       "pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
-                       "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
-                       "anchors": all_anchors,           # List(Tensor) [B, M, 2]
-                       'strides': self.stride}           # List(Int) [8, 16, 32]
-
             return outputs 
