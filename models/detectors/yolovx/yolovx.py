@@ -29,7 +29,6 @@ class YOLOvx(nn.Module):
         self.cfg = cfg
         self.device = device
         self.stride = cfg['stride']
-        self.reg_max = cfg['reg_max']
         self.num_classes = num_classes
         self.trainable = trainable
         self.conf_thresh = conf_thresh
