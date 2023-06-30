@@ -63,7 +63,7 @@ class MultiLevelPredLayer(nn.Module):
         self.num_levels = num_levels
 
         ## ----------- Network Parameters -----------
-        self.pred_layers = nn.ModuleList(
+        self.multi_level_preds = nn.ModuleList(
             [SingleLevelPredLayer(
                 cls_dim,
                 reg_dim,
@@ -106,7 +106,7 @@ class MultiLevelPredLayer(nn.Module):
         all_cls_preds = []
         all_box_preds = []
         for level in range(self.num_levels):
-            obj_pred, cls_pred, reg_pred = self.pred_layers[level](
+            obj_pred, cls_pred, reg_pred = self.multi_level_preds[level](
                 cls_feats[level], reg_feats[level])
 
             B, _, H, W = cls_pred.size()
