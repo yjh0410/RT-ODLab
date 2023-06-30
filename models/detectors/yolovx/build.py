@@ -5,16 +5,16 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .yolox2 import YOLOX2
+from .yolovx import YOLOvx
 
 
 # build object detector
-def build_yolox2(args, cfg, device, num_classes=80, trainable=False, deploy=False):
+def build_yolovx(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
         
     # -------------- Build YOLO --------------
-    model = YOLOX2(
+    model = YOLOvx(
         cfg=cfg,
         device=device, 
         num_classes=num_classes,

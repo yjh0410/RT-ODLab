@@ -122,43 +122,43 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 * YOLOv5:
 
-| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv5-N      | CSPDarkNet-N       |  640  |  250  |         29.8           |       47.1        |   7.7             |   2.4              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_n_coco.pth) |
-| YOLOv5-S      | CSPDarkNet-S       |  640  |  250  |         37.8           |       56.5        |   27.1            |   9.0              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_s_coco.pth) |
-| YOLOv5-M      | CSPDarkNet-M       |  640  |  250  |         43.5           |       62.5        |   74.3            |   25.4             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_m_coco.pth) |
-| YOLOv5-L      | CSPDarkNet-L       |  640  |  250  |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
+| Model     |  Backbone    | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|-----------|--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv5-N  | CSPDarkNet-N |  640  |  250  |         29.8           |       47.1        |   7.7             |   2.4              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_n_coco.pth) |
+| YOLOv5-S  | CSPDarkNet-S |  640  |  250  |         37.8           |       56.5        |   27.1            |   9.0              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_s_coco.pth) |
+| YOLOv5-M  | CSPDarkNet-M |  640  |  250  |         43.5           |       62.5        |   74.3            |   25.4             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_m_coco.pth) |
+| YOLOv5-L  | CSPDarkNet-L |  640  |  250  |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
 
 *For **YOLOv5-M** and **YOLOv5-L**, increasing the batch size may improve performance. Due to my computing resources, I can only set the batch size to 16.*
 
 * YOLOX:
 
-| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOX-N       | CSPDarkNet-N       |  640  |  300  |         31.1           |       49.5        |   7.5             |   2.3              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_n_coco.pth) |
-| YOLOX-S       | CSPDarkNet-S       |  640  |  300  |         39.0           |       58.8        |   26.8            |   8.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_s_coco.pth) |
-| YOLOX-M       | CSPDarkNet-M       |  640  |  300  |                        |                   |   74.3            |   25.4             |  |
-| YOLOX-L       | CSPDarkNet-L       |  640  |  300  |                        |                   |   155.4           |   54.2             |  |
+| Model   |   Backbone    | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------|---------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOX-N | CSPDarkNet-N  |  640  |  300  |         31.1           |       49.5        |   7.5             |   2.3              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_n_coco.pth) |
+| YOLOX-S | CSPDarkNet-S  |  640  |  300  |         39.0           |       58.8        |   26.8            |   8.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_s_coco.pth) |
+| YOLOX-M | CSPDarkNet-M  |  640  |  300  |                        |                   |   74.3            |   25.4             |  |
+| YOLOX-L | CSPDarkNet-L  |  640  |  300  |                        |                   |   155.4           |   54.2             |  |
 
 *For **YOLOX-M** and **YOLOX-L**, increasing the batch size may improve performance. Due to my computing resources, I can only set the batch size to 16.*
 
 * YOLOv7:
 
-| Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv7-T      | ELANNet-Tiny       |  640  |  300  |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
-| YOLOv7-L      | ELANNet-Large      |  640  |  300  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
+| Model    | Backbone      | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|----------|---------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv7-T | ELANNet-Tiny  |  640  |  300  |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
+| YOLOv7-L | ELANNet-Large |  640  |  300  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
 
-* YOLOX2 (Incremental Improved YOLOX):
+* YOLOvx (Incremental Improved YOLOX):
 
 | Model    | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOX2-N |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOX2-S |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOX2-M |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOX2-L |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOvx-N |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOvx-S |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOvx-M |  640  |  300  |                        |                   |                   |                    |  |
+| YOLOvx-L |  640  |  300  |                        |                   |                   |                    |  |
 
 * E2E-YOLO (End-to-End YOLO without NMS):
 

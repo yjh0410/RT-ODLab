@@ -8,8 +8,8 @@ from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
+from .yolovx.build import build_yolovx
 from .yolox.build import build_yolox
-from .yolox2.build import build_yolox2
 from .rtdetr.build import build_rtdetr
 from .e2eyolo.build import build_e2eyolo
 
@@ -49,9 +49,9 @@ def build_model(args,
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
-    # YOLOX2
-    elif args.model in ['yolox2_n', 'yolox2_s', 'yolox2_m', 'yolox2_l', 'yolox2_x']:
-        model, criterion = build_yolox2(
+    # YOLOvx
+    elif args.model in ['yolovx_n', 'yolovx_s', 'yolovx_m', 'yolovx_l', 'yolovx_x']:
+        model, criterion = build_yolovx(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:
