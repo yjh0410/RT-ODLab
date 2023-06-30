@@ -51,7 +51,8 @@ class YOLOvx(nn.Module):
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
-        self.det_heads = build_det_head(cfg, self.fpn_dims, self.head_dim, num_classes)
+        self.det_heads = build_det_head(
+            cfg, self.fpn_dims, self.head_dim, num_classes, num_levels=len(self.stride))
 
         ## ----------- Preds -----------
         self.pred_layers = build_pred_layer(
