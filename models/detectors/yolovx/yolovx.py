@@ -55,7 +55,8 @@ class YOLOvx(nn.Module):
 
         ## ----------- Preds -----------
         self.pred_layers = build_pred_layer(
-            self.head_dim, self.head_dim, self.stride, num_classes, num_coords=4, num_levels=len(self.stride))
+            self.det_heads.cls_head_dim, self.det_heads.reg_head_dim,
+            self.stride, num_classes, num_coords=4, num_levels=len(self.stride))
 
 
     ## post-process
