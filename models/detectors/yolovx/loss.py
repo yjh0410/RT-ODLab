@@ -89,11 +89,10 @@ class Criterion(object):
                 fg_mask = obj_preds.new_zeros(num_anchors).bool()
             else:
                 (
-                    gt_matched_classes,
                     fg_mask,
-                    pred_ious_this_matching,
-                    matched_gt_inds,
-                    num_fg_img,
+                    assigned_labels,
+                    assigned_ious,
+                    assigned_indexs
                 ) = self.matcher(
                     fpn_strides = fpn_strides,
                     anchors = anchors,
@@ -105,9 +104,9 @@ class Criterion(object):
                     )
 
                 obj_target = fg_mask.unsqueeze(-1)
-                cls_target = F.one_hot(gt_matched_classes.long(), self.num_classes)
-                cls_target = cls_target * pred_ious_this_matching.unsqueeze(-1)
-                box_target = tgt_bboxes[matched_gt_inds]
+                cls_target = F.one_hot(assigned_labels.long(), self.num_classes)
+                cls_target = cls_target * assigned_ious.unsqueeze(-1)
+                box_target = tgt_bboxes[assigned_indexs]
 
             cls_targets.append(cls_target)
             box_targets.append(box_target)
