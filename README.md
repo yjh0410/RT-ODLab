@@ -160,15 +160,6 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 | YOLOvx-M |  640  |  300  |                        |                   |                   |                    |  |
 | YOLOvx-L |  640  |  300  |                        |                   |                   |                    |  |
 
-* E2E-YOLO (End-to-End YOLO without NMS):
-
-| Model      | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| E2E-YOLO-N |  640  |  300  |                        |                   |                   |                    |  |
-| E2E-YOLO-S |  640  |  300  |                        |                   |                   |                    |  |
-| E2E-YOLO-M |  640  |  300  |                        |                   |                   |                    |  |
-| E2E-YOLO-L |  640  |  300  |                        |                   |                   |                    |  |
-
 * Redesigned RT-DETR:
 
 | Model     | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |

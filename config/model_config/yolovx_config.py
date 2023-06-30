@@ -42,22 +42,21 @@ yolovx_cfg = {
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
-        'matcher': {'topk': 10,
-                    'alpha': 0.5,
-                    'beta': 6.0},
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
         # ---------------- Loss config ----------------
         ## loss weight
-        'cls_loss': 'vfl', # vfl (optional)
+        'loss_obj_weight': 1.0,
         'loss_cls_weight': 1.0,
-        'loss_iou_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         # training configuration
         'no_aug_epoch': 20,
         'trainer_type': 'yolo',
         # optimizer
         'optimizer': 'sgd',        # optional: sgd, adam, adamw
-        'momentum': 0.937,         # SGD: 0.937;    AdamW: invalid
+        'momentum': 0.9,           # SGD: 0.937;    AdamW: invalid
         'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
         # model EMA

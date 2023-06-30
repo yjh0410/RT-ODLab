@@ -39,11 +39,6 @@ class YOLOvx(nn.Module):
         self.head_dim = round(256*cfg['width'])
         
         # ---------------------- Network Parameters ----------------------
-        ## ----------- proj_conv ------------
-        self.proj = nn.Parameter(torch.linspace(0, cfg['reg_max'], cfg['reg_max']), requires_grad=False)
-        self.proj_conv = nn.Conv2d(self.reg_max, 1, kernel_size=1, bias=False)
-        self.proj_conv.weight = nn.Parameter(self.proj.view([1, cfg['reg_max'], 1, 1]).clone().detach(), requires_grad=False)
-
         ## ----------- Backbone -----------
         self.backbone, feats_dim = build_backbone(cfg, trainable&cfg['pretrained'])
 
@@ -56,16 +51,23 @@ class YOLOvx(nn.Module):
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
-        self.heads = build_head(cfg, self.fpn_dims, self.head_dim, num_classes) 
+        self.heads = nn.ModuleList(
+            [build_head(cfg, fpn_dim, self.head_dim, num_classes) 
+            for fpn_dim in self.fpn_dims
+            ])
 
         ## ----------- Preds -----------
+        self.obj_preds = nn.ModuleList(
+                            [nn.Conv2d(head.reg_out_dim, 1, kernel_size=1) 
+                                for head in self.heads
+                              ]) 
         self.cls_preds = nn.ModuleList(
-                            [nn.Conv2d(self.head_dim, num_classes, kernel_size=1) 
-                                for _ in range(len(self.stride))
+                            [nn.Conv2d(head.cls_out_dim, self.num_classes, kernel_size=1) 
+                                for head in self.heads
                               ]) 
         self.reg_preds = nn.ModuleList(
-                            [nn.Conv2d(self.head_dim, 4*cfg['reg_max'], kernel_size=1) 
-                                for _ in range(len(self.stride))
+                            [nn.Conv2d(head.reg_out_dim, 4, kernel_size=1) 
+                                for head in self.heads
                               ])                 
 
 
@@ -86,38 +88,22 @@ class YOLOvx(nn.Module):
 
         return anchors
         
-    ## decode bbox
-    def decode_bbox(self, reg_pred, anchors, stride):
-        B, M = reg_pred.shape[:2]
-        # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max] -> [B, 4, M, reg_max]
-        reg_pred = reg_pred.reshape([B, M, 4, self.reg_max])
-        # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
-        reg_pred = reg_pred.permute(0, 3, 2, 1).contiguous()
-        # [B, reg_max, 4, M] -> [B, 1, 4, M]
-        reg_pred = self.proj_conv(F.softmax(reg_pred, dim=1))
-        # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
-        reg_pred = reg_pred.view(B, 4, M).permute(0, 2, 1).contiguous()
-        ## tlbr -> xyxy
-        x1y1_pred = anchors[None] - reg_pred[..., :2] * stride
-        x2y2_pred = anchors[None] + reg_pred[..., 2:] * stride
-        box_pred = torch.cat([x1y1_pred, x2y2_pred], dim=-1)
-
-        return box_pred
-    
     ## post-process
-    def post_process(self, cls_preds, box_preds):
+    def post_process(self, obj_preds, cls_preds, box_preds):
         """
         Input:
+            obj_preds: List(Tensor) [[H x W, 1], ...]
             cls_preds: List(Tensor) [[H x W, C], ...]
             box_preds: List(Tensor) [[H x W, 4], ...]
+            anchors:   List(Tensor) [[H x W, 2], ...]
         """
         all_scores = []
         all_labels = []
         all_bboxes = []
         
-        for cls_pred_i, box_pred_i in zip(cls_preds, box_preds):
-            # (H x W x C,)
-            scores_i = cls_pred_i.sigmoid().flatten()
+        for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
+            # (H x W x KA x C,)
+            scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
 
             # Keep top k top scoring indices only.
             num_topk = min(self.topk, box_pred_i.size(0))
@@ -156,111 +142,116 @@ class YOLOvx(nn.Module):
 
         return bboxes, scores, labels
 
-    
+
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
-        # ---------------- Backbone ----------------
+        # backbone
         pyramid_feats = self.backbone(x)
 
-        # ---------------- Neck: SPP ----------------
-        pyramid_feats[-1] = self.neck(pyramid_feats[-1])
-
-        # ---------------- Neck: PaFPN ----------------
+        # fpn
         pyramid_feats = self.fpn(pyramid_feats)
 
-        # ---------------- Heads ----------------
-        cls_feats, reg_feats = self.heads(pyramid_feats)
-
-        # ---------------- Preds ----------------
+        # non-shared heads
+        all_obj_preds = []
         all_cls_preds = []
         all_box_preds = []
-        for level, (cls_feat, reg_feat) in enumerate(zip(cls_feats, reg_feats)):
-            # prediction
+        for level, (feat, head) in enumerate(zip(pyramid_feats, self.heads)):
+            cls_feat, reg_feat = head(feat)
+
+            # [1, C, H, W]
+            obj_pred = self.obj_preds[level](reg_feat)
             cls_pred = self.cls_preds[level](cls_feat)
             reg_pred = self.reg_preds[level](reg_feat)
-            
-            # anchors: [M, 2]
-            B, _, H, W = cls_feat.size()
-            anchors = self.generate_anchors(level, [H, W])
-            
-            # process preds
-            cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
-            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
-            box_pred = self.decode_bbox(reg_pred, anchors, self.stride[level])
 
-            # collect preds
-            all_cls_preds.append(cls_pred[0])
-            all_box_preds.append(box_pred[0])
+            # anchors: [M, 2]
+            fmp_size = cls_pred.shape[-2:]
+            anchors = self.generate_anchors(level, fmp_size)
+
+            # [1, C, H, W] -> [H, W, C] -> [M, C]
+            obj_pred = obj_pred[0].permute(1, 2, 0).contiguous().view(-1, 1)
+            cls_pred = cls_pred[0].permute(1, 2, 0).contiguous().view(-1, self.num_classes)
+            reg_pred = reg_pred[0].permute(1, 2, 0).contiguous().view(-1, 4)
+
+            # decode bbox
+            ctr_pred = reg_pred[..., :2] * self.stride[level] + anchors[..., :2]
+            wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride[level]
+            pred_x1y1 = ctr_pred - wh_pred * 0.5
+            pred_x2y2 = ctr_pred + wh_pred * 0.5
+            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
+            all_obj_preds.append(obj_pred)
+            all_cls_preds.append(cls_pred)
+            all_box_preds.append(box_pred)
 
         if self.deploy:
-            # no post process
+            obj_preds = torch.cat(all_obj_preds, dim=0)
             cls_preds = torch.cat(all_cls_preds, dim=0)
-            box_pred = torch.cat(all_box_preds, dim=0)
+            box_preds = torch.cat(all_box_preds, dim=0)
+            scores = torch.sqrt(obj_preds.sigmoid() * cls_preds.sigmoid())
+            bboxes = box_preds
             # [n_anchors_all, 4 + C]
-            outputs = torch.cat([box_pred, cls_preds.sigmoid()], dim=-1)
+            outputs = torch.cat([bboxes, scores], dim=-1)
 
             return outputs
-
         else:
             # post process
-            bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
-            
+            bboxes, scores, labels = self.post_process(
+                all_obj_preds, all_cls_preds, all_box_preds)
+        
             return bboxes, scores, labels
 
 
-    # ---------------------- Main Process for Training ----------------------
     def forward(self, x):
         if not self.trainable:
             return self.inference_single_image(x)
         else:
-            # ---------------- Backbone ----------------
+            # backbone
             pyramid_feats = self.backbone(x)
 
-            # ---------------- Neck: SPP ----------------
-            pyramid_feats[-1] = self.neck(pyramid_feats[-1])
-
-            # ---------------- Neck: PaFPN ----------------
+            # fpn
             pyramid_feats = self.fpn(pyramid_feats)
 
-            # ---------------- Heads ----------------
-            cls_feats, reg_feats = self.heads(pyramid_feats)
-
-            # ---------------- Preds ----------------
+            # non-shared heads
             all_anchors = []
-            all_strides = []
+            all_obj_preds = []
             all_cls_preds = []
-            all_reg_preds = []
             all_box_preds = []
-            for level, (cls_feat, reg_feat) in enumerate(zip(cls_feats, reg_feats)):
-                # anchors & stride tensor
-                B, _, H, W = cls_feat.size()
-                anchors = self.generate_anchors(level, [H, W])                         # [M, 4]
-                stride_tensor = torch.ones_like(anchors[..., :1]) * self.stride[level] # [M, 1]
-                
-                # prediction
+            for level, (feat, head) in enumerate(zip(pyramid_feats, self.heads)):
+                cls_feat, reg_feat = head(feat)
+
+                # [B, C, H, W]
+                obj_pred = self.obj_preds[level](reg_feat)
                 cls_pred = self.cls_preds[level](cls_feat)
                 reg_pred = self.reg_preds[level](reg_feat)
 
-                # process preds
+                B, _, H, W = cls_pred.size()
+                fmp_size = [H, W]
+                # generate anchor boxes: [M, 4]
+                anchors = self.generate_anchors(level, fmp_size)
+                
+                # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
+                obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 1)
                 cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
-                reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
-                box_pred = self.decode_bbox(reg_pred, anchors, self.stride[level])
+                reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
 
-                # collect preds
+                # decode bbox
+                ctr_pred = reg_pred[..., :2] * self.stride[level] + anchors[..., :2]
+                wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride[level]
+                pred_x1y1 = ctr_pred - wh_pred * 0.5
+                pred_x2y2 = ctr_pred + wh_pred * 0.5
+                box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
+                all_obj_preds.append(obj_pred)
                 all_cls_preds.append(cls_pred)
-                all_reg_preds.append(reg_pred)
                 all_box_preds.append(box_pred)
                 all_anchors.append(anchors)
-                all_strides.append(stride_tensor)
             
             # output dict
-            outputs = {"pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
-                       "pred_reg": all_reg_preds,        # List(Tensor) [B, M, 4*(reg_max)]
+            outputs = {"pred_obj": all_obj_preds,        # List(Tensor) [B, M, 1]
+                       "pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
                        "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
-                       "anchors": all_anchors,           # List(Tensor) [M, 2]
-                       "strides": self.stride,           # List(Int) = [8, 16, 32]
-                       "stride_tensor": all_strides      # List(Tensor) [M, 1]
-                       }
-            
+                       "anchors": all_anchors,           # List(Tensor) [B, M, 2]
+                       'strides': self.stride}           # List(Int) [8, 16, 32]
+
             return outputs 
