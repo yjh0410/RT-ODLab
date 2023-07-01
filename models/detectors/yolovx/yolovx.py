@@ -29,7 +29,7 @@ class YOLOvx(nn.Module):
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device
-        self.strides = cfg['stride']
+        self.stride = cfg['stride']
         self.num_classes = num_classes
         self.trainable = trainable
         self.conf_thresh = conf_thresh
@@ -52,12 +52,12 @@ class YOLOvx(nn.Module):
 
         ## ----------- Heads -----------
         self.det_heads = build_det_head(
-            cfg, self.fpn_dims, self.head_dim, num_classes, num_levels=len(self.strides))
+            cfg, self.fpn_dims, self.head_dim, num_classes, num_levels=len(self.stride))
 
         ## ----------- Preds -----------
         self.pred_layers = build_pred_layer(
             self.det_heads.cls_head_dim, self.det_heads.reg_head_dim,
-            self.strides, num_classes, num_coords=4, num_levels=len(self.strides))
+            self.stride, num_classes, num_coords=4, num_levels=len(self.stride))
 
 
     ## post-process
