@@ -62,7 +62,7 @@ class MultiLevelPredLayer(nn.Module):
         self.num_coords = num_coords
         self.num_levels = num_levels
 
-        ## ----------- Network Parameters -----------
+        # ----------- Network Parameters -----------
         self.multi_level_preds = nn.ModuleList(
             [SingleLevelPredLayer(
                 cls_dim,
