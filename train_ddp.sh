@@ -3,7 +3,7 @@
 python -m torch.distributed.run --nproc_per_node=4 train.py \
                                                     --cuda \
                                                     -dist \
-                                                    -d voc \
+                                                    -d coco \
                                                     --root /data/datasets/ \
                                                     -m yolovx_n \
                                                     -bs 64 \
