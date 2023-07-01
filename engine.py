@@ -534,11 +534,7 @@ class RTMTrainer(object):
                 log += '[lr: {:.6f}]'.format(cur_lr[2])
                 # loss infor
                 for k in loss_dict_reduced.keys():
-                    if k == 'losses' and self.args.distributed:
-                        world_size = distributed_utils.get_world_size()
-                        log += '[{}: {:.2f}]'.format(k, loss_dict[k] / world_size)
-                    else:
-                        log += '[{}: {:.2f}]'.format(k, loss_dict[k])
+                    log += '[{}: {:.2f}]'.format(k, loss_dict[k])
 
                 # other infor
                 log += '[time: {:.2f}]'.format(t1 - t0)

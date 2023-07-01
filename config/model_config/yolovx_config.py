@@ -37,33 +37,33 @@ yolovx_cfg = {
         'num_reg_head': 2,
         'head_depthwise': False,
         # ---------------- Train config ----------------
-        ## input
+        ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
-        ## matcher
+        ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
                     'topk_candicate': 10},
         # ---------------- Loss config ----------------
-        ## loss weight
+        ## Loss weight
         'loss_obj_weight': 1.0,
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        # training configuration
+        ## Training configuration
         'no_aug_epoch': 20,
-        'trainer_type': 'yolo',
-        # optimizer
-        'optimizer': 'sgd',        # optional: sgd, adam, adamw
-        'momentum': 0.9,           # SGD: 0.937;    AdamW: invalid
-        'weight_decay': 5e-4,      # SGD: 5e-4;     AdamW: 5e-2
-        'clip_grad': 10,           # SGD: 10.0;     AdamW: -1
-        # model EMA
-        'ema_decay': 0.9999,       # SGD: 0.9999;   AdamW: 0.9998
+        'trainer_type': 'rtmdet',
+        ## Optimizer
+        'optimizer': 'adamw',      # optional: sgd, adam, adamw
+        'momentum': None,          # SGD: 0.937;    AdamW: invalid
+        'weight_decay': 5e-2,      # SGD: 5e-4;     AdamW: 5e-2
+        'clip_grad': 35,           # SGD: 10.0;     AdamW: -1
+        ## Model EMA
+        'ema_decay': 0.9998,       # SGD: 0.9999;   AdamW: 0.9998
         'ema_tau': 2000,
-        # lr schedule
-        'scheduler': 'linear',
-        'lr0': 0.01,               # SGD: 0.01;     AdamW: 0.001
+        ## LR schedule
+        'scheduler': 'cos_linear',
+        'lr0': 0.001,              # SGD: 0.01;     AdamW: 0.001
         'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
         'warmup_bias_lr': 0.1,
@@ -104,31 +104,31 @@ yolovx_cfg = {
         'num_reg_head': 2,
         'head_depthwise': False,
         # ---------------- Train config ----------------
-        ## input
+        ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
-        ## matcher
+        ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
                     'topk_candicate': 10},
         # ---------------- Loss config ----------------
-        ## loss weight
+        ## Loss weight
         'loss_obj_weight': 1.0,
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        # training configuration
+        ## Training configuration
         'no_aug_epoch': 20,
         'trainer_type': 'rtmdet',
-        # optimizer
+        ## Optimizer
         'optimizer': 'adamw',      # optional: sgd, adam, adamw
         'momentum': None,          # SGD: 0.937;    AdamW: invalid
         'weight_decay': 5e-2,      # SGD: 5e-4;     AdamW: 5e-2
         'clip_grad': 35,           # SGD: 10.0;     AdamW: -1
-        # model EMA
+        ## Model EMA
         'ema_decay': 0.9998,       # SGD: 0.9999;   AdamW: 0.9998
         'ema_tau': 2000,
-        # lr schedule
+        ## LR schedule
         'scheduler': 'cos_linear',
         'lr0': 0.001,              # SGD: 0.01;     AdamW: 0.001
         'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
