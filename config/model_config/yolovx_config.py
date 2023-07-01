@@ -119,7 +119,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         # training configuration
         'no_aug_epoch': 20,
-        'trainer_type': 'yolo',
+        'trainer_type': 'rtmdet',
         # optimizer
         'optimizer': 'adamw',      # optional: sgd, adam, adamw
         'momentum': None,          # SGD: 0.937;    AdamW: invalid
