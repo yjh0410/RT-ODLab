@@ -13,4 +13,5 @@ python -m torch.distributed.run --nproc_per_node=4 train.py \
                                                     --eval_epoch 10 \
                                                     --ema \
                                                     --fp16 \
+                                                    --sybn \
                                                     --multi_scale \
