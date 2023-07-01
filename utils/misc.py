@@ -303,7 +303,7 @@ def multiclass_nms_class_agnostic(scores, labels, bboxes, nms_thresh):
 ## class-aware NMS 
 def multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes):
     # nms
-    keep = np.zeros(len(bboxes), dtype=np.int)
+    keep = np.zeros(len(bboxes), dtype=np.int32)
     for i in range(num_classes):
         inds = np.where(labels == i)[0]
         if len(inds) == 0:
