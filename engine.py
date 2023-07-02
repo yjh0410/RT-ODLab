@@ -99,6 +99,7 @@ class YoloTrainer(object):
                     self.heavy_eval = True
 
             # train one epoch
+            self.epoch = epoch
             self.train_one_epoch(model)
 
             # eval one epoch
@@ -263,7 +264,6 @@ class YoloTrainer(object):
         
         # LR Schedule
         self.lr_scheduler.step()
-        self.epoch += 1
         
 
     def refine_targets(self, targets, min_box_size):
@@ -396,6 +396,7 @@ class RTMTrainer(object):
                     self.heavy_eval = True
 
             # train one epoch
+            self.epoch = epoch
             self.train_one_epoch(model)
 
             # eval one epoch
@@ -547,7 +548,6 @@ class RTMTrainer(object):
         
         # LR Schedule
         self.lr_scheduler.step()
-        self.epoch += 1
         
 
     def refine_targets(self, targets, min_box_size):
