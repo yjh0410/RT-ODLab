@@ -10,6 +10,7 @@ from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolox.build import build_yolox
 from .yolo_free_v1.build import build_yolo_free_v1
+from .yolo_free_v2.build import build_yolo_free_v2
 from .rtdetr.build import build_rtdetr
 
 
@@ -51,6 +52,10 @@ def build_model(args,
     # FreeYOLOv1
     elif args.model in ['yolo_free_v1_n', 'yolo_free_v1_s', 'yolo_free_v1_m', 'yolo_free_v1_l', 'yolo_free_v1_x']:
         model, criterion = build_yolo_free_v1(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # FreeYOLOv2
+    elif args.model in ['yolo_free_v2_n', 'yolo_free_v2_s', 'yolo_free_v2_m', 'yolo_free_v2_l', 'yolo_free_v1_x']:
+        model, criterion = build_yolo_free_v2(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:

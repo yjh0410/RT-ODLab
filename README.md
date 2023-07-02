@@ -160,6 +160,15 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 | FreeYOLOv1-M |  640  |  300  |                        |                   |                   |                    |  |
 | FreeYOLOv1-L |  640  |  300  |                        |                   |                   |                    |  |
 
+* FreeYOLOv2 (My YOLOv2):
+
+| Model        | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| FreeYOLOv2-N |  640  |  300  |                        |                   |                   |                    |  |
+| FreeYOLOv2-S |  640  |  300  |                        |                   |                   |                    |  |
+| FreeYOLOv2-M |  640  |  300  |                        |                   |                   |                    |  |
+| FreeYOLOv2-L |  640  |  300  |                        |                   |                   |                    |  |
+
 * Redesigned RT-DETR:
 
 | Model     | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |

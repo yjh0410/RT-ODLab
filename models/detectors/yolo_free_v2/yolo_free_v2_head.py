@@ -1,57 +1,57 @@
 import torch
 import torch.nn as nn
 
-from .yolo_free_v1_basic import Conv
+from .yolo_free_v2_basic import Conv
 
 
 class SingleLevelHead(nn.Module):
-    def __init__(self, in_dim, out_dim, num_classes, num_cls_head, num_reg_head, act_type, norm_type, depthwise):
+    def __init__(self, cfg, in_dim, out_dim, num_classes):
         super().__init__()
         # --------- Basic Parameters ----------
         self.in_dim = in_dim
         self.num_classes = num_classes
-        self.num_cls_head = num_cls_head
-        self.num_reg_head = num_reg_head
-        self.act_type = act_type
-        self.norm_type = norm_type
-        self.depthwise = depthwise
+        self.num_cls_head = cfg['num_cls_head']
+        self.num_reg_head = cfg['num_reg_head']
+        self.act_type = cfg['head_act']
+        self.norm_type = cfg['head_norm']
+        self.depthwise = cfg['head_depthwise']
         
         # --------- Network Parameters ----------
         ## cls head
         cls_feats = []
         self.cls_head_dim = max(out_dim, num_classes)
-        for i in range(num_cls_head):
+        for i in range(self.num_cls_head):
             if i == 0:
                 cls_feats.append(
                     Conv(in_dim, self.cls_head_dim, k=3, p=1, s=1, 
-                         act_type=act_type,
-                         norm_type=norm_type,
-                         depthwise=depthwise)
+                         act_type=self.act_type,
+                         norm_type=self.norm_type,
+                         depthwise=self.depthwise)
                         )
             else:
                 cls_feats.append(
                     Conv(self.cls_head_dim, self.cls_head_dim, k=3, p=1, s=1, 
-                        act_type=act_type,
-                        norm_type=norm_type,
-                        depthwise=depthwise)
+                        act_type=self.act_type,
+                        norm_type=self.norm_type,
+                        depthwise=self.depthwise)
                         )      
         ## reg head
         reg_feats = []
-        self.reg_head_dim = out_dim
-        for i in range(num_reg_head):
+        self.reg_head_dim = max(out_dim, 4*cfg['reg_max'])
+        for i in range(self.num_reg_head):
             if i == 0:
                 reg_feats.append(
                     Conv(in_dim, self.reg_head_dim, k=3, p=1, s=1, 
-                         act_type=act_type,
-                         norm_type=norm_type,
-                         depthwise=depthwise)
+                         act_type=self.act_type,
+                         norm_type=self.norm_type,
+                         depthwise=self.depthwise)
                         )
             else:
                 reg_feats.append(
                     Conv(self.reg_head_dim, self.reg_head_dim, k=3, p=1, s=1, 
-                         act_type=act_type,
-                         norm_type=norm_type,
-                         depthwise=depthwise)
+                         act_type=self.act_type,
+                         norm_type=self.norm_type,
+                         depthwise=self.depthwise)
                         )
         self.cls_feats = nn.Sequential(*cls_feats)
         self.reg_feats = nn.Sequential(*reg_feats)
@@ -73,14 +73,10 @@ class MultiLevelHead(nn.Module):
         ## ----------- Network Parameters -----------
         self.multi_level_heads = nn.ModuleList(
             [SingleLevelHead(
+                cfg,
                 in_dims[level],
                 out_dim,
-                num_classes,
-                cfg['num_cls_head'],
-                cfg['num_reg_head'],
-                cfg['head_act'],
-                cfg['head_norm'],
-                cfg['head_depthwise'])
+                num_classes)
                 for level in range(num_levels)
             ])
         # --------- Basic Parameters ----------

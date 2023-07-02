@@ -681,6 +681,7 @@ class DetrTrainer(object):
                     self.heavy_eval = True
 
             # train one epoch
+            self.epoch = epoch
             self.train_one_epoch(model)
 
             # eval one epoch
@@ -837,7 +838,6 @@ class DetrTrainer(object):
         
         # LR Scheduler
         self.lr_scheduler.step()
-        self.epoch += 1
         
 
     def refine_targets(self, targets, min_box_size, img_size):

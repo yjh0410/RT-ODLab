@@ -1,14 +1,13 @@
 # --------------- Torch components ---------------
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 # --------------- Model components ---------------
-from .yolo_free_v1_backbone import build_backbone
-from .yolo_free_v1_neck import build_neck
-from .yolo_free_v1_pafpn import build_fpn
-from .yolo_free_v1_head import build_det_head
-from .yolo_free_v1_pred import build_pred_layer
+from .yolo_free_v2_backbone import build_backbone
+from .yolo_free_v2_neck import build_neck
+from .yolo_free_v2_pafpn import build_fpn
+from .yolo_free_v2_head import build_det_head
+from .yolo_free_v2_pred import build_pred_layer
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
@@ -56,15 +55,14 @@ class FreeYOLOv2(nn.Module):
 
         ## ----------- Preds -----------
         self.pred_layers = build_pred_layer(
-            self.det_heads.cls_head_dim, self.det_heads.reg_head_dim,
-            self.stride, num_classes, num_coords=4, num_levels=len(self.stride))
+            cfg, self.det_heads.cls_head_dim, self.det_heads.reg_head_dim,
+            self.stride, num_classes, num_levels=len(self.stride))
 
 
     ## post-process
-    def post_process(self, obj_preds, cls_preds, box_preds):
+    def post_process(self, cls_preds, box_preds):
         """
         Input:
-            obj_preds: List(Tensor) [[H x W, 1], ...]
             cls_preds: List(Tensor) [[H x W, C], ...]
             box_preds: List(Tensor) [[H x W, 4], ...]
             anchors:   List(Tensor) [[H x W, 2], ...]
@@ -73,13 +71,12 @@ class FreeYOLOv2(nn.Module):
         all_labels = []
         all_bboxes = []
         
-        for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
-            obj_pred_i = obj_pred_i[0]
+        for cls_pred_i, box_pred_i in zip(cls_preds, box_preds):
             cls_pred_i = cls_pred_i[0]
             box_pred_i = box_pred_i[0]
             
-            # (H x W x KA x C,)
-            scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
+            # (H x W x C,)
+            scores_i = cls_pred_i.sigmoid().flatten()
 
             # Keep top k top scoring indices only.
             num_topk = min(self.topk, box_pred_i.size(0))
@@ -137,15 +134,13 @@ class FreeYOLOv2(nn.Module):
         # ---------------- Preds ----------------
         outputs = self.pred_layers(cls_feats, reg_feats)
 
-        all_obj_preds = outputs['pred_obj']
         all_cls_preds = outputs['pred_cls']
         all_box_preds = outputs['pred_box']
 
         if self.deploy:
-            obj_preds = torch.cat(all_obj_preds, dim=1)[0]
             cls_preds = torch.cat(all_cls_preds, dim=1)[0]
             box_preds = torch.cat(all_box_preds, dim=1)[0]
-            scores = torch.sqrt(obj_preds.sigmoid() * cls_preds.sigmoid())
+            scores = cls_preds.sigmoid()
             bboxes = box_preds
             # [n_anchors_all, 4 + C]
             outputs = torch.cat([bboxes, scores], dim=-1)
@@ -153,8 +148,7 @@ class FreeYOLOv2(nn.Module):
             return outputs
         else:
             # post process
-            bboxes, scores, labels = self.post_process(
-                all_obj_preds, all_cls_preds, all_box_preds)
+            bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
         
             return bboxes, scores, labels
 

@@ -56,6 +56,7 @@ class MultiLevelPredLayer(nn.Module):
         self.strides = strides
         self.num_classes = num_classes
         self.num_levels = num_levels
+        self.reg_max = cfg['reg_max']
 
         # ----------- Network Parameters -----------
         ## proj_conv
@@ -125,11 +126,11 @@ class MultiLevelPredLayer(nn.Module):
             anchors = anchors.to(cls_pred.device)
 
             # stride tensor: [M, 1]
-            stride_tensor = torch.ones_like(anchors[..., :1]) * self.stride[level]
+            stride_tensor = torch.ones_like(anchors[..., :1]) * self.strides[level]
 
             # process preds
             cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
-            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.cfg['reg_max'])
+            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
             box_pred = self.decode_bbox(reg_pred, anchors, self.strides[level])
 
             # collect preds

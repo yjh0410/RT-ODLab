@@ -12,10 +12,11 @@ yolo_free_v2_cfg = {
         'bk_dpw': False,
         'width': 0.25,
         'depth': 0.34,
+        'ratio': 2.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'sppf',
+        'neck': 'csp_sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -36,19 +37,21 @@ yolo_free_v2_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
+        'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
-        ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candicate': 10},
+        'matcher': {'topk': 10,
+                    'alpha': 0.5,
+                    'beta': 6.0},
         # ---------------- Loss config ----------------
         ## Loss weight
-        'loss_obj_weight': 1.0,
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'cls_loss': 'bce',   # optional: vfl
+        'loss_cls_weight': 0.5,
+        'loss_iou_weight': 7.5,
+        'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
         ## Training configuration
         'no_aug_epoch': 20,
@@ -79,10 +82,11 @@ yolo_free_v2_cfg = {
         'bk_dpw': False,
         'width': 1.0,
         'depth': 1.0,
+        'ratio': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'sppf',
+        'neck': 'csp_sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -92,7 +96,7 @@ yolo_free_v2_cfg = {
         'fpn': 'yolo_pafpn',
         'fpn_reduce_layer': 'Conv',
         'fpn_downsample_layer': 'Conv',
-        'fpn_core_block': 'elanblock',
+        'fpn_core_block': 'elan_cspblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -103,19 +107,21 @@ yolo_free_v2_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
+        'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
-        ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candicate': 10},
+        'matcher': {'topk': 10,
+                    'alpha': 0.5,
+                    'beta': 6.0},
         # ---------------- Loss config ----------------
         ## Loss weight
-        'loss_obj_weight': 1.0,
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'cls_loss': 'bce',   # optional: vfl
+        'loss_cls_weight': 0.5,
+        'loss_iou_weight': 7.5,
+        'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
         ## Training configuration
         'no_aug_epoch': 20,
