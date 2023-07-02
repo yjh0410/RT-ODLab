@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .yolovx_basic import Conv
+from .yolo_free_v1_basic import Conv
 
 
 class SingleLevelHead(nn.Module):

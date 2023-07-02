@@ -151,14 +151,14 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
 
-* YOLOvx (Incremental Improved YOLOX):
+* FreeYOLOv1 (My YOLO):
 
-| Model    | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOvx-N |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOvx-S |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOvx-M |  640  |  300  |                        |                   |                   |                    |  |
-| YOLOvx-L |  640  |  300  |                        |                   |                   |                    |  |
+| Model        | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| FreeYOLOv1-N |  640  |  300  |                        |                   |                   |                    |  |
+| FreeYOLOv1-S |  640  |  300  |                        |                   |                   |                    |  |
+| FreeYOLOv1-M |  640  |  300  |                        |                   |                   |                    |  |
+| FreeYOLOv1-L |  640  |  300  |                        |                   |                   |                    |  |
 
 * Redesigned RT-DETR:
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .yolovx_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .yolo_free_v1_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
 # YOLO-Style PaFPN

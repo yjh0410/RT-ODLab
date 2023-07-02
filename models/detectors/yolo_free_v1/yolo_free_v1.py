@@ -4,18 +4,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # --------------- Model components ---------------
-from .yolovx_backbone import build_backbone
-from .yolovx_neck import build_neck
-from .yolovx_pafpn import build_fpn
-from .yolovx_head import build_det_head
-from .yolovx_pred import build_pred_layer
+from .yolo_free_v1_backbone import build_backbone
+from .yolo_free_v1_neck import build_neck
+from .yolo_free_v1_pafpn import build_fpn
+from .yolo_free_v1_head import build_det_head
+from .yolo_free_v1_pred import build_pred_layer
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
 
 
-# YOLOvx
-class YOLOvx(nn.Module):
+# My YOLO
+class FreeYOLOv1(nn.Module):
     def __init__(self, 
                  cfg,
                  device, 
@@ -25,7 +25,7 @@ class YOLOvx(nn.Module):
                  trainable = False, 
                  topk = 1000,
                  deploy = False):
-        super(YOLOvx, self).__init__()
+        super(FreeYOLOv1, self).__init__()
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device

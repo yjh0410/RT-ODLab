@@ -1,8 +1,8 @@
-# YOLOvx Config
+# FreeYOLOv`` Config
 
 
-yolovx_cfg = {
-    'yolovx_n':{
+yolo_free_v1_cfg = {
+    'yolo_free_v1_n':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -69,7 +69,7 @@ yolovx_cfg = {
         'warmup_bias_lr': 0.1,
     },
 
-    'yolovx_l':{
+    'yolo_free_v1_l':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
