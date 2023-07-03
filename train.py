@@ -157,7 +157,7 @@ def train():
     if args.eval_first and distributed_utils.is_main_process():
         # to check whether the evaluator can work
         model_eval = model_without_ddp
-        trainer.eval_one_epoch(model_eval)
+        trainer.eval(model_eval)
 
     ## Satrt Training
     trainer.train(model)
