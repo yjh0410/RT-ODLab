@@ -62,7 +62,7 @@ yolo_free_v1_cfg = {
         'ema_decay': 0.9998,       # SGD: 0.9999;   AdamW: 0.9998
         'ema_tau': 2000,
         ## LR schedule
-        'scheduler': 'cos_linear',
+        'scheduler': 'linear',
         'lr0': 0.001,              # SGD: 0.01;     AdamW: 0.001
         'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
@@ -129,7 +129,7 @@ yolo_free_v1_cfg = {
         'ema_decay': 0.9998,       # SGD: 0.9999;   AdamW: 0.9998
         'ema_tau': 2000,
         ## LR schedule
-        'scheduler': 'cos_linear',
+        'scheduler': 'linear',
         'lr0': 0.001,              # SGD: 0.01;     AdamW: 0.001
         'lrf': 0.01,               # SGD: 0.01;     AdamW: 0.01
         'warmup_momentum': 0.8,
