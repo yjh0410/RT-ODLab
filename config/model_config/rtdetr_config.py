@@ -57,23 +57,7 @@ rtdetr_cfg = {
         'loss_box_weight': 5.0,
         'loss_giou_weight': 2.0,
         # ---------------- Train config ----------------
-        ## close strong augmentation
-        'no_aug_epoch': 20,
         'trainer_type': 'detr',
-        ## optimizer
-        'optimizer': 'adamw',
-        'momentum': None,
-        'weight_decay': 1e-4,
-        'clip_grad': 0.1,
-        ## model EMA
-        'ema_decay': 0.9998,
-        'ema_tau': 2000,
-        ## lr schedule
-        'scheduler': 'linear',
-        'lr0': 0.0001,
-        'lrf': 0.1,
-        'warmup_momentum': 0.8,
-        'warmup_bias_lr': 0.1,
         },
 
 }
