@@ -8,35 +8,34 @@ from .yolox_head import build_head
 from utils.misc import multiclass_nms
 
 
-# YOLOX
 class YOLOX(nn.Module):
-    def __init__(self,
+    def __init__(self, 
                  cfg,
-                 device,
-                 num_classes=20,
-                 conf_thresh=0.01,
-                 nms_thresh=0.5,
-                 topk=100,
-                 trainable=False,
+                 device, 
+                 num_classes = 20, 
+                 conf_thresh = 0.05,
+                 nms_thresh = 0.6,
+                 trainable = False, 
+                 topk = 1000,
                  deploy = False):
         super(YOLOX, self).__init__()
-        # --------- Basic Parameters ----------
+        # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device
-        self.stride = [8, 16, 32]
+        self.stride = cfg['stride']
         self.num_classes = num_classes
         self.trainable = trainable
         self.conf_thresh = conf_thresh
         self.nms_thresh = nms_thresh
         self.topk = topk
         self.deploy = deploy
-        
+                
         # ------------------- Network Structure -------------------
         ## 主干网络
         self.backbone, feats_dim = build_backbone(cfg, trainable&cfg['pretrained'])
         
-        ## 颈部网络: 特征金字塔
-        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=int(256*cfg['width']))
+        ## 特征金字塔
+        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))
         self.head_dim = self.fpn.out_dim
 
         ## 检测头
@@ -58,6 +57,7 @@ class YOLOX(nn.Module):
                             [nn.Conv2d(head.reg_out_dim, 4, kernel_size=1) 
                                 for head in self.non_shared_heads
                               ])                 
+
 
     # ---------------------- Basic Functions ----------------------
     ## generate anchor points
@@ -134,16 +134,17 @@ class YOLOX(nn.Module):
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):
-        # backbone
+        # 主干网络
         pyramid_feats = self.backbone(x)
 
-        # fpn
+        # 特征金字塔
         pyramid_feats = self.fpn(pyramid_feats)
 
-        # non-shared heads
+        # 检测头
         all_obj_preds = []
         all_cls_preds = []
         all_box_preds = []
+        all_anchors = []
         for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
             cls_feat, reg_feat = head(feat)
 
@@ -171,6 +172,7 @@ class YOLOX(nn.Module):
             all_obj_preds.append(obj_pred)
             all_cls_preds.append(cls_pred)
             all_box_preds.append(box_pred)
+            all_anchors.append(anchors)
 
         if self.deploy:
             obj_preds = torch.cat(all_obj_preds, dim=0)
@@ -190,17 +192,18 @@ class YOLOX(nn.Module):
             return bboxes, scores, labels
 
 
+    # ---------------------- Main Process for Training ----------------------
     def forward(self, x):
         if not self.trainable:
             return self.inference_single_image(x)
         else:
-            # backbone
+            # 主干网络
             pyramid_feats = self.backbone(x)
 
-            # fpn
+            # 特征金字塔
             pyramid_feats = self.fpn(pyramid_feats)
 
-            # non-shared heads
+            # 检测头
             all_anchors = []
             all_obj_preds = []
             all_cls_preds = []

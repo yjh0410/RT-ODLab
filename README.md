@@ -144,30 +144,12 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 * YOLOv7:
 
-| Model    | Backbone      | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|---------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv7-T | ELANNet-Tiny  |  640  |  300  |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
-| YOLOv7-L | ELANNet-Large |  640  |  300  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
+| Model       | Backbone      | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|-------------|---------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOv7-Tiny | ELANNet-Tiny  |  640  |  300  |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
+| YOLOv7      | ELANNet-Large |  640  |  300  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
-
-* FreeYOLOv1 (My YOLO):
-
-| Model        | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| FreeYOLOv1-N |  640  |  300  |                        |                   |                   |                    |  |
-| FreeYOLOv1-S |  640  |  300  |                        |                   |                   |                    |  |
-| FreeYOLOv1-M |  640  |  300  |                        |                   |                   |                    |  |
-| FreeYOLOv1-L |  640  |  300  |                        |                   |                   |                    |  |
-
-* FreeYOLOv2 (My YOLOv2):
-
-| Model        | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| FreeYOLOv2-N |  640  |  300  |                        |                   |                   |                    |  |
-| FreeYOLOv2-S |  640  |  300  |                        |                   |                   |                    |  |
-| FreeYOLOv2-M |  640  |  300  |                        |                   |                   |                    |  |
-| FreeYOLOv2-L |  640  |  300  |                        |                   |                   |                    |  |
 
 * Redesigned RT-DETR:
 

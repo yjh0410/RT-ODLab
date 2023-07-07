@@ -1,7 +1,9 @@
+import numpy as np
 import torch
 import torch.nn as nn
 
 
+# ---------------------------- 2D CNN ----------------------------
 class SiLU(nn.Module):
     """export-friendly version of nn.SiLU()"""
 
@@ -25,6 +27,8 @@ def get_activation(act_type=None):
         return nn.Mish(inplace=True)
     elif act_type == 'silu':
         return nn.SiLU(inplace=True)
+    elif act_type is None:
+        return nn.Identity()
 
 
 def get_norm(norm_type, dim):
@@ -43,8 +47,8 @@ class Conv(nn.Module):
                  p=0,                  # padding
                  s=1,                  # padding
                  d=1,                  # dilation
-                 act_type='',          # activation
-                 norm_type='',         # normalization
+                 act_type='lrelu',     # activation
+                 norm_type='BN',       # normalization
                  depthwise=False):
         super(Conv, self).__init__()
         convs = []
@@ -77,25 +81,21 @@ class Conv(nn.Module):
         return self.convs(x)
 
 
-# ConvBlocks
+# ---------------------------- YOLOv5 Modules ----------------------------
+## BottleNeck
 class Bottleneck(nn.Module):
     def __init__(self,
                  in_dim,
                  out_dim,
                  expand_ratio=0.5,
-                 kernel=[1, 3],
                  shortcut=False,
+                 depthwise=False,
                  act_type='silu',
-                 norm_type='BN',
-                 depthwise=False):
+                 norm_type='BN'):
         super(Bottleneck, self).__init__()
         inter_dim = int(out_dim * expand_ratio)  # hidden channels            
-        self.cv1 = Conv(in_dim, inter_dim, k=kernel[0], p=kernel[0]//2,
-                        norm_type=norm_type, act_type=act_type,
-                        depthwise=False if kernel[0] == 1 else depthwise)
-        self.cv2 = Conv(inter_dim, out_dim, k=kernel[1], p=kernel[1]//2,
-                        norm_type=norm_type, act_type=act_type,
-                        depthwise=False if kernel[1] == 1 else depthwise)
+        self.cv1 = Conv(in_dim, inter_dim, k=1, norm_type=norm_type, act_type=act_type)
+        self.cv2 = Conv(inter_dim, out_dim, k=3, p=1, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
         self.shortcut = shortcut and in_dim == out_dim
 
     def forward(self, x):
@@ -103,14 +103,12 @@ class Bottleneck(nn.Module):
 
         return x + h if self.shortcut else h
 
-
-# CSP-stage block
+## CSP-stage block
 class CSPBlock(nn.Module):
     def __init__(self,
                  in_dim,
                  out_dim,
                  expand_ratio=0.5,
-                 kernel=[1, 3],
                  nblocks=1,
                  shortcut=False,
                  depthwise=False,
@@ -122,7 +120,7 @@ class CSPBlock(nn.Module):
         self.cv2 = Conv(in_dim, inter_dim, k=1, norm_type=norm_type, act_type=act_type)
         self.cv3 = Conv(2 * inter_dim, out_dim, k=1, norm_type=norm_type, act_type=act_type)
         self.m = nn.Sequential(*[
-            Bottleneck(inter_dim, inter_dim, expand_ratio=1.0, kernel=kernel, shortcut=shortcut,
+            Bottleneck(inter_dim, inter_dim, expand_ratio=1.0, shortcut=shortcut,
                        norm_type=norm_type, act_type=act_type, depthwise=depthwise)
                        for _ in range(nblocks)
                        ])
@@ -135,3 +133,33 @@ class CSPBlock(nn.Module):
 
         return out
     
+
+# ---------------------------- FPN Modules ----------------------------
+## build fpn's core block
+def build_fpn_block(cfg, in_dim, out_dim):
+    if cfg['fpn_core_block'] == 'CSPBlock':
+        layer = CSPBlock(in_dim=in_dim,
+                         out_dim=out_dim,
+                         expand_ratio=0.5,
+                         nblocks = round(3*cfg['depth']),
+                         shortcut = False,
+                         act_type=cfg['fpn_act'],
+                         norm_type=cfg['fpn_norm'],
+                         depthwise=cfg['fpn_depthwise']
+                         )
+        
+    return layer
+
+## build fpn's reduce layer
+def build_reduce_layer(cfg, in_dim, out_dim):
+    if cfg['fpn_reduce_layer'] == 'Conv':
+        layer = Conv(in_dim, out_dim, k=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        
+    return layer
+
+## build fpn's downsample layer
+def build_downsample_layer(cfg, in_dim, out_dim):
+    if cfg['fpn_downsample_layer'] == 'Conv':
+        layer = Conv(in_dim, out_dim, k=3, s=2, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        
+    return layer

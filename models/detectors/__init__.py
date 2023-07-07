@@ -9,8 +9,6 @@ from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolox.build import build_yolox
-from .yolo_free_v1.build import build_yolo_free_v1
-from .yolo_free_v2.build import build_yolo_free_v2
 from .rtdetr.build import build_rtdetr
 
 
@@ -30,11 +28,11 @@ def build_model(args,
         model, criterion = build_yolov2(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv3   
-    elif args.model in ['yolov3', 'yolov3_t']:
+    elif args.model in ['yolov3', 'yolov3_tiny']:
         model, criterion = build_yolov3(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv4   
-    elif args.model in ['yolov4', 'yolov4_t']:
+    elif args.model in ['yolov4', 'yolov4_tiny']:
         model, criterion = build_yolov4(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv5   
@@ -42,20 +40,12 @@ def build_model(args,
         model, criterion = build_yolov5(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv7
-    elif args.model in ['yolov7_t', 'yolov7_l', 'yolov7_x']:
+    elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         model, criterion = build_yolov7(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
-            args, model_cfg, device, num_classes, trainable, deploy)
-    # FreeYOLOv1
-    elif args.model in ['yolo_free_v1_n', 'yolo_free_v1_s', 'yolo_free_v1_m', 'yolo_free_v1_l', 'yolo_free_v1_x']:
-        model, criterion = build_yolo_free_v1(
-            args, model_cfg, device, num_classes, trainable, deploy)
-    # FreeYOLOv2
-    elif args.model in ['yolo_free_v2_n', 'yolo_free_v2_s', 'yolo_free_v2_m', 'yolo_free_v2_l', 'yolo_free_v1_x']:
-        model, criterion = build_yolo_free_v2(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:

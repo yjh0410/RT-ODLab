@@ -202,11 +202,11 @@ class ModelEMA(object):
     For EMA details see https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage
     """
 
-    def __init__(self, model, decay=0.9999, tau=2000, updates=0):
+    def __init__(self, cfg, model, updates=0):
         # Create EMA
         self.ema = deepcopy(self.de_parallel(model)).eval()  # FP32 EMA
         self.updates = updates  # number of EMA updates
-        self.decay = lambda x: decay * (1 - math.exp(-x / tau))  # decay exponential ramp (to help early epochs)
+        self.decay = lambda x: cfg['ema_decay'] * (1 - math.exp(-x / cfg['ema_tau']))  # decay exponential ramp (to help early epochs)
         for p in self.ema.parameters():
             p.requires_grad_(False)
 

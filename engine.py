@@ -24,7 +24,7 @@ from dataset.build import build_dataset, build_transform
 
 # Trainer refered to YOLOv8
 class YoloTrainer(object):
-    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion):
+    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
         self.args = args
         self.epoch = 0
@@ -32,7 +32,14 @@ class YoloTrainer(object):
         self.last_opt_step = 0
         self.device = device
         self.criterion = criterion
+        self.world_size = world_size
         self.heavy_eval = False
+        self.no_aug_epoch = 20
+        self.clip_grad = 10
+        self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.937, 'weight_decay': 5e-4, 'lr0': 0.01}
+        self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
+        self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
+        self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
         self.data_cfg = data_cfg
@@ -41,14 +48,13 @@ class YoloTrainer(object):
 
         # ---------------------------- Build Transform ----------------------------
         self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+            args=args, trans_config=self.trans_cfg, max_stride=model_cfg['max_stride'], is_train=True)
         self.val_transform, _ = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
+            args=args, trans_config=self.trans_cfg, max_stride=model_cfg['max_stride'], is_train=False)
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
         self.dataset, self.dataset_info = build_dataset(self.args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
-        world_size = distributed_utils.get_world_size()
-        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // world_size, CollateFunc())
+        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // self.world_size, CollateFunc())
 
         # ---------------------------- Build Evaluator ----------------------------
         self.evaluator = build_evluator(self.args, self.data_cfg, self.val_transform, self.device)
@@ -58,12 +64,11 @@ class YoloTrainer(object):
 
         # ---------------------------- Build Optimizer ----------------------------
         accumulate = max(1, round(64 / self.args.batch_size))
-        self.model_cfg['weight_decay'] *= self.args.batch_size * accumulate / 64
-        self.optimizer, self.start_epoch = build_yolo_optimizer(self.model_cfg, model, self.args.resume)
+        self.optimizer_dict['weight_decay'] *= self.args.batch_size * accumulate / 64
+        self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.args.max_epoch += self.args.wp_epoch
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, self.args.max_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume:
             self.lr_scheduler.step()
@@ -71,11 +76,7 @@ class YoloTrainer(object):
         # ---------------------------- Build Model-EMA ----------------------------
         if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
             print('Build ModelEMA ...')
-            self.model_ema = ModelEMA(
-                model,
-                self.model_cfg['ema_decay'],
-                self.model_cfg['ema_tau'],
-                self.start_epoch * len(self.train_loader))
+            self.model_ema = ModelEMA(self.ema_dict, model, self.start_epoch * len(self.train_loader))
         else:
             self.model_ema = None
 
@@ -86,7 +87,7 @@ class YoloTrainer(object):
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
             # check second stage
-            if epoch >= (self.args.max_epoch - self.model_cfg['no_aug_epoch'] - 1):
+            if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1):
                 # close mosaic augmentation
                 if self.train_loader.dataset.mosaic_prob > 0.:
                     print('close Mosaic Augmentation ...')
@@ -176,7 +177,7 @@ class YoloTrainer(object):
         nw = epoch_size * self.args.wp_epoch
         accumulate = accumulate = max(1, round(64 / self.args.batch_size))
 
-        # Train one epoch
+        # train one epoch
         for iter_i, (images, targets) in enumerate(self.train_loader):
             ni = iter_i + self.epoch * epoch_size
             # Warmup
@@ -186,11 +187,11 @@ class YoloTrainer(object):
                 for j, x in enumerate(self.optimizer.param_groups):
                     # bias lr falls from 0.1 to lr0, all other lrs rise from 0.0 to lr0
                     x['lr'] = np.interp(
-                        ni, xi, [self.model_cfg['warmup_bias_lr'] if j == 0 else 0.0, x['initial_lr'] * self.lf(self.epoch)])
+                        ni, xi, [self.warmup_dict['warmup_bias_lr'] if j == 0 else 0.0, x['initial_lr'] * self.lf(self.epoch)])
                     if 'momentum' in x:
-                        x['momentum'] = np.interp(ni, xi, [self.model_cfg['warmup_momentum'], self.model_cfg['momentum']])
+                        x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
-            # To device
+            # to device
             images = images.to(self.device, non_blocking=True).float() / 255.
 
             # Multi scale
@@ -200,34 +201,34 @@ class YoloTrainer(object):
             else:
                 targets = self.refine_targets(targets, self.args.min_box_size)
                 
-            # Visualize train targets
+            # visualize train targets
             if self.args.vis_tgt:
                 vis_data(images*255, targets)
 
-            # Inference
+            # inference
             with torch.cuda.amp.autocast(enabled=self.args.fp16):
                 outputs = model(images)
-                # Compute loss
+                # loss
                 loss_dict = self.criterion(outputs=outputs, targets=targets)
                 losses = loss_dict['losses']
                 losses *= images.shape[0]  # loss * bs
 
+                # reduce            
                 loss_dict_reduced = distributed_utils.reduce_dict(loss_dict)
 
-                if self.args.distributed:
-                    # gradient averaged between devices in DDP mode
-                    losses *= distributed_utils.get_world_size()
+                # gradient averaged between devices in DDP mode
+                losses *= distributed_utils.get_world_size()
 
-            # Backward
+            # backward
             self.scaler.scale(losses).backward()
 
             # Optimize
             if ni - self.last_opt_step >= accumulate:
-                if self.model_cfg['clip_grad'] > 0:
+                if self.clip_grad > 0:
                     # unscale gradients
                     self.scaler.unscale_(self.optimizer)
                     # clip gradients
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.model_cfg['clip_grad'])
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.clip_grad)
                 # optimizer.step
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
@@ -237,7 +238,7 @@ class YoloTrainer(object):
                     self.model_ema.update(model)
                 self.last_opt_step = ni
 
-            # Logs
+            # display
             if distributed_utils.is_main_process() and iter_i % 10 == 0:
                 t1 = time.time()
                 cur_lr = [param_group['lr']  for param_group in self.optimizer.param_groups]
@@ -247,11 +248,7 @@ class YoloTrainer(object):
                 log += '[lr: {:.6f}]'.format(cur_lr[2])
                 # loss infor
                 for k in loss_dict_reduced.keys():
-                    if k == 'losses' and self.args.distributed:
-                        world_size = distributed_utils.get_world_size()
-                        log += '[{}: {:.2f}]'.format(k, loss_dict[k] / world_size)
-                    else:
-                        log += '[{}: {:.2f}]'.format(k, loss_dict[k])
+                    log += '[{}: {:.2f}]'.format(k, loss_dict_reduced[k])
 
                 # other infor
                 log += '[time: {:.2f}]'.format(t1 - t0)
@@ -262,7 +259,6 @@ class YoloTrainer(object):
                 
                 t0 = time.time()
         
-        # LR Schedule
         self.lr_scheduler.step()
         
 
@@ -323,14 +319,19 @@ class YoloTrainer(object):
 
 # Trainer refered to RTMDet
 class RTMTrainer(object):
-    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion):
+    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
         self.args = args
         self.epoch = 0
         self.best_map = -1.
         self.device = device
         self.criterion = criterion
+        self.world_size = world_size
         self.heavy_eval = False
+        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
+        self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.01}
+        self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
         self.data_cfg = data_cfg
@@ -345,8 +346,7 @@ class RTMTrainer(object):
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
         self.dataset, self.dataset_info = build_dataset(self.args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
-        world_size = distributed_utils.get_world_size()
-        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // world_size, CollateFunc())
+        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // self.world_size, CollateFunc())
 
         # ---------------------------- Build Evaluator ----------------------------
         self.evaluator = build_evluator(self.args, self.data_cfg, self.val_transform, self.device)
@@ -355,12 +355,11 @@ class RTMTrainer(object):
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.model_cfg['lr0'] *= self.args.batch_size / 64
-        self.optimizer, self.start_epoch = build_yolo_optimizer(self.model_cfg, model, self.args.resume)
+        self.optimizer_dict['lr0'] *= self.args.batch_size / 64
+        self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.args.max_epoch += self.args.wp_epoch
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, self.args.max_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume:
             self.lr_scheduler.step()
@@ -368,11 +367,7 @@ class RTMTrainer(object):
         # ---------------------------- Build Model-EMA ----------------------------
         if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
             print('Build ModelEMA ...')
-            self.model_ema = ModelEMA(
-                model,
-                self.model_cfg['ema_decay'],
-                self.model_cfg['ema_tau'],
-                self.start_epoch * len(self.train_loader))
+            self.model_ema = ModelEMA(self.ema_dict, model, self.start_epoch * len(self.train_loader))
         else:
             self.model_ema = None
 
@@ -607,7 +602,7 @@ class RTMTrainer(object):
 
 # Trainer for DETR
 class DetrTrainer(object):
-    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion):
+    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
         self.args = args
         self.epoch = 0
@@ -615,7 +610,12 @@ class DetrTrainer(object):
         self.last_opt_step = 0
         self.device = device
         self.criterion = criterion
+        self.world_size = world_size
         self.heavy_eval = False
+        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001}
+        self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
+        self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.1}
+        self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
         self.data_cfg = data_cfg
@@ -630,8 +630,7 @@ class DetrTrainer(object):
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
         self.dataset, self.dataset_info = build_dataset(self.args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
-        world_size = distributed_utils.get_world_size()
-        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // world_size, CollateFunc())
+        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // self.world_size, CollateFunc())
 
         # ---------------------------- Build Evaluator ----------------------------
         self.evaluator = build_evluator(self.args, self.data_cfg, self.val_transform, self.device)
@@ -640,12 +639,11 @@ class DetrTrainer(object):
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.model_cfg['lr0'] *= self.args.batch_size / 16.
-        self.optimizer, self.start_epoch = build_detr_optimizer(model_cfg, model, self.args.resume)
+        self.optimizer_dict['lr0'] *= self.args.batch_size / 16.
+        self.optimizer, self.start_epoch = build_detr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.args.max_epoch += self.args.wp_epoch
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.model_cfg, self.optimizer, self.args.max_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume:
             self.lr_scheduler.step()
@@ -653,11 +651,7 @@ class DetrTrainer(object):
         # ---------------------------- Build Model-EMA ----------------------------
         if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
             print('Build ModelEMA ...')
-            self.model_ema = ModelEMA(
-                model,
-                self.model_cfg['ema_decay'],
-                self.model_cfg['ema_tau'],
-                self.start_epoch * len(self.train_loader))
+            self.model_ema = ModelEMA(self.ema_dict, model, self.start_epoch * len(self.train_loader))
         else:
             self.model_ema = None
 
@@ -910,13 +904,13 @@ class DetrTrainer(object):
 
 
 # Build Trainer
-def build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion):
+def build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
     if model_cfg['trainer_type'] == 'yolo':
-        return YoloTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion)
+        return YoloTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     elif model_cfg['trainer_type'] == 'rtmdet':
-        return RTMTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion)
+        return RTMTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     elif model_cfg['trainer_type'] == 'detr':
-        return DetrTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion)
+        return DetrTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     else:
         raise NotImplementedError
     

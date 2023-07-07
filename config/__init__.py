@@ -74,7 +74,7 @@ def build_trans_config(trans_config='ssd'):
 
 
 # ------------------ Model Config ----------------------
-## Reproducrd YOLO
+## YOLO series
 from .model_config.yolov1_config import yolov1_cfg
 from .model_config.yolov2_config import yolov2_cfg
 from .model_config.yolov3_config import yolov3_cfg
@@ -82,9 +82,6 @@ from .model_config.yolov4_config import yolov4_cfg
 from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolox_config import yolox_cfg
-## My YOLO
-from .model_config.yolo_free_v1_config import yolo_free_v1_cfg
-from .model_config.yolo_free_v2_config import yolo_free_v2_cfg
 ## Real-Time DETR
 from .model_config.rtdetr_config import rtdetr_cfg
 
@@ -99,26 +96,20 @@ def build_model_config(args):
     elif args.model == 'yolov2':
         cfg = yolov2_cfg
     # YOLOv3
-    elif args.model in ['yolov3', 'yolov3_t']:
+    elif args.model in ['yolov3', 'yolov3_tiny']:
         cfg = yolov3_cfg[args.model]
     # YOLOv4
-    elif args.model in ['yolov4', 'yolov4_t']:
+    elif args.model in ['yolov4', 'yolov4_tiny']:
         cfg = yolov4_cfg[args.model]
     # YOLOv5
     elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
         cfg = yolov5_cfg[args.model]
     # YOLOv7
-    elif args.model in ['yolov7_t', 'yolov7_l', 'yolov7_x']:
+    elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         cfg = yolov7_cfg[args.model]
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
-    # FreeYOLOv1
-    elif args.model in ['yolo_free_v1_n', 'yolo_free_v1_s', 'yolo_free_v1_m', 'yolo_free_v1_l', 'yolo_free_v1_x']:
-        cfg = yolo_free_v1_cfg[args.model]
-    # FreeYOLOv2
-    elif args.model in ['yolo_free_v2_n', 'yolo_free_v2_s', 'yolo_free_v2_m', 'yolo_free_v2_l', 'yolo_free_v2_x']:
-        cfg = yolo_free_v2_cfg[args.model]
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:
         cfg = rtdetr_cfg[args.model]

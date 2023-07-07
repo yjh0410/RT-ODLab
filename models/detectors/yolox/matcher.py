@@ -8,7 +8,6 @@ import torch.nn.functional as F
 from utils.box_ops import *
 
 
-# YOLOX SimOTA
 class SimOTA(object):
     """
         This code referenced to https://github.com/Megvii-BaseDetection/YOLOX/blob/main/yolox/models/yolo_head.py
@@ -29,76 +28,59 @@ class SimOTA(object):
                  tgt_labels,
                  tgt_bboxes):
         # [M,]
-        strides = torch.cat([torch.ones_like(anchor_i[:, 0]) * stride_i
+        strides_tensor = torch.cat([torch.ones_like(anchor_i[:, 0]) * stride_i
                                 for stride_i, anchor_i in zip(fpn_strides, anchors)], dim=-1)
         # List[F, M, 2] -> [M, 2]
         anchors = torch.cat(anchors, dim=0)
         num_anchor = anchors.shape[0]        
         num_gt = len(tgt_labels)
 
-        fg_mask, is_in_boxes_and_center = \
-            self.get_in_boxes_info(
-                tgt_bboxes,
-                anchors,
-                strides,
-                num_anchor,
-                num_gt
-                )
+        # ----------------------- Find inside points -----------------------
+        fg_mask, is_in_boxes_and_center = self.get_in_boxes_info(
+            tgt_bboxes, anchors, strides_tensor, num_anchor, num_gt)
+        obj_preds = pred_obj[fg_mask].float()   # [Mp, 1]
+        cls_preds = pred_cls[fg_mask].float()   # [Mp, C]
+        box_preds = pred_box[fg_mask].float()   # [Mp, 4]
 
-        obj_preds_ = pred_obj[fg_mask]   # [Mp, 1]
-        cls_preds_ = pred_cls[fg_mask]   # [Mp, C]
-        box_preds_ = pred_box[fg_mask]   # [Mp, 4]
-        num_in_boxes_anchor = box_preds_.shape[0]
+        # ----------------------- Reg cost -----------------------
+        pair_wise_ious, _ = box_iou(tgt_bboxes, box_preds)      # [N, Mp]
+        reg_cost = -torch.log(pair_wise_ious + 1e-8)            # [N, Mp]
 
-        # [N, Mp]
-        pair_wise_ious, _ = box_iou(tgt_bboxes, box_preds_)
-        pair_wise_ious_loss = -torch.log(pair_wise_ious + 1e-8)
-
-        # [N, C] -> [N, Mp, C]
-        gt_cls = (
-            F.one_hot(tgt_labels.long(), self.num_classes)
-            .float()
-            .unsqueeze(1)
-            .repeat(1, num_in_boxes_anchor, 1)
-        )
-
+        # ----------------------- Cls cost -----------------------
         with torch.cuda.amp.autocast(enabled=False):
-            score_preds_ = torch.sqrt(
-                cls_preds_.float().unsqueeze(0).repeat(num_gt, 1, 1).sigmoid_()
-                * obj_preds_.float().unsqueeze(0).repeat(num_gt, 1, 1).sigmoid_()
-            ) # [N, Mp, C]
-            pair_wise_cls_loss = F.binary_cross_entropy(
-                score_preds_, gt_cls, reduction="none"
-            ).sum(-1) # [N, Mp]
-        del score_preds_
+            # [Mp, C]
+            score_preds = torch.sqrt(obj_preds.sigmoid_()* cls_preds.sigmoid_())
+            # [N, Mp, C]
+            score_preds = score_preds.unsqueeze(0).repeat(num_gt, 1, 1)
+            # prepare cls_target
+            cls_targets = F.one_hot(tgt_labels.long(), self.num_classes).float()
+            cls_targets = cls_targets.unsqueeze(1).repeat(1, score_preds.size(1), 1)
+            cls_targets *= pair_wise_ious.unsqueeze(-1)  # iou-aware
+            # [N, Mp]
+            cls_cost = F.binary_cross_entropy(score_preds, cls_targets, reduction="none").sum(-1)
+        del score_preds
 
-        cost = (
-            pair_wise_cls_loss
-            + 3.0 * pair_wise_ious_loss
+        #----------------------- Dynamic K-Matching -----------------------
+        cost_matrix = (
+            cls_cost
+            + 3.0 * reg_cost
             + 100000.0 * (~is_in_boxes_and_center)
         ) # [N, Mp]
 
         (
-            num_fg,
-            gt_matched_classes,         # [num_fg,]
-            pred_ious_this_matching,    # [num_fg,]
-            matched_gt_inds,            # [num_fg,]
+            assigned_labels,         # [num_fg,]
+            assigned_ious,           # [num_fg,]
+            assigned_indexs,         # [num_fg,]
         ) = self.dynamic_k_matching(
-            cost,
+            cost_matrix,
             pair_wise_ious,
             tgt_labels,
             num_gt,
             fg_mask
             )
-        del pair_wise_cls_loss, cost, pair_wise_ious, pair_wise_ious_loss
+        del cls_cost, cost_matrix, pair_wise_ious, reg_cost
 
-        return (
-                gt_matched_classes,
-                fg_mask,
-                pred_ious_this_matching,
-                matched_gt_inds,
-                num_fg,
-        )
+        return fg_mask, assigned_labels, assigned_ious, assigned_indexs
 
 
     def get_in_boxes_info(
@@ -193,15 +175,14 @@ class SimOTA(object):
             matching_matrix[:, anchor_matching_gt > 1] *= 0
             matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1
         fg_mask_inboxes = matching_matrix.sum(0) > 0
-        num_fg = fg_mask_inboxes.sum().item()
 
         fg_mask[fg_mask.clone()] = fg_mask_inboxes
 
-        matched_gt_inds = matching_matrix[:, fg_mask_inboxes].argmax(0)
-        gt_matched_classes = gt_classes[matched_gt_inds]
+        assigned_indexs = matching_matrix[:, fg_mask_inboxes].argmax(0)
+        assigned_labels = gt_classes[assigned_indexs]
 
-        pred_ious_this_matching = (matching_matrix * pair_wise_ious).sum(0)[
+        assigned_ious = (matching_matrix * pair_wise_ious).sum(0)[
             fg_mask_inboxes
         ]
-        return num_fg, gt_matched_classes, pred_ious_this_matching, matched_gt_inds
+        return assigned_labels, assigned_ious, assigned_indexs
     

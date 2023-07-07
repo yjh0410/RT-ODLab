@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from .matcher import SimOTA
 from utils.box_ops import get_ious
@@ -42,10 +41,7 @@ class Criterion(object):
 
     def loss_bboxes(self, pred_box, gt_box):
         # regression loss
-        ious = get_ious(pred_box,
-                        gt_box,
-                        box_mode="xyxy",
-                        iou_type='giou')
+        ious = get_ious(pred_box, gt_box, "xyxy", 'giou')
         loss_box = 1.0 - ious
 
         return loss_box
@@ -90,11 +86,10 @@ class Criterion(object):
                 fg_mask = obj_preds.new_zeros(num_anchors).bool()
             else:
                 (
-                    gt_matched_classes,
                     fg_mask,
-                    pred_ious_this_matching,
-                    matched_gt_inds,
-                    num_fg_img,
+                    assigned_labels,
+                    assigned_ious,
+                    assigned_indexs
                 ) = self.matcher(
                     fpn_strides = fpn_strides,
                     anchors = anchors,
@@ -106,9 +101,9 @@ class Criterion(object):
                     )
 
                 obj_target = fg_mask.unsqueeze(-1)
-                cls_target = F.one_hot(gt_matched_classes.long(), self.num_classes)
-                cls_target = cls_target * pred_ious_this_matching.unsqueeze(-1)
-                box_target = tgt_bboxes[matched_gt_inds]
+                cls_target = F.one_hot(assigned_labels.long(), self.num_classes)
+                cls_target = cls_target * assigned_ious.unsqueeze(-1)
+                box_target = tgt_bboxes[assigned_indexs]
 
             cls_targets.append(cls_target)
             box_targets.append(box_target)
@@ -125,16 +120,16 @@ class Criterion(object):
             torch.distributed.all_reduce(num_fgs)
         num_fgs = (num_fgs / get_world_size()).clamp(1.0)
 
-        # obj loss
+        # ------------------ objecntness loss ------------------
         loss_obj = self.loss_objectness(obj_preds.view(-1, 1), obj_targets.float())
         loss_obj = loss_obj.sum() / num_fgs
         
-        # cls loss
+        # ------------------ classification loss ------------------
         cls_preds_pos = cls_preds.view(-1, self.num_classes)[fg_masks]
         loss_cls = self.loss_classes(cls_preds_pos, cls_targets)
         loss_cls = loss_cls.sum() / num_fgs
 
-        # regression loss
+        # ------------------ regression loss ------------------
         box_preds_pos = box_preds.view(-1, 4)[fg_masks]
         loss_box = self.loss_bboxes(box_preds_pos, box_targets)
         loss_box = loss_box.sum() / num_fgs

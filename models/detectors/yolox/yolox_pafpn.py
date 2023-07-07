@@ -1,124 +1,80 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-try:
-    from .yolox_basic import Conv, CSPBlock
-except:
-    from yolox_basic import Conv, CSPBlock
+
+from .yolox_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
-# PaFPN-CSP
+# YOLO-Style PaFPN
 class Yolov5PaFPN(nn.Module):
-    def __init__(self, 
-                 in_dims=[256, 512, 1024],
-                 out_dim=256,
-                 width=1.0,
-                 depth=1.0,
-                 act_type='silu',
-                 norm_type='BN',
-                 depthwise=False):
+    def __init__(self, cfg, in_dims=[256, 512, 1024], out_dim=None):
         super(Yolov5PaFPN, self).__init__()
+        # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
-        self.out_dim = out_dim
         c3, c4, c5 = in_dims
+        width = cfg['width']
 
-        # top dwon
-        ## P5 -> P4
-        self.reduce_layer_1 = Conv(c5, int(512*width), k=1, norm_type=norm_type, act_type=act_type)
-        self.top_down_layer_1 = CSPBlock(c4 + int(512*width),
-                                         int(512*width),
-                                         expand_ratio=0.5,
-                                         kernel=[1, 3],
-                                         nblocks=int(3*depth),
-                                         shortcut=False,
-                                         act_type=act_type,
-                                         norm_type=norm_type,
-                                         depthwise=depthwise
-                                         )
+        # --------------------------- Network Parameters ---------------------------
+        ## top dwon
+        ### P5 -> P4
+        self.reduce_layer_1 = build_reduce_layer(cfg, c5, round(512*width))
+        self.top_down_layer_1 = build_fpn_block(cfg, c4 + round(512*width), round(512*width))
 
-        ## P4 -> P3
-        self.reduce_layer_2 = Conv(c4, int(256*width), k=1, norm_type=norm_type, act_type=act_type)  # 14
-        self.top_down_layer_2 = CSPBlock(c3 + int(256*width),
-                                         int(256*width),
-                                         expand_ratio=0.5,
-                                         kernel=[1, 3],
-                                         nblocks=int(3*depth),
-                                         shortcut=False,
-                                         act_type=act_type,
-                                         norm_type=norm_type,
-                                         depthwise=depthwise
-                                         )
+        ### P4 -> P3
+        self.reduce_layer_2 = build_reduce_layer(cfg, round(512*width), round(256*width))
+        self.top_down_layer_2 = build_fpn_block(cfg, c3 + round(256*width), round(256*width))
 
-        # bottom up
-        ## P3 -> P4
-        self.reduce_layer_3 = Conv(int(256*width), int(256*width), k=3, p=1, s=2,
-                                   act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.bottom_up_layer_1 = CSPBlock(int(256*width) + int(256*width),
-                                         int(512*width),
-                                         expand_ratio=0.5,
-                                         kernel=[1, 3],
-                                         nblocks=int(3*depth),
-                                         shortcut=False,
-                                         act_type=act_type,
-                                         norm_type=norm_type,
-                                         depthwise=depthwise
-                                         )
+        ## bottom up
+        ### P3 -> P4
+        self.downsample_layer_1 = build_downsample_layer(cfg, round(256*width), round(256*width))
+        self.bottom_up_layer_1 = build_fpn_block(cfg, round(256*width) + round(256*width), round(512*width))
 
-        ## P4 -> P5
-        self.reduce_layer_4 = Conv(int(512*width), int(512*width), k=3, p=1, s=2,
-                                   act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.bottom_up_layer_2 = CSPBlock(int(512*width) + int(512*width),
-                                         int(1024*width),
-                                         expand_ratio=0.5,
-                                         kernel=[1, 3],
-                                         nblocks=int(3*depth),
-                                         shortcut=False,
-                                         act_type=act_type,
-                                         norm_type=norm_type,
-                                         depthwise=depthwise
-                                         )
-
-        # output proj layers
+        ### P4 -> P5
+        self.downsample_layer_2 = build_downsample_layer(cfg, round(512*width), round(512*width))
+        self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*width) + round(512*width), round(1024*width))
+                
+        ## output proj layers
         if out_dim is not None:
-            # output proj layers
             self.out_layers = nn.ModuleList([
                 Conv(in_dim, out_dim, k=1,
-                        norm_type=norm_type, act_type=act_type)
-                        for in_dim in [int(256 * width), int(512 * width), int(1024 * width)]
-                        ])
+                     act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+                     for in_dim in [round(256*width), round(512*width), round(1024*width)]
+                     ])
             self.out_dim = [out_dim] * 3
-
         else:
             self.out_layers = None
-            self.out_dim = [int(256 * width), int(512 * width), int(1024 * width)]
+            self.out_dim = [round(256*width), round(512*width), round(1024*width)]
 
 
     def forward(self, features):
         c3, c4, c5 = features
 
+        # Top down
+        ## P5 -> P4
         c6 = self.reduce_layer_1(c5)
-        c7 = F.interpolate(c6, scale_factor=2.0)   # s32->s16
+        c7 = F.interpolate(c6, scale_factor=2.0)
         c8 = torch.cat([c7, c4], dim=1)
         c9 = self.top_down_layer_1(c8)
-        # P3/8
+        ## P4 -> P3
         c10 = self.reduce_layer_2(c9)
-        c11 = F.interpolate(c10, scale_factor=2.0)   # s16->s8
+        c11 = F.interpolate(c10, scale_factor=2.0)
         c12 = torch.cat([c11, c3], dim=1)
-        c13 = self.top_down_layer_2(c12)  # to det
-        # p4/16
-        c14 = self.reduce_layer_3(c13)
+        c13 = self.top_down_layer_2(c12)
+
+        # Bottom up
+        ## p3 -> P4
+        c14 = self.downsample_layer_1(c13)
         c15 = torch.cat([c14, c10], dim=1)
-        c16 = self.bottom_up_layer_1(c15)  # to det
-        # p5/32
-        c17 = self.reduce_layer_4(c16)
+        c16 = self.bottom_up_layer_1(c15)
+        ## P4 -> P5
+        c17 = self.downsample_layer_2(c16)
         c18 = torch.cat([c17, c6], dim=1)
-        c19 = self.bottom_up_layer_2(c18)  # to det
+        c19 = self.bottom_up_layer_2(c18)
 
         out_feats = [c13, c16, c19] # [P3, P4, P5]
-
+        
         # output proj layers
         if self.out_layers is not None:
-            # output proj layers
             out_feats_proj = []
             for feat, layer in zip(out_feats, self.out_layers):
                 out_feats_proj.append(layer(feat))
@@ -129,16 +85,8 @@ class Yolov5PaFPN(nn.Module):
 
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
-    # build neck
+    # build pafpn
     if model == 'yolov5_pafpn':
-        fpn_net = Yolov5PaFPN(in_dims=in_dims,
-                             out_dim=out_dim,
-                             width=cfg['width'],
-                             depth=cfg['depth'],
-                             act_type=cfg['fpn_act'],
-                             norm_type=cfg['fpn_norm'],
-                             depthwise=cfg['fpn_depthwise']
-                             )
-
+        fpn_net = Yolov5PaFPN(cfg, in_dims, out_dim)
 
     return fpn_net
