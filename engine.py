@@ -87,7 +87,7 @@ class YoloTrainer(object):
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
             # check second stage
-            if epoch >= (self.args.max_epoch - self.no_aug_epoch = 20 - 1):
+            if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1):
                 # close mosaic augmentation
                 if self.train_loader.dataset.mosaic_prob > 0.:
                     print('close Mosaic Augmentation ...')
