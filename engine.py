@@ -31,11 +31,11 @@ class YoloTrainer(object):
         self.best_map = -1.
         self.last_opt_step = 0
         self.no_aug_epoch = 20
+        self.clip_grad = 10
         self.device = device
         self.criterion = criterion
         self.world_size = world_size
         self.heavy_eval = False
-        self.clip_grad = 10
         self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.937, 'weight_decay': 5e-4, 'lr0': 0.01}
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
@@ -328,6 +328,7 @@ class RTMTrainer(object):
         self.criterion = criterion
         self.world_size = world_size
         self.no_aug_epoch = 20
+        self.clip_grad = 35
         self.heavy_eval = False
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
@@ -477,9 +478,9 @@ class RTMTrainer(object):
                 for j, x in enumerate(self.optimizer.param_groups):
                     # bias lr falls from 0.1 to lr0, all other lrs rise from 0.0 to lr0
                     x['lr'] = np.interp(
-                        ni, xi, [self.model_cfg['warmup_bias_lr'] if j == 0 else 0.0, x['initial_lr'] * self.lf(self.epoch)])
+                        ni, xi, [self.warmup_dict['warmup_bias_lr'] if j == 0 else 0.0, x['initial_lr'] * self.lf(self.epoch)])
                     if 'momentum' in x:
-                        x['momentum'] = np.interp(ni, xi, [self.model_cfg['warmup_momentum'], self.model_cfg['momentum']])
+                        x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
             # To device
             images = images.to(self.device, non_blocking=True).float() / 255.
@@ -508,11 +509,11 @@ class RTMTrainer(object):
             self.scaler.scale(losses).backward()
 
             # Optimize
-            if self.model_cfg['clip_grad'] > 0:
+            if self.clip_grad > 0:
                 # unscale gradients
                 self.scaler.unscale_(self.optimizer)
                 # clip gradients
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.model_cfg['clip_grad'])
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.clip_grad)
             # optimizer.step
             self.scaler.step(self.optimizer)
             self.scaler.update()
@@ -610,6 +611,7 @@ class DetrTrainer(object):
         self.best_map = -1.
         self.last_opt_step = 0
         self.no_aug_epoch = 20
+        self.clip_grad = -1
         self.device = device
         self.criterion = criterion
         self.world_size = world_size
@@ -793,11 +795,11 @@ class DetrTrainer(object):
             self.scaler.scale(losses).backward()
 
             # Optimize
-            if self.model_cfg['clip_grad'] > 0:
+            if self.clip_grad > 0:
                 # unscale gradients
                 self.scaler.unscale_(self.optimizer)
                 # clip gradients
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.model_cfg['clip_grad'])
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.clip_grad)
             self.scaler.step(self.optimizer)
             self.scaler.update()
             self.optimizer.zero_grad()
