@@ -137,8 +137,8 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 |---------|---------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOX-N | CSPDarkNet-N  |  640  |  300  |         31.1           |       49.5        |   7.5             |   2.3              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_n_coco.pth) |
 | YOLOX-S | CSPDarkNet-S  |  640  |  300  |         39.0           |       58.8        |   26.8            |   8.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_s_coco.pth) |
-| YOLOX-M | CSPDarkNet-M  |  640  |  300  |                        |                   |   74.3            |   25.4             |  |
-| YOLOX-L | CSPDarkNet-L  |  640  |  300  |         46.9           |       65.9        |   155.4           |   54.2             |  |
+| YOLOX-M | CSPDarkNet-M  |  640  |  300  |         44.6           |       63.8        |   74.3            |   25.4             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_m_coco.pth) |
+| YOLOX-L | CSPDarkNet-L  |  640  |  300  |         46.9           |       65.9        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolox_l_coco.pth) |
 
 *For **YOLOX-M** and **YOLOX-L**, increasing the batch size may improve performance. Due to my computing resources, I can only set the batch size to 16.*
 
