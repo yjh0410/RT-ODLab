@@ -132,43 +132,6 @@ class ELANBlock(nn.Module):
 
         return out
 
-## PaFPN's ELAN-Block proposed by YOLOv7
-class ELANBlockFPN(nn.Module):
-    def __init__(self, in_dim, out_dim, expand_ratio=0.5, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
-        super(ELANBlockFPN, self).__init__()
-        inter_dim = int(in_dim * expand_ratio)
-        inter_dim2 = int(inter_dim * expand_ratio) 
-        # branch-1
-        self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        # branch-2
-        self.cv2 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        # more branches
-        self.cv3 = nn.ModuleList()
-        for idx in range(round(4*width)):
-            if idx == 0:
-                cvs = [Conv(inter_dim, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)]
-            else:
-                cvs = [Conv(inter_dim2, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)]
-            # deeper
-            for _ in range(1, round(depth)):
-                cvs.append(Conv(inter_dim2, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
-            self.cv3.append(nn.Sequential(*cvs))
-
-        self.out = Conv(inter_dim*2+inter_dim2*len(self.cv3), out_dim, k=1, act_type=act_type, norm_type=norm_type)
-
-
-    def forward(self, x):
-        x1 = self.cv1(x)
-        x2 = self.cv2(x)
-        inter_outs = [x1, x2]
-        for m in self.cv3:
-            y1 = inter_outs[-1]
-            y2 = m(y1)
-            inter_outs.append(y2)
-        out = self.out(torch.cat(inter_outs, dim=1))
-
-        return out
-
 ## DownSample
 class DownSample(nn.Module):
     def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
@@ -193,15 +156,14 @@ class DownSample(nn.Module):
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'elanblock':
-        layer = ELANBlockFPN(in_dim=in_dim,
-                             out_dim=out_dim,
-                             expand_ratio=0.5,
-                             width=cfg['width'],
-                             depth=cfg['depth'],
-                             act_type=cfg['fpn_act'],
-                             norm_type=cfg['fpn_norm'],
-                             depthwise=cfg['fpn_depthwise']
-                             )
+        layer = ELANBlock(in_dim=in_dim,
+                          out_dim=out_dim,
+                          expand_ratio=[0.5, 0.5],
+                          depth=cfg['depth'],
+                          act_type=cfg['fpn_act'],
+                          norm_type=cfg['fpn_norm'],
+                          depthwise=cfg['fpn_depthwise']
+                          )
         
     return layer
 

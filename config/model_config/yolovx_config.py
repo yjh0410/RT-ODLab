@@ -15,7 +15,7 @@ yolovx_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'csp_sppf',
+        'neck': 'sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -24,7 +24,7 @@ yolovx_cfg = {
         ## Neck: PaFPN
         'fpn': 'yolovx_pafpn',
         'fpn_reduce_layer': 'conv',
-        'fpn_downsample_layer': 'dsblock',
+        'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -69,7 +69,7 @@ yolovx_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'csp_sppf',
+        'neck': 'sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -78,7 +78,7 @@ yolovx_cfg = {
         ## Neck: PaFPN
         'fpn': 'yolovx_pafpn',
         'fpn_reduce_layer': 'conv',
-        'fpn_downsample_layer': 'dsblock',
+        'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
