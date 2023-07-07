@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .yolox_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .yolovx_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
 # YOLO-Style PaFPN
-class YoloxPaFPN(nn.Module):
+class YolovxPaFPN(nn.Module):
     def __init__(self, cfg, in_dims=[256, 512, 1024], out_dim=None):
-        super(YoloxPaFPN, self).__init__()
+        super(YolovxPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
         c3, c4, c5 = in_dims
@@ -18,19 +18,21 @@ class YoloxPaFPN(nn.Module):
         ## top dwon
         ### P5 -> P4
         self.reduce_layer_1 = build_reduce_layer(cfg, c5, round(512*width))
-        self.top_down_layer_1 = build_fpn_block(cfg, c4 + round(512*width), round(512*width))
+        self.reduce_layer_2 = build_reduce_layer(cfg, c4, round(512*width))
+        self.top_down_layer_1 = build_fpn_block(cfg, round(512*width) + round(512*width), round(512*width))
 
         ### P4 -> P3
-        self.reduce_layer_2 = build_reduce_layer(cfg, round(512*width), round(256*width))
-        self.top_down_layer_2 = build_fpn_block(cfg, c3 + round(256*width), round(256*width))
+        self.reduce_layer_3 = build_reduce_layer(cfg, round(512*width), round(256*width))
+        self.reduce_layer_4 = build_reduce_layer(cfg, c3, round(256*width))
+        self.top_down_layer_2 = build_fpn_block(cfg, round(256*width) + round(256*width), round(256*width))
 
         ## bottom up
         ### P3 -> P4
-        self.reduce_layer_3 = build_downsample_layer(cfg, round(256*width), round(256*width))
+        self.downsample_layer_1 = build_downsample_layer(cfg, round(256*width), round(256*width))
         self.bottom_up_layer_1 = build_fpn_block(cfg, round(256*width) + round(256*width), round(512*width))
 
         ### P4 -> P5
-        self.reduce_layer_4 = build_downsample_layer(cfg, round(512*width), round(512*width))
+        self.downsample_layer_2 = build_downsample_layer(cfg, round(512*width), round(512*width))
         self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*width) + round(512*width), round(1024*width))
                 
         ## output proj layers
@@ -52,22 +54,22 @@ class YoloxPaFPN(nn.Module):
         # Top down
         ## P5 -> P4
         c6 = self.reduce_layer_1(c5)
-        c7 = F.interpolate(c6, scale_factor=2.0)
-        c8 = torch.cat([c7, c4], dim=1)
+        c7 = self.reduce_layer_2(c4)
+        c8 = torch.cat([F.interpolate(c6, scale_factor=2.0), c7], dim=1)
         c9 = self.top_down_layer_1(c8)
         ## P4 -> P3
-        c10 = self.reduce_layer_2(c9)
-        c11 = F.interpolate(c10, scale_factor=2.0)
-        c12 = torch.cat([c11, c3], dim=1)
+        c10 = self.reduce_layer_3(c9)
+        c11 = self.reduce_layer_4(c3)
+        c12 = torch.cat([F.interpolate(c10, scale_factor=2.0), c11], dim=1)
         c13 = self.top_down_layer_2(c12)
 
         # Bottom up
-        ## p3 -> P4
-        c14 = self.reduce_layer_3(c13)
+        # p3 -> P4
+        c14 = self.downsample_layer_1(c13)
         c15 = torch.cat([c14, c10], dim=1)
         c16 = self.bottom_up_layer_1(c15)
-        ## P4 -> P5
-        c17 = self.reduce_layer_4(c16)
+        # P4 -> P5
+        c17 = self.downsample_layer_2(c16)
         c18 = torch.cat([c17, c6], dim=1)
         c19 = self.bottom_up_layer_2(c18)
 
@@ -86,7 +88,7 @@ class YoloxPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
     # build pafpn
-    if model == 'yolox_pafpn':
-        fpn_net = YoloxPaFPN(cfg, in_dims, out_dim)
+    if model == 'yolovx_pafpn':
+        fpn_net = YolovxPaFPN(cfg, in_dims, out_dim)
 
     return fpn_net

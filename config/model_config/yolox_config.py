@@ -15,10 +15,10 @@ yolox_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## FPN
-        'fpn': 'yolov5_pafpn',
-        'fpn_reduce_layer': 'Conv',
-        'fpn_downsample_layer': 'Conv',
-        'fpn_core_block': 'CSPBlock',
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -59,10 +59,10 @@ yolox_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## FPN
-        'fpn': 'yolov5_pafpn',
-        'fpn_reduce_layer': 'Conv',
-        'fpn_downsample_layer': 'Conv',
-        'fpn_core_block': 'CSPBlock',
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -103,10 +103,10 @@ yolox_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## FPN
-        'fpn': 'yolov5_pafpn',
-        'fpn_reduce_layer': 'Conv',
-        'fpn_downsample_layer': 'Conv',
-        'fpn_core_block': 'CSPBlock',
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -147,10 +147,10 @@ yolox_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## FPN
-        'fpn': 'yolov5_pafpn',
-        'fpn_reduce_layer': 'Conv',
-        'fpn_downsample_layer': 'Conv',
-        'fpn_core_block': 'CSPBlock',
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -191,10 +191,10 @@ yolox_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## FPN
-        'fpn': 'yolov5_pafpn',
-        'fpn_reduce_layer': 'Conv',
-        'fpn_downsample_layer': 'Conv',
-        'fpn_core_block': 'CSPBlock',
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,

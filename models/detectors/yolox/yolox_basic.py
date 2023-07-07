@@ -82,7 +82,7 @@ class Conv(nn.Module):
 
 
 # ---------------------------- YOLOv5 Modules ----------------------------
-## BottleNeck
+## YOLO-style BottleNeck
 class Bottleneck(nn.Module):
     def __init__(self,
                  in_dim,
@@ -137,29 +137,29 @@ class CSPBlock(nn.Module):
 # ---------------------------- FPN Modules ----------------------------
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
-    if cfg['fpn_core_block'] == 'CSPBlock':
-        layer = CSPBlock(in_dim=in_dim,
-                         out_dim=out_dim,
+    if cfg['fpn_core_block'] == 'cspblock':
+        layer = CSPBlock(in_dim = in_dim,
+                         out_dim = out_dim,
                          expand_ratio=0.5,
                          nblocks = round(3*cfg['depth']),
                          shortcut = False,
-                         act_type=cfg['fpn_act'],
-                         norm_type=cfg['fpn_norm'],
-                         depthwise=cfg['fpn_depthwise']
+                         act_type = cfg['fpn_act'],
+                         norm_type = cfg['fpn_norm'],
+                         depthwise = cfg['fpn_depthwise']
                          )
         
     return layer
 
 ## build fpn's reduce layer
 def build_reduce_layer(cfg, in_dim, out_dim):
-    if cfg['fpn_reduce_layer'] == 'Conv':
+    if cfg['fpn_reduce_layer'] == 'conv':
         layer = Conv(in_dim, out_dim, k=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
         
     return layer
 
 ## build fpn's downsample layer
 def build_downsample_layer(cfg, in_dim, out_dim):
-    if cfg['fpn_downsample_layer'] == 'Conv':
+    if cfg['fpn_downsample_layer'] == 'conv':
         layer = Conv(in_dim, out_dim, k=3, s=2, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
         
     return layer

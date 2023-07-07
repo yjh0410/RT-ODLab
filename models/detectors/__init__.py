@@ -8,6 +8,7 @@ from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
+from .yolovx.build import build_yolovx
 from .yolox.build import build_yolox
 from .rtdetr.build import build_rtdetr
 
@@ -42,6 +43,10 @@ def build_model(args,
     # YOLOv7
     elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         model, criterion = build_yolov7(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # YOLOvx
+    elif args.model in ['yolovx_n', 'yolovx_s', 'yolovx_m', 'yolovx_l', 'yolovx_x']:
+        model, criterion = build_yolovx(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
