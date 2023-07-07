@@ -532,7 +532,7 @@ class RTMTrainer(object):
                 log += '[lr: {:.6f}]'.format(cur_lr[2])
                 # loss infor
                 for k in loss_dict_reduced.keys():
-                    log += '[{}: {:.2f}]'.format(k, loss_dict[k])
+                    log += '[{}: {:.2f}]'.format(k, loss_dict_reduced[k])
 
                 # other infor
                 log += '[time: {:.2f}]'.format(t1 - t0)
@@ -820,10 +820,10 @@ class DetrTrainer(object):
                 # loss infor
                 for k in loss_dict_reduced.keys():
                     if self.args.vis_aux_loss:
-                        log += '[{}: {:.2f}]'.format(k, loss_dict[k])
+                        log += '[{}: {:.2f}]'.format(k, loss_dict_reduced[k])
                     else:
                         if k in ['loss_cls', 'loss_bbox', 'loss_giou', 'losses']:
-                            log += '[{}: {:.2f}]'.format(k, loss_dict[k])
+                            log += '[{}: {:.2f}]'.format(k, loss_dict_reduced[k])
 
                 # other infor
                 log += '[time: {:.2f}]'.format(t1 - t0)
