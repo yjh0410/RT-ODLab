@@ -43,11 +43,11 @@ class YOLOvx(nn.Module):
         self.backbone, feats_dim = build_backbone(cfg, trainable&cfg['pretrained'])
 
         ## ----------- Neck: SPP -----------
-        self.neck = build_neck(cfg=cfg, in_dim=feats_dim[-1], out_dim=feats_dim[-1])
+        self.neck = build_neck(cfg, feats_dim[-1], feats_dim[-1])
         feats_dim[-1] = self.neck.out_dim
         
         ## ----------- Neck: FPN -----------
-        self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))
+        self.fpn = build_fpn(cfg, feats_dim, round(256*cfg['width']), True)
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
