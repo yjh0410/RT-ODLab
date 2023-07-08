@@ -332,7 +332,7 @@ class RTMTrainer(object):
         self.heavy_eval = False
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.01}
+        self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
