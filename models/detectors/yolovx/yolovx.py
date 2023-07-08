@@ -47,7 +47,7 @@ class YOLOvx(nn.Module):
         feats_dim[-1] = self.neck.out_dim
         
         ## ----------- Neck: FPN -----------
-        self.fpn = build_fpn(cfg, feats_dim, round(256*cfg['width']))
+        self.fpn = build_fpn(cfg, feats_dim, round(256*cfg['width']), True)
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
