@@ -31,7 +31,14 @@ from .data_config.transform_config import (
     yolox_large_trans_config,
     yolox_huge_trans_config,
     # SSD-Style
-    ssd_trans_config
+    ssd_trans_config,
+    # RTMDet-Style
+    rtmdet_pico_trans_config,
+    rtmdet_nano_trans_config,
+    rtmdet_small_trans_config,
+    rtmdet_medium_trans_config,
+    rtmdet_large_trans_config,
+    rtmdet_huge_trans_config
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -69,7 +76,21 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolox_large_trans_config
     elif trans_config == 'yolox_huge':
         cfg = yolox_huge_trans_config
-        
+
+    # RTMDet-style transform
+    elif trans_config == 'rtmdet_pico':
+        cfg = rtmdet_pico_trans_config
+    elif trans_config == 'rtmdet_nano':
+        cfg = rtmdet_nano_trans_config
+    elif trans_config == 'rtmdet_small':
+        cfg = rtmdet_small_trans_config
+    elif trans_config == 'rtmdet_medium':
+        cfg = rtmdet_medium_trans_config
+    elif trans_config == 'rtmdet_large':
+        cfg = rtmdet_large_trans_config
+    elif trans_config == 'rtmdet_huge':
+        cfg = rtmdet_huge_trans_config
+
     return cfg
 
 
