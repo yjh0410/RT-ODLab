@@ -311,7 +311,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 960
-        'trans_type': 'yolox_large',
+        'trans_type': 'rtmdet_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
