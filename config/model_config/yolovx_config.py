@@ -40,8 +40,8 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
-        'trans_type': 'yolox_nano',
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'trans_type': 'yolox_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -94,7 +94,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -148,7 +148,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -202,7 +202,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -256,7 +256,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -310,7 +310,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -364,7 +364,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
