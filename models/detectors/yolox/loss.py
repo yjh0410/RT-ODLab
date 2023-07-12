@@ -159,13 +159,6 @@ class Criterion(object):
                  self.loss_cls_weight * loss_cls + \
                  self.loss_box_weight * loss_box
 
-        loss_dict = dict(
-                loss_obj = loss_obj,
-                loss_cls = loss_cls,
-                loss_box = loss_box,
-                losses = losses
-        )
-
         # ------------------ Aux regression loss ------------------
         loss_box_aux = None
         if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
@@ -200,7 +193,6 @@ class Criterion(object):
                     loss_box_aux = loss_box_aux,
                     losses = losses
                     )
-
 
         return loss_dict
     
