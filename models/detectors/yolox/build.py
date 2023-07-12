@@ -60,5 +60,5 @@ def build_yolox(args, cfg, device, num_classes=80, trainable=False, deploy=False
     criterion = None
     if trainable:
         # build criterion for training
-        criterion = build_criterion(cfg, device, num_classes)
+        criterion = build_criterion(args, cfg, device, num_classes)
     return model, criterion

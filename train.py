@@ -55,6 +55,8 @@ def parse_args():
                         help='warmup epoch.')
     parser.add_argument('--eval_epoch', default=10, type=int, 
                         help='after eval epoch, the model is evaluated on val dataset.')
+    parser.add_argument('--no_aug_epoch', default=20, type=int, 
+                        help='cancel strong augmentation.')
 
     # Model
     parser.add_argument('-m', '--model', default='yolov1', type=str,

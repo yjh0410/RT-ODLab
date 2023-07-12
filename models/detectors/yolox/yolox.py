@@ -205,9 +205,11 @@ class YOLOX(nn.Module):
 
             # 检测头
             all_anchors = []
+            all_strides = []
             all_obj_preds = []
             all_cls_preds = []
             all_box_preds = []
+            all_reg_preds = []
             for level, (feat, head) in enumerate(zip(pyramid_feats, self.non_shared_heads)):
                 cls_feat, reg_feat = head(feat)
 
@@ -220,7 +222,10 @@ class YOLOX(nn.Module):
                 fmp_size = [H, W]
                 # generate anchor boxes: [M, 4]
                 anchors = self.generate_anchors(level, fmp_size)
-                
+
+                # stride tensor: [M, 1]
+                stride_tensor = torch.ones_like(anchors[..., :1]) * self.stride[level]
+
                 # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
                 obj_pred = obj_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 1)
                 cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
@@ -236,13 +241,18 @@ class YOLOX(nn.Module):
                 all_obj_preds.append(obj_pred)
                 all_cls_preds.append(cls_pred)
                 all_box_preds.append(box_pred)
+                all_reg_preds.append(reg_pred)
                 all_anchors.append(anchors)
+                all_strides.append(stride_tensor)
             
             # output dict
             outputs = {"pred_obj": all_obj_preds,        # List(Tensor) [B, M, 1]
                        "pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
                        "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
-                       "anchors": all_anchors,           # List(Tensor) [B, M, 2]
-                       'strides': self.stride}           # List(Int) [8, 16, 32]
+                       "pred_reg": all_reg_preds,        # List(Tensor) [B, M, 4]
+                       "anchors": all_anchors,           # List(Tensor) [M, 2]
+                       "strides": self.stride,           # List(Int) [8, 16, 32]
+                       "stride_tensors": all_strides     # List(Tensor) [M, 1]
+                       }
 
             return outputs 

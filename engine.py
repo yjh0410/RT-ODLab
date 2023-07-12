@@ -30,7 +30,7 @@ class YoloTrainer(object):
         self.epoch = 0
         self.best_map = -1.
         self.last_opt_step = 0
-        self.no_aug_epoch = 20
+        self.no_aug_epoch = args.no_aug_epoch
         self.clip_grad = 10
         self.device = device
         self.criterion = criterion
@@ -327,7 +327,7 @@ class RTMTrainer(object):
         self.device = device
         self.criterion = criterion
         self.world_size = world_size
-        self.no_aug_epoch = 20
+        self.no_aug_epoch = args.no_aug_epoch
         self.clip_grad = 35
         self.heavy_eval = False
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
@@ -610,7 +610,7 @@ class DetrTrainer(object):
         self.epoch = 0
         self.best_map = -1.
         self.last_opt_step = 0
-        self.no_aug_epoch = 20
+        self.no_aug_epoch = args.no_aug_epoch
         self.clip_grad = -1
         self.device = device
         self.criterion = criterion

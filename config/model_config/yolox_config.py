@@ -94,7 +94,7 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -138,7 +138,7 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -182,7 +182,7 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
