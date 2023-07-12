@@ -115,18 +115,11 @@ class ELANBlock(nn.Module):
 
 
     def forward(self, x):
-        """
-        Input:
-            x: [B, C_in, H, W]
-        Output:
-            out: [B, C_out, H, W]
-        """
         x1 = self.cv1(x)
         x2 = self.cv2(x)
         x3 = self.cv3(x2)
         x4 = self.cv4(x3)
 
-        # [B, C, H, W] -> [B, 2C, H, W]
         out = self.out(torch.cat([x1, x2, x3, x4], dim=1))
 
         return out
@@ -144,17 +137,8 @@ class DownSample(nn.Module):
         )
 
     def forward(self, x):
-        """
-        Input:
-            x: [B, C, H, W]
-        Output:
-            out: [B, C, H//2, W//2]
-        """
-        # [B, C, H, W] -> [B, C//2, H//2, W//2]
         x1 = self.cv1(self.mp(x))
         x2 = self.cv2(x)
-
-        # [B, C, H//2, W//2]
         out = torch.cat([x1, x2], dim=1)
 
         return out
