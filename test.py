@@ -35,6 +35,8 @@ def parse_args():
                         help='Final confidence threshold')
     parser.add_argument('-ws', '--window_scale', default=1.0, type=float,
                         help='resize window of cv2 for visualization.')
+    parser.add_argument('--resave', action='store_true', default=False, 
+                        help='resave checkpoints without optimizer state dict.')
 
     # model
     parser.add_argument('-m', '--model', default='yolov1', type=str,
