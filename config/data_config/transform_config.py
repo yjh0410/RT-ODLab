@@ -119,10 +119,10 @@ yolov5_pico_trans_config = {
 yolox_huge_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
+    'degrees': 10.0,
+    'translate': 0.1,
     'scale': 0.9,
-    'shear': 0.0,
+    'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
     'hsv_s': 0.7,
@@ -132,16 +132,16 @@ yolox_huge_trans_config = {
     'mixup_prob': 1.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
-    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+    'mixup_scale': [0.5, 1.5]
 }
 
 yolox_large_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
+    'degrees': 10.0,
+    'translate': 0.1,
     'scale': 0.9,
-    'shear': 0.0,
+    'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
     'hsv_s': 0.7,
@@ -157,10 +157,10 @@ yolox_large_trans_config = {
 yolox_medium_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
+    'degrees': 10.0,
+    'translate': 0.1,
     'scale': 0.9,
-    'shear': 0.0,
+    'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
     'hsv_s': 0.7,
@@ -176,10 +176,10 @@ yolox_medium_trans_config = {
 yolox_small_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
+    'degrees': 10.0,
+    'translate': 0.1,
     'scale': 0.9,
-    'shear': 0.0,
+    'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
     'hsv_s': 0.7,
@@ -195,10 +195,10 @@ yolox_small_trans_config = {
 yolox_nano_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
-    'degrees': 0.0,
+    'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.5,
-    'shear': 0.0,
+    'scale': 0.9,
+    'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
     'hsv_s': 0.7,
@@ -214,10 +214,10 @@ yolox_nano_trans_config = {
 yolox_pico_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
-    'degrees': 0.0,
+    'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.5,
-    'shear': 0.0,
+    'scale': 0.9,
+    'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
     'hsv_s': 0.7,
@@ -239,4 +239,119 @@ ssd_trans_config = {
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
     'mixup_scale': [0.5, 1.5]
+}
+
+# ----------------------- YOLOX's Transform without Rotation -----------------------
+yolovx_huge_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': 0.9,
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+yolovx_large_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': 0.9,
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+yolovx_medium_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': 0.9,
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+yolovx_small_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': 0.9,
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+yolovx_nano_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.1,
+    'scale': 0.5,
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 0.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+yolovx_pico_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.1,
+    'scale': 0.5,
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 0.5,
+    'mixup_prob': 0.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }

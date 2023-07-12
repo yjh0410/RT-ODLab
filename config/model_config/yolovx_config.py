@@ -41,7 +41,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_pico',
+        'trans_type': 'yolovx_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -95,7 +95,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_nano',
+        'trans_type': 'yolovx_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -149,7 +149,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_nano',
+        'trans_type': 'yolovx_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -203,7 +203,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_small',
+        'trans_type': 'yolovx_small',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -257,7 +257,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_medium',
+        'trans_type': 'yolovx_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -311,7 +311,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_large',
+        'trans_type': 'yolovx_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -365,7 +365,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_huge',
+        'trans_type': 'yolovx_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
