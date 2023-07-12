@@ -158,7 +158,7 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 | YOLOvx-N |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-S |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-M |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-L |  640  |  300  |         50.2            |       68.6         |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
+| YOLOvx-L |  640  |  300  |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
 
 * Redesigned RT-DETR:
 
