@@ -4,7 +4,7 @@ python train.py \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
         -m yolox_s \
-        -bs 64 \
+        -bs 128 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
