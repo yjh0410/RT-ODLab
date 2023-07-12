@@ -1,7 +1,7 @@
 # Train YOLO
 python train.py \
         --cuda \
-        -d voc \
+        -d coco \
         --root /mnt/share/ssd2/dataset/ \
         -m yolox_s \
         -bs 64 \
