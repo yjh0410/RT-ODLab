@@ -30,18 +30,6 @@ My environment:
 
 At least, please make sure your torch is version 1.x.
 
-## Training Configuration
-|   Configuration         |                            |
-|-------------------------|----------------------------|
-| Per GPU Batch Size      | 16                         |
-| Init Lr                 | 0.01                       |
-| Warmup Scheduler        | Linear                     |
-| Lr Scheduler            | Linear                     |
-| Optimizer               | SGD                        |
-| Multi Scale Train       | True (320 ~ 640)           |
-
-*Due to my limited computing resources, I can not use a larger multi-scale range, such as 320-960.*
-
 ## Experiments
 ### VOC
 - Download VOC.
