@@ -205,7 +205,7 @@ yolox_nano_trans_config = {
     'hsv_v': 0.4,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
-    'mixup_prob': 0.5,
+    'mixup_prob': 0.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
@@ -239,113 +239,4 @@ ssd_trans_config = {
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
     'mixup_scale': [0.5, 1.5]
-}
-
-# ----------------------- RTMDet-Style Transform -----------------------
-rtmdet_huge_trans_config = {
-    'aug_type': 'yolov5',
-    # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
-    'scale': 0.9,
-    'shear': 0.0,
-    'perspective': 0.0,
-    'hsv_h': 0.015,
-    'hsv_s': 0.7,
-    'hsv_v': 0.4,
-    # Mosaic & Mixup
-    'mosaic_prob': 1.0,
-    'mixup_prob': 1.0,
-    'mosaic_type': 'yolov5_mosaic',
-    'mixup_type': 'yolov5_mixup',
-}
-
-rtmdet_large_trans_config = {
-    'aug_type': 'yolov5',
-    # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
-    'scale': 0.9,
-    'shear': 0.0,
-    'perspective': 0.0,
-    'hsv_h': 0.015,
-    'hsv_s': 0.7,
-    'hsv_v': 0.4,
-    # Mosaic & Mixup
-    'mosaic_prob': 1.0,
-    'mixup_prob': 1.0,
-    'mosaic_type': 'yolov5_mosaic',
-    'mixup_type': 'yolov5_mixup',
-}
-
-rtmdet_medium_trans_config = {
-    'aug_type': 'yolov5',
-    # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
-    'scale': 0.9,
-    'shear': 0.0,
-    'perspective': 0.0,
-    'hsv_h': 0.015,
-    'hsv_s': 0.7,
-    'hsv_v': 0.4,
-    # Mosaic & Mixup
-    'mosaic_prob': 1.0,
-    'mixup_prob': 1.0,
-    'mosaic_type': 'yolov5_mosaic',
-    'mixup_type': 'yolov5_mixup',
-}
-
-rtmdet_small_trans_config = {
-    'aug_type': 'yolov5',
-    # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.2,
-    'scale': 0.9,
-    'shear': 0.0,
-    'perspective': 0.0,
-    'hsv_h': 0.015,
-    'hsv_s': 0.7,
-    'hsv_v': 0.4,
-    # Mosaic & Mixup
-    'mosaic_prob': 1.0,
-    'mixup_prob': 1.0,
-    'mosaic_type': 'yolov5_mosaic',
-    'mixup_type': 'yolov5_mixup',
-}
-
-rtmdet_nano_trans_config = {
-    'aug_type': 'yolov5',
-    # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.1,
-    'scale': 0.5,
-    'shear': 0.0,
-    'perspective': 0.0,
-    'hsv_h': 0.015,
-    'hsv_s': 0.7,
-    'hsv_v': 0.4,
-    # Mosaic & Mixup
-    'mosaic_prob': 1.0,
-    'mixup_prob': 0.5,
-    'mosaic_type': 'yolov5_mosaic',
-    'mixup_type': 'yolov5_mixup',
-}
-
-rtmdet_pico_trans_config = {
-    'aug_type': 'yolov5',
-    # Basic Augment
-    'degrees': 0.0,
-    'translate': 0.1,
-    'scale': 0.5,
-    'shear': 0.0,
-    'perspective': 0.0,
-    'hsv_h': 0.015,
-    'hsv_s': 0.7,
-    'hsv_v': 0.4,
-    # Mosaic & Mixup
-    'mosaic_prob': 0.5,
-    'mixup_prob': 0.0,
-    'mosaic_type': 'yolov5_mosaic',
-    'mixup_type': 'yolov5_mixup',
 }

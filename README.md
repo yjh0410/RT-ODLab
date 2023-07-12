@@ -151,6 +151,15 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 *While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.*
 
+* My YOLO:
+
+| Model    | Scale | Epoch | AP<sup>test<br>0.5:0.95 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|----------|-------|-------|-------------------------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOvx-N |  640  |  300  |                         |                        |                   |                   |                    |  |
+| YOLOvx-S |  640  |  300  |                         |                        |                   |                   |                    |  |
+| YOLOvx-M |  640  |  300  |                         |                        |                   |                   |                    |  |
+| YOLOvx-L |  640  |  300  |                         |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
+
 * Redesigned RT-DETR:
 
 | Model     | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
