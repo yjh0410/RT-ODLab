@@ -1,13 +1,13 @@
 # Train YOLO
 python train.py \
         --cuda \
-        -d voc \
+        -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolox_n \
+        -m yolox_s \
         -bs 64 \
         -size 640 \
         --wp_epoch 3 \
-        --max_epoch 150 \
+        --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 20 \
         --ema \
