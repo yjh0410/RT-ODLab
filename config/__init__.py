@@ -44,7 +44,7 @@ from .data_config.transform_config import (
 def build_trans_config(trans_config='ssd'):
     print('==============================')
     print('Transform: {}-Style ...'.format(trans_config))
-    
+   
     # SSD-style transform 
     if trans_config == 'ssd':
         cfg = ssd_trans_config
@@ -90,6 +90,8 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolovx_large_trans_config
     elif trans_config == 'yolovx_huge':
         cfg = yolovx_huge_trans_config
+
+    print('Transform Config: {} \n'.format(cfg))
 
     return cfg
 
