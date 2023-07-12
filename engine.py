@@ -209,7 +209,7 @@ class YoloTrainer(object):
             with torch.cuda.amp.autocast(enabled=self.args.fp16):
                 outputs = model(images)
                 # loss
-                loss_dict = self.criterion(outputs=outputs, targets=targets)
+                loss_dict = self.criterion(outputs=outputs, targets=targets, epoch=self.epoch)
                 losses = loss_dict['losses']
                 losses *= images.shape[0]  # loss * bs
 
@@ -786,7 +786,7 @@ class DetrTrainer(object):
             with torch.cuda.amp.autocast(enabled=self.args.fp16):
                 outputs = model(images)
                 # Compute loss
-                loss_dict = self.criterion(outputs=outputs, targets=targets)
+                loss_dict = self.criterion(outputs=outputs, targets=targets, epoch=self.epoch)
                 losses = loss_dict['losses']
 
                 loss_dict_reduced = distributed_utils.reduce_dict(loss_dict)
