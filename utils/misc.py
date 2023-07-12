@@ -180,10 +180,10 @@ def load_weight(model, path_to_ckpt, fuse_cbn=False):
         checkpoint = torch.load(path_to_ckpt, map_location='cpu')
         print('--------------------------------------')
         print('Best model infor:')
-        print('Epoch: {}'.format(checkpoint.pop("epoch")))
-        print('mAP: {}'.format(checkpoint.pop("mAP")))
+        print('Epoch: {}'.format(checkpoint["epoch"]))
+        print('mAP: {}'.format(checkpoint["mAP"]))
         print('--------------------------------------')
-        checkpoint_state_dict = checkpoint.pop("model")
+        checkpoint_state_dict = checkpoint["model"]
         model.load_state_dict(checkpoint_state_dict)
 
         print('Finished loading model!')

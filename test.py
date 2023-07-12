@@ -210,6 +210,16 @@ if __name__ == '__main__':
         device=device)
     del model_copy
 
+    # resave model weight
+    if args.resave:
+        print('Resave: {}'.format(args.model.upper()))
+        checkpoint = torch.load(args.weight, map_location='cpu')
+        checkpoint_path = 'weights/{}/{}/{}_pure.pth'.format(args.dataset, args.model, args.model)
+        torch.save({'model': model.state_dict(),
+                    'mAP': checkpoint.pop("mAP"),
+                    'epoch': checkpoint.pop("epoch")}, 
+                    checkpoint_path)
+        
     print("================= DETECT =================")
     # run
     test(args=args,
