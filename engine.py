@@ -82,6 +82,41 @@ class YoloTrainer(object):
             self.model_ema = None
 
 
+    def check_second_stage(self):
+        # set second stage
+        print('============== Second stage of Training ==============')
+        self.second_stage = True
+
+        # close mosaic augmentation
+        if self.train_loader.dataset.mosaic_prob > 0.:
+            print(' - Close < Mosaic Augmentation > ...')
+            self.train_loader.dataset.mosaic_prob = 0.
+            self.heavy_eval = True
+
+        # close mixup augmentation
+        if self.train_loader.dataset.mixup_prob > 0.:
+            print(' - Close < Mixup Augmentation > ...')
+            self.train_loader.dataset.mixup_prob = 0.
+            self.heavy_eval = True
+
+        # close rotation augmentation
+        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
+            print(' - Close < degress of rotation > ...')
+            self.trans_cfg['degrees'] = 0.0
+        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
+            print(' - Close < shear of rotation >...')
+            self.trans_cfg['shear'] = 0.0
+        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
+            print(' - Close < perspective of rotation > ...')
+            self.trans_cfg['perspective'] = 0.0
+
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
+
     def train(self, model):
         for epoch in range(self.start_epoch, self.args.max_epoch):
             if self.args.distributed:
@@ -89,16 +124,7 @@ class YoloTrainer(object):
 
             # check second stage
             if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
-                # close mosaic augmentation
-                if self.train_loader.dataset.mosaic_prob > 0.:
-                    print('close Mosaic Augmentation ...')
-                    self.train_loader.dataset.mosaic_prob = 0.
-                    self.heavy_eval = True
-                # close mixup augmentation
-                if self.train_loader.dataset.mixup_prob > 0.:
-                    print('close Mixup Augmentation ...')
-                    self.train_loader.dataset.mixup_prob = 0.
-                    self.heavy_eval = True
+                self.check_second_stage()
 
             # train one epoch
             self.epoch = epoch
@@ -643,6 +669,7 @@ class DetrTrainer(object):
         self.device = device
         self.criterion = criterion
         self.world_size = world_size
+        self.second_stage = False
         self.heavy_eval = False
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
@@ -688,23 +715,49 @@ class DetrTrainer(object):
             self.model_ema = None
 
 
+    def check_second_stage(self):
+        # set second stage
+        print('============== Second stage of Training ==============')
+        self.second_stage = True
+
+        # close mosaic augmentation
+        if self.train_loader.dataset.mosaic_prob > 0.:
+            print(' - Close < Mosaic Augmentation > ...')
+            self.train_loader.dataset.mosaic_prob = 0.
+            self.heavy_eval = True
+
+        # close mixup augmentation
+        if self.train_loader.dataset.mixup_prob > 0.:
+            print(' - Close < Mixup Augmentation > ...')
+            self.train_loader.dataset.mixup_prob = 0.
+            self.heavy_eval = True
+
+        # close rotation augmentation
+        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
+            print(' - Close < degress of rotation > ...')
+            self.trans_cfg['degrees'] = 0.0
+        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
+            print(' - Close < shear of rotation >...')
+            self.trans_cfg['shear'] = 0.0
+        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
+            print(' - Close < perspective of rotation > ...')
+            self.trans_cfg['perspective'] = 0.0
+
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
+
     def train(self, model):
         for epoch in range(self.start_epoch, self.args.max_epoch):
             if self.args.distributed:
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
             # check second stage
-            if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1):
-                # close mosaic augmentation
-                if self.train_loader.dataset.mosaic_prob > 0.:
-                    print('close Mosaic Augmentation ...')
-                    self.train_loader.dataset.mosaic_prob = 0.
-                    self.heavy_eval = True
-                # close mixup augmentation
-                if self.train_loader.dataset.mixup_prob > 0.:
-                    print('close Mixup Augmentation ...')
-                    self.train_loader.dataset.mixup_prob = 0.
-                    self.heavy_eval = True
+            if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
+                self.check_second_stage()
 
             # train one epoch
             self.epoch = epoch
