@@ -35,7 +35,6 @@ class TransformerDecoder(nn.Module):
         nn.init.normal_(self.object_query.weight.data)
         ## TODO: Group queries
 
-
         self.bbox_embed = None
         self.class_embed = None
 
@@ -86,7 +85,6 @@ class TransformerDecoder(nn.Module):
             # Conditional query
             query_sine_embed = self.query_sine_embed(num_feats, reference_points)
             query_pos = self.ref_point_head(query_sine_embed) # [B, N, C]
-
             # Decoder
             output = layer(
                     # input for decoder
@@ -96,7 +94,6 @@ class TransformerDecoder(nn.Module):
                     memory = memory,
                     memory_pos = memory_pos,
                 )
-
             # Iter update
             if self.bbox_embed is not None:
                 delta_unsig = self.bbox_embed[layer_id](output)

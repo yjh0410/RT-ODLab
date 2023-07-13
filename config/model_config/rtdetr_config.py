@@ -24,13 +24,19 @@ rtdetr_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ### CNN-CSFM
-        'fpn': 'yolo_pafpn',
+        'fpn': 'yolovx_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
+        ## ------- Memory Decoder -------
+        'dim_compressed': 900,
+        'com_dim_feedforward': 1024,
+        'com_num_heads': 8,
+        'com_dropout': 0.1,
+        'com_act': 'silu',
         ## ------- Transformer Decoder -------
         'd_model': 256,
         'attn_type': 'mhsa',

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from .rtdetr_encoder import build_encoder
+from .rtdetr_compressor import build_compressor
 from .rtdetr_decoder import build_decoder
 from .rtdetr_dethead import build_dethead
 
@@ -31,6 +32,9 @@ class RTDETR(nn.Module):
         # --------- Network Parameters ----------
         ## Encoder
         self.encoder = build_encoder(cfg, trainable, 'img_encoder')
+
+        ## Compressor
+        self.compressor = build_compressor(cfg, self.d_model)
 
         ## Decoder
         self.decoder = build_decoder(cfg, self.d_model, return_intermediate=aux_loss)
@@ -97,8 +101,11 @@ class RTDETR(nn.Module):
         memory = memory.permute(0, 2, 1).contiguous()
         memory_pos = memory_pos.permute(0, 2, 1).contiguous()
 
+        # -------------------- Compressor --------------------
+        compressed_memory = self.compressor(memory, memory_pos)
+
         # -------------------- Decoder --------------------
-        hs, reference = self.decoder(memory, memory_pos)
+        hs, reference = self.decoder(compressed_memory, None)
 
         # -------------------- DetHead --------------------
         out_logits, out_bbox = self.dethead(hs, reference, False)
@@ -139,8 +146,11 @@ class RTDETR(nn.Module):
             memory = memory.permute(0, 2, 1).contiguous()
             memory_pos = memory_pos.permute(0, 2, 1).contiguous()
             
+            # -------------------- Compressor --------------------
+            compressed_memory = self.compressor(memory, memory_pos)
+
             # -------------------- Decoder --------------------
-            hs, reference = self.decoder(memory, memory_pos)
+            hs, reference = self.decoder(compressed_memory, None)
 
             # -------------------- DetHead --------------------
             outputs_class, outputs_coords = self.dethead(hs, reference, True)

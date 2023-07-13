@@ -92,7 +92,7 @@ class YolovxPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None, input_proj=False):
     model = cfg['fpn']
     # build pafpn
-    if model == 'YolovxPaFPN':
+    if model == 'yolovx_pafpn':
         fpn_net = YolovxPaFPN(cfg, in_dims, out_dim, input_proj)
 
     return fpn_net
