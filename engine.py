@@ -671,7 +671,7 @@ class DetrTrainer(object):
         self.world_size = world_size
         self.second_stage = False
         self.heavy_eval = False
-        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.001, 'backbone_lr_raio': 1.0}
+        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.001, 'backbone_lr_raio': 0.1}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
