@@ -671,7 +671,7 @@ class DetrTrainer(object):
         self.world_size = world_size
         self.second_stage = False
         self.heavy_eval = False
-        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-4, 'lr0': 0.001}
+        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
@@ -698,7 +698,7 @@ class DetrTrainer(object):
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.optimizer_dict['lr0'] *= self.args.batch_size / 64.
+        self.optimizer_dict['lr0'] *= self.args.batch_size / 16.
         self.optimizer, self.start_epoch = build_detr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
