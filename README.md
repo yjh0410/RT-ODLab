@@ -147,6 +147,7 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 | YOLOvx-S |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-M |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-L |  640  |  300  |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
+| YOLOvx-X |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
 
 * Redesigned RT-DETR:
 
@@ -363,6 +364,112 @@ python track.py --mode video \
 Results:
 
 ![image](./img_files/video_tracking_demo.gif)
+
+
+## Train on custom dataset
+Besides the popular datasets, we can also train the model on ourself dataset. To achieve this goal, you should follow these steps:
+- Step-1: Prepare the images (JPG/JPEG/PNG ...) and use `labelimg` to make XML format annotation files.
+
+```
+OurDataset
+|_ train
+|  |_ images     
+|     |_ 0.jpg
+|     |_ 1.jpg
+|     |_ ...
+|  |_ annotations
+|     |_ 0.xml
+|     |_ 1.xml
+|     |_ ...
+|_ val
+|  |_ images     
+|     |_ 0.jpg
+|     |_ 1.jpg
+|     |_ ...
+|  |_ annotations
+|     |_ 0.xml
+|     |_ 1.xml
+|     |_ ...
+|  ...
+```
+
+- Step-2: Convert ourdataset to COCO format.
+
+```Shell
+cd <PyTorch_YOLO_Tutorial_HOME>
+cd tools
+# convert train split
+python convert_ours_to_coco.py --root path/to/dataset/ --split train
+# convert val split
+python convert_ours_to_coco.py --root path/to/dataset/ --split val
+```
+Then, we can get a `train.json` file and a `val.json` file, as shown below.
+```
+OurDataset
+|_ train
+|  |_ images     
+|     |_ 0.jpg
+|     |_ 1.jpg
+|     |_ ...
+|  |_ annotations
+|     |_ 0.xml
+|     |_ 1.xml
+|     |_ ...
+|     |_ train.json
+|_ val
+|  |_ images     
+|     |_ 0.jpg
+|     |_ 1.jpg
+|     |_ ...
+|  |_ annotations
+|     |_ 0.xml
+|     |_ 1.xml
+|     |_ ...
+|     |_ val.json
+|  ...
+```
+
+- Step-3 Define our class labels.
+
+Please open `dataset/ourdataset.py` file and change `our_class_labels = ('cat',)` according to our definition of categories.
+
+- Step-4 Check
+
+```Shell
+cd <PyTorch_YOLO_Tutorial_HOME>
+cd dataset
+# convert train split
+python ourdataset.py --root path/to/dataset/ --split train
+# convert val split
+python ourdataset.py --root path/to/dataset/ --split val
+```
+
+- Step-5 **Train**
+
+For example:
+
+```Shell
+cd <PyTorch_YOLO_Tutorial_HOME>
+python train.py --root path/to/dataset/ -d ourdataset -m yolov1 -bs 16 --max_epoch 100 --wp_epoch 1 --eval_epoch 5 -p path/to/yolov1_coco.pth
+```
+
+- Step-6 **Test**
+
+For example:
+
+```Shell
+cd <PyTorch_YOLO_Tutorial_HOME>
+python test.py --root path/to/dataset/ -d ourdataset -m yolov1 --weight path/to/checkpoint --show
+```
+
+- Step-7 **Eval**
+
+For example:
+
+```Shell
+cd <PyTorch_YOLO_Tutorial_HOME>
+python eval.py --root path/to/dataset/ -d ourdataset -m yolov1 --weight path/to/checkpoint
+```
 
 
 ## Deployment
