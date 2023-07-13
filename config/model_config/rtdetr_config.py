@@ -8,7 +8,7 @@ rtdetr_cfg = {
         ## ------- Image Encoder -------
         ### CNN-Backbone
         'backbone': 'elannet',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
