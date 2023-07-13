@@ -32,7 +32,7 @@ rtdetr_cfg = {
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
         ## ------- Memory Decoder -------
-        'dim_compressed': 900,
+        'dim_compressed': 300,
         'com_dim_feedforward': 1024,
         'com_num_heads': 8,
         'com_dropout': 0.1,
