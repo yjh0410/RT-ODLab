@@ -11,7 +11,7 @@ class MemoryCompressor(nn.Module):
         # -------------------- Basic Parameters ---------------------
         self.d_model = in_dim
         self.ffn_dim = round(cfg['com_dim_feedforward']*cfg['width'])
-        self.compressed_vector = nn.Embedding(cfg['dim_compressed'], in_dim)
+        self.compressed_vector = nn.Embedding(cfg['num_compressed'], in_dim)
         # -------------------- Network Parameters ---------------------
         self.compress_layer = TRDecoderLayer(
             d_model=in_dim,
