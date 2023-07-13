@@ -53,7 +53,7 @@ def build_detr_optimizer(cfg, model, resume=None):
         {"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},
         {
             "params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],
-            "lr": cfg['lr0'] * 0.1,
+            "lr": cfg['lr0'] * cfg['backbone_lr_raio'],
         },
     ]
 
