@@ -87,7 +87,7 @@ For example:
 python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-* Redesigned YOLOv1~v2:
+#### Redesigned YOLOv1~v2:
 
 | Model         |   Backbone         | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------------|--------------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
@@ -155,12 +155,12 @@ Due to my limited computing resources, I can not to train `YOLOvx-X` with the se
 
 * Redesigned RT-DETR:
 
-| Model     | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+| Model     | Scale | Batch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |-----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RT-DETR-N |  640  |  300  |                        |                   |                   |                    |  |
-| RT-DETR-S |  640  |  300  |                        |                   |                   |                    |  |
-| RT-DETR-M |  640  |  300  |                        |                   |                   |                    |  |
-| RT-DETR-L |  640  |  300  |                        |                   |                   |                    |  |
+| RT-DETR-N |  640  |       |                        |                   |                   |                    |  |
+| RT-DETR-S |  640  |       |                        |                   |                   |                    |  |
+| RT-DETR-M |  640  |       |                        |                   |                   |                    |  |
+| RT-DETR-L |  640  |       |                        |                   |                   |                    |  |
 
 #### Necessary instructions：
 
