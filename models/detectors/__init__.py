@@ -46,7 +46,7 @@ def build_model(args,
         model, criterion = build_yolov7(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOvx
-    elif args.model in ['yolovx_n', 'yolovx_s', 'yolovx_m', 'yolovx_l', 'yolovx_x']:
+    elif args.model in ['yolovx_n', 'yolovx_t', 'yolovx_s', 'yolovx_m', 'yolovx_l', 'yolovx_x']:
         model, criterion = build_yolovx(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX   

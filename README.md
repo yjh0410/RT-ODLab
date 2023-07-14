@@ -143,16 +143,25 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 | Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOvx-N |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-T |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-S |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-M |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| YOLOvx-N |  640  | 4xb32 |                         |                    |                        |                   |      9.1          |        2.4         |  |
+| YOLOvx-T |  640  | 4xb32 |                         |                    |                        |                   |      18.9         |        5.1         |  |
+| YOLOvx-S |  640  | 4xb32 |                         |                    |                        |                   |      33.6         |        9.0         |  |
+| YOLOvx-M |  640  | 8xb16 |                         |                    |                        |                   |      87.4         |        23.6        |  |
 | YOLOvx-L |  640  | 8xb16 |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
 | YOLOvx-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
 
 - We use `AdamW` optimizer with `per_image_lr=0.001 / 64` and `linear` learning rate decay scheduler to train all models with 300 epoch.
 - We use `YOLOv5-style Mosaic augmentation` and `YOLOX-style Mixup augmentation` wihout rotation.
 - Due to my limited computing resources, I can not train `YOLOvx-X` with the setting of `batch size=128`.
+
+#### LODet: An Empirical Study of Designing Lightweight Object Detector
+
+| Model | Scale | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
+| LODet |  320  |                         |                    |                        |                   |      1.05         |        1.20        |  |
+| LODet |  416  |                         |                    |                        |                   |      1.78         |        1.20        |  |
+| LODet |  512  |                         |                    |                        |                   |      2.70         |        1.20        |  |
+| LODet |  640  |                         |                    |                        |                   |      4.21         |        1.20        |  |
 
 #### Redesigned RT-DETR:
 
