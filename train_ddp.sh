@@ -1,6 +1,6 @@
 # train YOLO with 4 GPUs
 # 使用4张GPU来训练YOLO
-python -m torch.distributed.run --nproc_per_node=4 train.py \
+python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --cuda \
                                                     -dist \
                                                     -d coco \
