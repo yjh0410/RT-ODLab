@@ -3,8 +3,8 @@ python train.py \
         --cuda \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolox_n \
-        -bs 64 \
+        -m yolovx_x \
+        -bs 8 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
