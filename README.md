@@ -143,7 +143,6 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 | Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOvx-P |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-N |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-T |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
 | YOLOvx-S |  640  | 4xb32 |                         |                    |                        |                   |                   |                    |  |
