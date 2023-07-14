@@ -141,15 +141,17 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 * My YOLO:
 
-| Model    | Scale | Epoch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOvx-P |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-N |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-T |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-S |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-M |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
-| YOLOvx-L |  640  |  300  |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
-| YOLOvx-X |  640  |  300  |                         |                    |                        |                   |                   |                    |  |
+| Model    | Scale | Batch | Epoch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|----------|-------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOvx-P |  640  | 4xb32 |  300  |                         |                    |                        |                   |                   |                    |  |
+| YOLOvx-N |  640  | 4xb32 |  300  |                         |                    |                        |                   |                   |                    |  |
+| YOLOvx-T |  640  | 4xb32 |  300  |                         |                    |                        |                   |                   |                    |  |
+| YOLOvx-S |  640  | 4xb32 |  300  |                         |                    |                        |                   |                   |                    |  |
+| YOLOvx-M |  640  | 8xb16 |  300  |                         |                    |                        |                   |                   |                    |  |
+| YOLOvx-L |  640  | 8xb16 |  300  |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
+| YOLOvx-X |  640  |       |       |                         |                    |                        |                   |                   |                    |  |
+
+Due to my limited computing resources, I can not to train `YOLOvx-X` with the setting of `batch size=128`.
 
 * Redesigned RT-DETR:
 

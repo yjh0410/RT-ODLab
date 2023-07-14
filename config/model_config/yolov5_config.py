@@ -44,7 +44,7 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
     'yolov5_s':{
@@ -90,7 +90,7 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
     'yolov5_m':{
@@ -136,7 +136,7 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
     'yolov5_l':{
@@ -182,7 +182,7 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
     'yolov5_x':{
@@ -228,7 +228,7 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
 }

@@ -35,5 +35,5 @@ yolov2_cfg = {
     'loss_cls_weight': 1.0,
     'loss_box_weight': 5.0,
     # training configuration
-    'trainer_type': 'yolo',
+    'trainer_type': 'yolov8',
 }

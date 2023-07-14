@@ -47,7 +47,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
     'yolov7':{
@@ -96,7 +96,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
     'yolov7_x':{
@@ -145,7 +145,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolo',
+        'trainer_type': 'yolov8',
     },
 
 }
