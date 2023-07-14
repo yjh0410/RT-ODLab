@@ -153,7 +153,7 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 - We use `AdamW` optimizer with `per_image_lr=0.001 / 64` and `linear` learning rate decay scheduler to train all models with 300 epoch.
 - We use `YOLOv5-style Mosaic augmentation` and `YOLOX-style Mixup augmentation` wihout rotation.
-- Due to my limited computing resources, I can not to train `YOLOvx-X` with the setting of `batch size=128`.
+- Due to my limited computing resources, I can not train `YOLOvx-X` with the setting of `batch size=128`.
 
 #### Redesigned RT-DETR:
 
