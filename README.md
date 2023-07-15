@@ -145,8 +145,8 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOvx-N |  640  | 4xb32 |                         |                    |                        |                   |      9.1          |        2.4         |  |
 | YOLOvx-T |  640  | 4xb32 |                         |                    |                        |                   |      18.9         |        5.1         |  |
-| YOLOvx-S |  640  | 4xb32 |                         |                    |                        |                   |      33.6         |        9.0         |  |
-| YOLOvx-M |  640  | 8xb16 |                         |                    |                        |                   |      87.4         |        23.6        |  |
+| YOLOvx-S |  640  | 8xb16 |                         |                    |                        |                   |      33.6         |        9.0         |  |
+| YOLOvx-M |  640  | 8xb16 |         48.3            |        67.0        |          48.1          |        66.9       |      87.4         |        23.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_m_coco.pth) |
 | YOLOvx-L |  640  | 8xb16 |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
 | YOLOvx-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
 
@@ -156,12 +156,12 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 #### LODet: An Empirical Study of Designing Lightweight Object Detector
 
-| Model | Scale | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| LODet |  320  |                         |                    |                        |                   |      1.05         |        1.20        |  |
-| LODet |  416  |                         |                    |                        |                   |      1.78         |        1.20        |  |
-| LODet |  512  |                         |                    |                        |                   |      2.70         |        1.20        |  |
-| LODet |  640  |                         |                    |                        |                   |      4.21         |        1.20        |  |
+| Model | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| LODet |  320  |                        |                   |      1.05         |        1.20        |  |
+| LODet |  416  |                        |                   |      1.78         |        1.20        |  |
+| LODet |  512  |                        |                   |      2.70         |        1.20        |  |
+| LODet |  640  |                        |                   |      4.21         |        1.20        |  |
 
 #### Redesigned RT-DETR:
 
