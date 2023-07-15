@@ -39,7 +39,7 @@ class ScaleModulationNet(nn.Module):
         # P5/32
         self.layer_5 = nn.Sequential(
             nn.MaxPool2d((2, 2), stride=2),             
-            SMBlock(256, 256, 0.25, act_type, norm_type, depthwise)
+            SMBlock(256, 256, 0.5, act_type, norm_type, depthwise)
         )
 
 
