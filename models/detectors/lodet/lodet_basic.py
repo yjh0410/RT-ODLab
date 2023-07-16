@@ -85,7 +85,7 @@ class Conv(nn.Module):
 # ---------------------------- Core Modules ----------------------------
 ## Scale Modulation Block
 class SMBlock(nn.Module):
-    def __init__(self, in_dim, out_dim=None, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
         super(SMBlock, self).__init__()
         # -------------- Basic parameters --------------
         self.in_dim = in_dim
@@ -111,7 +111,7 @@ class SMBlock(nn.Module):
 
         # Output proj
         self.out_proj = None
-        if out_dim is not None:
+        if in_dim != out_dim:
             self.out_proj = Conv(self.inter_dim*2, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
 

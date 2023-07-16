@@ -27,22 +27,22 @@ class ScaleModulationNet(nn.Module):
         # P2/4
         self.layer_2 = nn.Sequential(   
             DSBlock(16, act_type, norm_type, depthwise),             
-            SMBlock(32, None, act_type, norm_type, depthwise)
+            SMBlock(32, 32, act_type, norm_type, depthwise)
         )
         # P3/8
         self.layer_3 = nn.Sequential(
             DSBlock(32, act_type, norm_type, depthwise),             
-            SMBlock(64, None, act_type, norm_type, depthwise)
+            SMBlock(64, 64, act_type, norm_type, depthwise)
         )
         # P4/16
         self.layer_4 = nn.Sequential(
             DSBlock(64, act_type, norm_type, depthwise),             
-            SMBlock(128, None, act_type, norm_type, depthwise)
+            SMBlock(128, 128, act_type, norm_type, depthwise)
         )
         # P5/32
         self.layer_5 = nn.Sequential(
             DSBlock(128, act_type, norm_type, depthwise),             
-            SMBlock(256, None, act_type, norm_type, depthwise)
+            SMBlock(256, 256, act_type, norm_type, depthwise)
         )
 
 
