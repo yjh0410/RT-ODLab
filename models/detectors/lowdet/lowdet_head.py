@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .lodet_basic import Conv
+from .lowdet_basic import Conv
 
 
 # Single-level Head

@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .lodet_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .lowdet_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
 # YOLO-Style PaFPN
-class LodetPaFPN(nn.Module):
+class LowdetPaFPN(nn.Module):
     def __init__(self, cfg, in_dims=[64, 128, 256], out_dim=None):
-        super(LodetPaFPN, self).__init__()
+        super(LowdetPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.fpn_dims = in_dims
         
@@ -83,7 +83,7 @@ class LodetPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
     # build pafpn
-    if model == 'lodet_pafpn':
-        fpn_net = LodetPaFPN(cfg, in_dims, out_dim)
+    if model == 'lowdet_pafpn':
+        fpn_net = LowdetPaFPN(cfg, in_dims, out_dim)
 
     return fpn_net

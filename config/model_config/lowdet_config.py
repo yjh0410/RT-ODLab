@@ -1,7 +1,7 @@
-# Light-weight Object Detector Config
+# Low-computation Object Detector Config
 
 
-lodet_cfg = {
+lowdet_cfg = {
     # ---------------- Model config ----------------
     ## Backbone
     'backbone': 'smnet',
@@ -19,7 +19,7 @@ lodet_cfg = {
     'neck_norm': 'BN',
     'neck_depthwise': True,
     ## Neck: PaFPN
-    'fpn': 'lodet_pafpn',
+    'fpn': 'lowdet_pafpn',
     'fpn_core_block': 'smblock',
     'fpn_reduce_layer': 'conv',
     'fpn_downsample_layer': 'conv',

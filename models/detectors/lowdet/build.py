@@ -5,16 +5,16 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .lodet import LODet
+from .lowdet import LOWDet
 
 
 # build object detector
-def build_lodet(args, cfg, device, num_classes=80, trainable=False, deploy=False):
+def build_lowdet(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
         
-    # -------------- Build LODet --------------
-    model = LODet(
+    # -------------- Build LOWDet --------------
+    model = LOWDet(
         cfg=cfg,
         device=device, 
         num_classes=num_classes,
@@ -25,7 +25,7 @@ def build_lodet(args, cfg, device, num_classes=80, trainable=False, deploy=False
         deploy=deploy
         )
 
-    # -------------- Initialize LODet --------------
+    # -------------- Initialize LOWDet --------------
     for m in model.modules():
         if isinstance(m, nn.BatchNorm2d):
             m.eps = 1e-3

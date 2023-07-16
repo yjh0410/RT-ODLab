@@ -154,14 +154,14 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 - We use `YOLOv5-style Mosaic augmentation` and `YOLOX-style Mixup augmentation` wihout rotation.
 - Due to my limited computing resources, I can not train `YOLOvx-X` with the setting of `batch size=128`.
 
-#### LODet: An Empirical Study of Designing Lightweight Object Detector
+#### LOWDet: An Empirical Study of Designing Lightweight Object Detector
 
-| Model | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| LODet |  320  |                        |                   |      1.05         |        1.20        |  |
-| LODet |  416  |                        |                   |      1.78         |        1.20        |  |
-| LODet |  512  |                        |                   |      2.70         |        1.20        |  |
-| LODet |  640  |                        |                   |      4.21         |        1.20        |  |
+| Model  | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|--------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| LOWDet |  320  |                        |                   |      1.05         |        1.20        |  |
+| LOWDet |  416  |                        |                   |      1.78         |        1.20        |  |
+| LOWDet |  512  |                        |                   |      2.70         |        1.20        |  |
+| LOWDet |  640  |                        |                   |      4.21         |        1.20        |  |
 
 #### Redesigned RT-DETR:
 

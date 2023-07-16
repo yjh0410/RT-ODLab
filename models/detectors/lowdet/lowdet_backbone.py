@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .lodet_basic import Conv, SMBlock, DSBlock
+    from .lowdet_basic import Conv, SMBlock, DSBlock
 except:
-    from lodet_basic import Conv, SMBlock, DSBlock
+    from lowdet_basic import Conv, SMBlock, DSBlock
 
 
 

@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import torch
+# YOLO series
 from .yolov1.build import build_yolov1
 from .yolov2.build import build_yolov2
 from .yolov3.build import build_yolov3
@@ -9,8 +10,11 @@ from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolovx.build import build_yolovx
+# My custom YOLO
 from .yolox.build import build_yolox
-from .lodet.build import build_lodet
+# Lightweight Detector
+from .lowdet.build import build_lowdet
+# Real-time DETR
 from .rtdetr.build import build_rtdetr
 
 
@@ -53,9 +57,9 @@ def build_model(args,
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
-    # LODet
-    elif args.model == 'lodet':
-        model, criterion = build_lodet(
+    # LOWDet
+    elif args.model == 'lowdet':
+        model, criterion = build_lowdet(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RT-DETR
     elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:

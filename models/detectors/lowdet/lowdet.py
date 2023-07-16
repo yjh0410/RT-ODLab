@@ -3,18 +3,18 @@ import torch
 import torch.nn as nn
 
 # --------------- Model components ---------------
-from .lodet_backbone import build_backbone
-from .lodet_neck import build_neck
-from .lodet_pafpn import build_fpn
-from .lodet_head import build_det_head
-from .lodet_pred import build_pred_layer
+from .lowdet_backbone import build_backbone
+from .lowdet_neck import build_neck
+from .lowdet_pafpn import build_fpn
+from .lowdet_head import build_det_head
+from .lowdet_pred import build_pred_layer
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
 
 
 # Lightweight Object Detector
-class LODet(nn.Module):
+class LOWDet(nn.Module):
     def __init__(self, 
                  cfg,
                  device, 
@@ -24,7 +24,7 @@ class LODet(nn.Module):
                  trainable = False, 
                  topk = 1000,
                  deploy = False):
-        super(LODet, self).__init__()
+        super(LOWDet, self).__init__()
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device
