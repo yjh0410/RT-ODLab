@@ -22,7 +22,7 @@ lodet_cfg = {
     'fpn': 'lodet_pafpn',
     'fpn_core_block': 'smblock',
     'fpn_reduce_layer': 'conv',
-    'fpn_downsample_layer': 'dsblock',
+    'fpn_downsample_layer': 'conv',
     'fpn_act': 'silu',
     'fpn_norm': 'BN',
     'fpn_depthwise': True,
