@@ -21,7 +21,7 @@ class ScaleModulationNet(nn.Module):
         # P1/2
         self.layer_1 = nn.Sequential(
             Conv(3, 16, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Conv(16, 16, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise),
+            Conv(16, 16, k=3, p=1, s=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise),
         )
 
         # P2/4
