@@ -36,7 +36,7 @@ yolov7_cfg = {
         # ---------------- Train config ----------------
         ## input
         'trans_type': 'yolov5_nano',
-        'multi_scale': [0.5, 1.25], # 320 -> 800
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -134,7 +134,7 @@ yolov7_cfg = {
         # ---------------- Train config ----------------
         ## input
         'trans_type': 'yolov5_huge',
-        'multi_scale': [0.5, 1.25], # 320 -> 640
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,

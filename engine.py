@@ -37,10 +37,7 @@ class Yolov8Trainer(object):
         self.world_size = world_size
         self.heavy_eval = False
         self.second_stage = False
-        """
-            The below hyperparameters refer to YOLOv8.
-        """
-
+        # ---------------------------- Hyperparameters refer to YOLOv8 ----------------------------
         self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.937, 'weight_decay': 5e-4, 'lr0': 0.01}
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
@@ -361,9 +358,7 @@ class YoloxTrainer(object):
         self.no_aug_epoch = args.no_aug_epoch
         self.heavy_eval = False
         self.second_stage = False
-        """
-            The below hyperparameters refer to YOLOX: https://github.com/open-mmlab/mmyolo/tree/main/configs/rtmdet.
-        """
+        # ---------------------------- Hyperparameters refer to YOLOX ----------------------------
         self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.9, 'weight_decay': 5e-4, 'lr0': 0.01}
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
@@ -670,9 +665,7 @@ class RTMTrainer(object):
         self.clip_grad = 35
         self.heavy_eval = False
         self.second_stage = False
-        """
-            The below hyperparameters refer to RTMDet: https://github.com/open-mmlab/mmyolo/tree/main/configs/rtmdet.
-        """
+        # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
