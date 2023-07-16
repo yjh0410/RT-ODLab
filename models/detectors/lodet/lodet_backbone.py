@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .lodet_basic import Conv, SMBlock
+    from .lodet_basic import Conv, SMBlock, DSBlock
 except:
-    from lodet_basic import Conv, SMBlock
+    from lodet_basic import Conv, SMBlock, DSBlock
 
 
 
@@ -16,30 +16,33 @@ model_urls = {
 class ScaleModulationNet(nn.Module):
     def __init__(self, act_type='silu', norm_type='BN', depthwise=False):
         super(ScaleModulationNet, self).__init__()
-        self.feat_dims = [128, 256, 256]
+        self.feat_dims = [64, 128, 256]
         
         # P1/2
-        self.layer_1 = Conv(3, 32, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type)
+        self.layer_1 = nn.Sequential(
+            Conv(3, 16, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
+            Conv(16, 16, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise),
+        )
 
         # P2/4
         self.layer_2 = nn.Sequential(   
-            nn.MaxPool2d((2, 2), stride=2),             
-            SMBlock(32, 64, 0.5, act_type, norm_type, depthwise)
+            DSBlock(16, 16, act_type, norm_type, depthwise),             
+            SMBlock(16, 32, act_type, norm_type, depthwise)
         )
         # P3/8
         self.layer_3 = nn.Sequential(
-            nn.MaxPool2d((2, 2), stride=2),             
-            SMBlock(64, 128, 0.5, act_type, norm_type, depthwise)
+            DSBlock(32, 32, act_type, norm_type, depthwise),             
+            SMBlock(32, 64, act_type, norm_type, depthwise)
         )
         # P4/16
         self.layer_4 = nn.Sequential(
-            nn.MaxPool2d((2, 2), stride=2),             
-            SMBlock(128, 256, 0.5, act_type, norm_type, depthwise)
+            DSBlock(64, 64, act_type, norm_type, depthwise),             
+            SMBlock(64, 128, act_type, norm_type, depthwise)
         )
         # P5/32
         self.layer_5 = nn.Sequential(
-            nn.MaxPool2d((2, 2), stride=2),             
-            SMBlock(256, 256, 0.5, act_type, norm_type, depthwise)
+            DSBlock(128, 128, act_type, norm_type, depthwise),             
+            SMBlock(128, 256, act_type, norm_type, depthwise)
         )
 
 

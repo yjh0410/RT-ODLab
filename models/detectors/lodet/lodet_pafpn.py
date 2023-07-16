@@ -7,43 +7,40 @@ from .lodet_basic import (Conv, build_reduce_layer, build_downsample_layer, buil
 
 # YOLO-Style PaFPN
 class LodetPaFPN(nn.Module):
-    def __init__(self, cfg, in_dims=[128, 256, 256], out_dim=None):
+    def __init__(self, cfg, in_dims=[64, 128, 256], out_dim=None):
         super(LodetPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
-        self.in_dims = in_dims
-        c3, c4, c5 = in_dims
+        self.fpn_dims = in_dims
         
         # --------------------------- Top-down FPN---------------------------
         ## P5 -> P4
-        self.reduce_layer_1 = build_reduce_layer(cfg, c5, 128)
-        self.reduce_layer_2 = build_reduce_layer(cfg, c4, 128)
-        self.top_down_layer_1 = build_fpn_block(cfg, 128 + 128, 128)
+        self.reduce_layer_1 = build_reduce_layer(cfg, self.fpn_dims[2], self.fpn_dims[2]//2)
+        self.top_down_layer_1 = build_fpn_block(cfg, self.fpn_dims[1] + self.fpn_dims[2]//2, self.fpn_dims[1])
 
         ## P4 -> P3
-        self.reduce_layer_3 = build_reduce_layer(cfg, 128, 64)
-        self.reduce_layer_4 = build_reduce_layer(cfg, c3, 64)
-        self.top_down_layer_2 = build_fpn_block(cfg, 64 + 64, 64)
+        self.reduce_layer_2 = build_reduce_layer(cfg, self.fpn_dims[1], self.fpn_dims[1]//2)
+        self.top_down_layer_2 = build_fpn_block(cfg, self.fpn_dims[0] + self.fpn_dims[1]//2, self.fpn_dims[0])
 
         # --------------------------- Bottom-up FPN ---------------------------
         ## P3 -> P4
-        self.downsample_layer_1 = build_downsample_layer(cfg, 64, 64)
-        self.bottom_up_layer_1 = build_fpn_block(cfg, 64 + 64, 128)
+        self.downsample_layer_1 = build_downsample_layer(cfg, self.fpn_dims[0], self.fpn_dims[0])
+        self.bottom_up_layer_1 = build_fpn_block(cfg, self.fpn_dims[0] + self.fpn_dims[1]//2, self.fpn_dims[1])
 
         ## P4 -> P5
-        self.downsample_layer_2 = build_downsample_layer(cfg, 128, 128)
-        self.bottom_up_layer_2 = build_fpn_block(cfg, 128 + 128, 256)
+        self.downsample_layer_2 = build_downsample_layer(cfg, self.fpn_dims[1], self.fpn_dims[1])
+        self.bottom_up_layer_2 = build_fpn_block(cfg, self.fpn_dims[1] + self.fpn_dims[2]//2, self.fpn_dims[2])
                 
         # --------------------------- Output proj ---------------------------
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
                 Conv(in_dim, out_dim, k=1,
                      act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-                     for in_dim in [64, 128, 256]
+                     for in_dim in self.fpn_dims
                      ])
             self.out_dim = [out_dim] * 3
         else:
             self.out_layers = None
-            self.out_dim = self.in_dims
+            self.out_dim = self.fpn_dims
 
 
     def forward(self, features):
@@ -52,21 +49,21 @@ class LodetPaFPN(nn.Module):
         # Top down
         ## P5 -> P4
         c6 = self.reduce_layer_1(c5)
-        c7 = self.reduce_layer_2(c4)
-        c8 = torch.cat([F.interpolate(c6, scale_factor=2.0), c7], dim=1)
+        c7 = F.interpolate(c6, scale_factor=2.0)
+        c8 = torch.cat([c7, c4], dim=1)
         c9 = self.top_down_layer_1(c8)
         ## P4 -> P3
-        c10 = self.reduce_layer_3(c9)
-        c11 = self.reduce_layer_4(c3)
-        c12 = torch.cat([F.interpolate(c10, scale_factor=2.0), c11], dim=1)
+        c10 = self.reduce_layer_2(c9)
+        c11 = F.interpolate(c10, scale_factor=2.0)
+        c12 = torch.cat([c11, c3], dim=1)
         c13 = self.top_down_layer_2(c12)
 
         # Bottom up
-        # p3 -> P4
+        ## p3 -> P4
         c14 = self.downsample_layer_1(c13)
         c15 = torch.cat([c14, c10], dim=1)
         c16 = self.bottom_up_layer_1(c15)
-        # P4 -> P5
+        ## P4 -> P5
         c17 = self.downsample_layer_2(c16)
         c18 = torch.cat([c17, c6], dim=1)
         c19 = self.bottom_up_layer_2(c18)

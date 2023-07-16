@@ -85,20 +85,28 @@ class Conv(nn.Module):
 # ---------------------------- Core Modules ----------------------------
 ## Scale Modulation Block
 class SMBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, expand_ratio=0.5, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
         super(SMBlock, self).__init__()
         # -------------- Basic parameters --------------
         self.in_dim = in_dim
         self.out_dim = out_dim
-        self.expand_ratio = expand_ratio
-        self.inter_dim = round(in_dim * expand_ratio)
+        self.inter_dim = in_dim // 2
         # -------------- Network parameters --------------
         self.cv1 = Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         ## Scale Modulation
-        self.sm1 = Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.sm2 = Conv(self.inter_dim, self.inter_dim, k=5, p=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.sm3 = Conv(self.inter_dim, self.inter_dim, k=7, p=3, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.sm1 = nn.Sequential(
+            Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type),
+            Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            )
+        self.sm2 = nn.Sequential(
+            Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type),
+            Conv(self.inter_dim, self.inter_dim, k=5, p=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            )
+        self.sm3 = nn.Sequential(
+            Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type),
+            Conv(self.inter_dim, self.inter_dim, k=7, p=3, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            )
         ## Output proj
         self.out_proj = Conv(self.inter_dim*4, self.out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
@@ -133,6 +141,23 @@ class SMBlock(nn.Module):
 
         return out
 
+## DownSample Block
+class DSBlock(nn.Module):
+    def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
+        super().__init__()
+        self.maxpool = nn.MaxPool2d((2, 2), 2)
+        self.conv = Conv(in_dim//2, in_dim//2, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.out_proj = Conv(in_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+
+    def forward(self, x):
+        x1, x2 = torch.chunk(x, 2, dim=1)
+        x1 = self.maxpool(x1)
+        x2 = self.conv(x2)
+        out = torch.cat([x1, x2], dim=1)
+        out = self.out_proj(out)
+
+        return out
+
 
 # ---------------------------- FPN Modules ----------------------------
 ## build fpn's core block
@@ -140,7 +165,6 @@ def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'smblock':
         layer = SMBlock(in_dim=in_dim,
                         out_dim=out_dim,
-                        expand_ratio=cfg['fpn_expand_ratio'],
                         act_type=cfg['fpn_act'],
                         norm_type=cfg['fpn_norm'],
                         depthwise=cfg['fpn_depthwise']
@@ -162,5 +186,7 @@ def build_downsample_layer(cfg, in_dim, out_dim):
     elif cfg['fpn_downsample_layer'] == 'maxpool':
         assert in_dim == out_dim
         layer = nn.MaxPool2d((2, 2), stride=2)
+    elif cfg['fpn_downsample_layer'] == 'dsblock':
+        layer = DSBlock(in_dim, out_dim, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'], depthwise=cfg['fpn_depthwise'])
         
     return layer

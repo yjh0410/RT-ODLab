@@ -20,10 +20,9 @@ lodet_cfg = {
     'neck_depthwise': True,
     ## Neck: PaFPN
     'fpn': 'lodet_pafpn',
-    'fpn_reduce_layer': 'conv',
-    'fpn_downsample_layer': 'maxpool',
     'fpn_core_block': 'smblock',
-    'fpn_expand_ratio': 0.5,
+    'fpn_reduce_layer': 'conv',
+    'fpn_downsample_layer': 'dsblock',
     'fpn_act': 'silu',
     'fpn_norm': 'BN',
     'fpn_depthwise': True,
