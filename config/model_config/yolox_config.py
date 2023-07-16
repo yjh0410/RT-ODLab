@@ -31,7 +31,7 @@ yolox_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 960
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -75,7 +75,7 @@ yolox_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 960
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## matcher
