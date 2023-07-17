@@ -97,7 +97,7 @@ class MultiHeadMixedConv(nn.Module):
         ## Scale Modulation
         self.mixed_convs = nn.ModuleList([
             Conv(self.head_dim, self.head_dim, k=2*i+1, p=i, act_type=None, norm_type=None, depthwise=depthwise)
-            for i in range(num_heads)])
+            for i in range(1, num_heads+1)])
         ## Aggregation proj
         self.out_proj = Conv(self.head_dim*num_heads, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
