@@ -40,7 +40,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolovx_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -94,7 +94,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolovx_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -148,7 +148,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolovx_small',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -202,7 +202,7 @@ yolovx_cfg = {
         'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolovx_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
