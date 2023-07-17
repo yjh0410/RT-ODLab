@@ -41,7 +41,7 @@ lowdet_cfg = {
     'reg_max': 16,
     # ---------------- Train config ----------------
     ## Input
-    'multi_scale': [0.5, 1.25],   # 320 -> 800
+    'multi_scale': [0.5, 1.5],   # 320 -> 960
     'trans_type': 'yolovx_pico',
     # ---------------- Assignment config ----------------
     ## Matcher
