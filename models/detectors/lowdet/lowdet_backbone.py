@@ -14,35 +14,35 @@ model_urls = {
 
 # ---------------------------- Backbones ----------------------------
 class ScaleModulationNet(nn.Module):
-    def __init__(self, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, num_heads=4, act_type='silu', norm_type='BN', depthwise=False):
         super(ScaleModulationNet, self).__init__()
-        self.feat_dims = [64, 128, 256]
+        self.feat_dims = [96, 192, 384]
         
         # P1/2
         self.layer_1 = nn.Sequential(
-            Conv(3, 16, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Conv(16, 16, k=3, p=1, s=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise),
+            Conv(3, 24, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
+            Conv(24, 24, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise),
         )
 
         # P2/4
         self.layer_2 = nn.Sequential(   
-            DSBlock(16, act_type, norm_type, depthwise),             
-            SMBlock(32, 32, act_type, norm_type, depthwise)
+            DSBlock(24, act_type, norm_type, depthwise),             
+            SMBlock(48, 48, nblocks=1, num_heads=num_heads, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         )
         # P3/8
         self.layer_3 = nn.Sequential(
-            DSBlock(32, act_type, norm_type, depthwise),             
-            SMBlock(64, 64, act_type, norm_type, depthwise)
+            DSBlock(48, act_type, norm_type, depthwise),             
+            SMBlock(96, 96, nblocks=3, num_heads=num_heads, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         )
         # P4/16
         self.layer_4 = nn.Sequential(
-            DSBlock(64, act_type, norm_type, depthwise),             
-            SMBlock(128, 128, act_type, norm_type, depthwise)
+            DSBlock(96, act_type, norm_type, depthwise),             
+            SMBlock(192, 192, nblocks=3, num_heads=num_heads, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         )
         # P5/32
         self.layer_5 = nn.Sequential(
-            DSBlock(128, act_type, norm_type, depthwise),             
-            SMBlock(256, 256, act_type, norm_type, depthwise)
+            DSBlock(192, act_type, norm_type, depthwise),             
+            SMBlock(384, 384, nblocks=2, num_heads=num_heads, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         )
 
 
@@ -93,6 +93,7 @@ def load_weight(model, model_name):
 def build_backbone(cfg, pretrained=False): 
     # model
     backbone = ScaleModulationNet(
+        num_heads=cfg['bk_num_heads'],
         act_type=cfg['bk_act'],
         norm_type=cfg['bk_norm'],
         depthwise=cfg['bk_dpw']

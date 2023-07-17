@@ -83,53 +83,53 @@ class Conv(nn.Module):
 
 
 # ---------------------------- Core Modules ----------------------------
-## Scale Modulation Block
-class SMBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
-        super(SMBlock, self).__init__()
+## MultiHeadMixedConv
+class MultiHeadMixedConv(nn.Module):
+    def __init__(self, in_dim, out_dim, num_heads=4, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
+        super().__init__()
         # -------------- Basic parameters --------------
         self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.num_heads = num_heads
+        self.head_dim = in_dim // num_heads
+        self.shortcut = shortcut
+        # -------------- Network parameters --------------
+        ## Scale Modulation
+        self.mixed_convs = nn.ModuleList([
+            Conv(self.head_dim, self.head_dim, k=2*i+1, p=i, act_type=None, norm_type=None, depthwise=depthwise)
+            for i in range(num_heads)])
+        ## Aggregation proj
+        self.out_proj = Conv(self.head_dim*num_heads, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+
+    def forward(self, x):
+        xs = torch.chunk(x, self.num_heads, dim=1)
+        ys = [mixed_conv(x_h) for x_h, mixed_conv in zip(xs, self.mixed_convs)]
+        ys = self.out_proj(torch.cat(ys, dim=1))
+
+        return x + ys if self.shortcut else ys
+    
+
+## Scale Modulation Block
+class SMBlock(nn.Module):
+    def __init__(self, in_dim, out_dim, nblocks=1, num_heads=4, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
+        super().__init__()
+        # -------------- Basic parameters --------------
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.nblocks = nblocks
+        self.num_heads = num_heads
+        self.shortcut = shortcut
         self.inter_dim = in_dim // 2
         # -------------- Network parameters --------------
         self.cv1 = Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         ## Scale Modulation
-        self.sm1 = nn.Sequential(
-            Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type),
-            Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            )
-        self.sm2 = nn.Sequential(
-            Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type),
-            Conv(self.inter_dim, self.inter_dim, k=5, p=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            )
-        self.sm3 = nn.Sequential(
-            Conv(self.inter_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type),
-            Conv(self.inter_dim, self.inter_dim, k=7, p=3, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            )
-        ## Aggregation proj
-        self.sm_aggregation = Conv(self.inter_dim*3, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.smblocks = nn.Sequential(*[
+            MultiHeadMixedConv(self.inter_dim, self.inter_dim, self.num_heads, self.shortcut, act_type, norm_type, depthwise)
+            for _ in range(nblocks)])
+        ## Output proj
+        self.out_proj = Conv(self.inter_dim*2, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
-        # Output proj
-        self.out_proj = None
-        if in_dim != out_dim:
-            self.out_proj = Conv(self.inter_dim*2, out_dim, k=1, act_type=act_type, norm_type=norm_type)
-
-
-    def channel_shuffle(self, x, groups):
-        # type: (torch.Tensor, int) -> torch.Tensor
-        batchsize, num_channels, height, width = x.data.size()
-        per_group_dim = num_channels // groups
-
-        # reshape
-        x = x.view(batchsize, groups, per_group_dim, height, width)
-
-        x = torch.transpose(x, 1, 2).contiguous()
-
-        # flatten
-        x = x.view(batchsize, -1, height, width)
-
-        return x
-    
 
     def forward(self, x):
         """
@@ -142,17 +142,13 @@ class SMBlock(nn.Module):
         # branch-1
         x1 = self.cv1(x1)
         # branch-2
-        x2 = self.cv2(x2)
-        x2 = torch.cat([self.sm1(x2), self.sm2(x2), self.sm3(x2)], dim=1)
-        x2 = self.sm_aggregation(x2)
-        # channel shuffle
+        x2 = self.smblocks(x2)
+        # output
         out = torch.cat([x1, x2], dim=1)
-        out = self.channel_shuffle(out, groups=2)
-
-        if self.out_proj:
-            out = self.out_proj(out)
+        out = self.out_proj(out)
 
         return out
+
 
 ## DownSample Block
 class DSBlock(nn.Module):
@@ -208,6 +204,9 @@ def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'smblock':
         layer = SMBlock(in_dim=in_dim,
                         out_dim=out_dim,
+                        nblocks=cfg['fpn_nblocks'],
+                        num_heads=cfg['fpn_num_heads'],
+                        shortcut=cfg['fpn_shortcut'],
                         act_type=cfg['fpn_act'],
                         norm_type=cfg['fpn_norm'],
                         depthwise=cfg['fpn_depthwise']

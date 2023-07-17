@@ -36,7 +36,7 @@ class LOWDet(nn.Module):
         self.nms_thresh = nms_thresh
         self.topk = topk
         self.deploy = deploy
-        self.head_dim = 64
+        self.head_dim = cfg['head_dim']
         
         # ---------------------- Network Parameters ----------------------
         ## ----------- Backbone -----------
