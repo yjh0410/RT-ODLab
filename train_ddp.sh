@@ -16,4 +16,4 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --fp16 \
                                                     --sybn \
                                                     --multi_scale \
-                                                    --resume weights/coco/yolovx_s/yolox_s_best.pth \
+                                                    --resume weights/coco/yolovx_s/yolovx_s_best.pth \
