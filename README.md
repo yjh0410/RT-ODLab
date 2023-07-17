@@ -158,10 +158,10 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 
 | Model  | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |--------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| LOWDet |  320  |                        |                   |      1.05         |        1.20        |  |
-| LOWDet |  416  |                        |                   |      1.78         |        1.20        |  |
-| LOWDet |  512  |                        |                   |      2.70         |        1.20        |  |
-| LOWDet |  640  |                        |                   |      4.21         |        1.20        |  |
+| LOWDet |  320  |                        |                   |      1.05         |        1.72        |  |
+| LOWDet |  416  |                        |                   |      1.78         |        1.72        |  |
+| LOWDet |  512  |                        |                   |      2.70         |        1.72        |  |
+| LOWDet |  640  |                        |                   |      4.21         |        1.72        |  |
 
 #### Redesigned RT-DETR:
 
