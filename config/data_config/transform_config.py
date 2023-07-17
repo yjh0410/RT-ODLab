@@ -312,7 +312,7 @@ yolovx_small_trans_config = {
     'hsv_v': 0.4,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
-    'mixup_prob': 1.0,
+    'mixup_prob': 0.5,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
