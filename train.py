@@ -130,6 +130,15 @@ def train():
 
     # Build Model
     model, criterion = build_model(args, model_cfg, device, data_cfg['num_classes'], True)
+
+    # Keep training
+    if distributed_utils.is_main_process and args.resume is not None:
+        print('keep training: ', args.resume)
+        checkpoint = torch.load(args.resume, map_location='cpu')
+        # checkpoint state dict
+        checkpoint_state_dict = checkpoint.pop("model")
+        model.load_state_dict(checkpoint_state_dict)
+
     model = model.to(device).train()
     model_without_ddp = model
     if args.sybn and args.distributed:
