@@ -39,6 +39,7 @@ def build_yolo_optimizer(cfg, model, resume=None):
         checkpoint_state_dict = checkpoint.pop("optimizer")
         optimizer.load_state_dict(checkpoint_state_dict)
         start_epoch = checkpoint.pop("epoch")
+        del checkpoint, checkpoint_state_dict
                                                         
     return optimizer, start_epoch
 

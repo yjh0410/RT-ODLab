@@ -97,6 +97,7 @@ def build_model(args,
             # checkpoint state dict
             checkpoint_state_dict = checkpoint.pop("model")
             model.load_state_dict(checkpoint_state_dict)
+            del checkpoint, checkpoint_state_dict
 
         return model, criterion
 
