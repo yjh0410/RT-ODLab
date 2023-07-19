@@ -43,7 +43,7 @@ yolox_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
     'yolox_s':{
@@ -87,7 +87,7 @@ yolox_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
     'yolox_m':{
@@ -131,7 +131,7 @@ yolox_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
     'yolox_l':{
@@ -175,7 +175,7 @@ yolox_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
     'yolox_x':{
@@ -219,7 +219,7 @@ yolox_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
 }

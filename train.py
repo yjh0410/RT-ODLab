@@ -73,7 +73,7 @@ def parse_args():
                         help='keep training')
 
     # Dataset
-    parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/',
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc, widerface, crowdhuman')
