@@ -3,8 +3,8 @@
 | Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOvx-N |  640  | 8xb16 |                         |                    |                        |                   |      9.1          |        2.4         |  |
-| YOLOvx-T |  640  | 8xb16 |                         |                    |                        |                   |      18.9         |        5.1         |  |
-| YOLOvx-S |  640  | 8xb16 |                         |                    |                        |                   |      33.6         |        9.0         |  |
+| YOLOvx-T |  640  | 8xb16 |                         |                    |                        |                   |      19.0         |        5.1         |  |
+| YOLOvx-S |  640  | 8xb16 |                         |                    |          43.3          |        62.6       |      33.6         |        9.0         | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_s_coco.pth) |
 | YOLOvx-M |  640  | 8xb16 |         48.3            |        67.0        |          48.1          |        66.9       |      87.4         |        23.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_m_coco.pth) |
 | YOLOvx-L |  640  | 8xb16 |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolovx_l_coco.pth) |
 | YOLOvx-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
