@@ -12,8 +12,6 @@ from .yolov7.build import build_yolov7
 from .yolovx.build import build_yolovx
 # My custom YOLO
 from .yolox.build import build_yolox
-# Real-time DETR
-from .rtdetr.build import build_rtdetr
 
 
 # build object detector
@@ -54,10 +52,6 @@ def build_model(args,
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
-            args, model_cfg, device, num_classes, trainable, deploy)
-    # RT-DETR
-    elif args.model in ['rtdetr_n', 'rtdetr_s', 'rtdetr_m', 'rtdetr_l', 'rtdetr_x']:
-        model, criterion = build_rtdetr(
             args, model_cfg, device, num_classes, trainable, deploy)
 
 
