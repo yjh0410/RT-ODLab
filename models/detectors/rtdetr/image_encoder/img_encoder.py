@@ -17,7 +17,7 @@ class ImageEncoder(nn.Module):
         self.encoder = build_neck(cfg, feats_dim[-1], feats_dim[-1])
 
         ## CSFM
-        self.csfm = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(cfg['d_model']*cfg['width']))
+        self.csfm = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(cfg['d_model']*cfg['width']), input_proj=True)
 
 
     def forward(self, x):
