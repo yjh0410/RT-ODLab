@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .yolovx_basic import Conv
+from .rtmdet_v1_basic import Conv
 
 
 # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
@@ -57,6 +57,7 @@ class SPPFBlockCSP(nn.Module):
         return y
 
 
+# build neck
 def build_neck(cfg, in_dim, out_dim):
     model = cfg['neck']
     print('==============================')

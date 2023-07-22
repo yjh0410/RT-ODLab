@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .yolovx_basic import Conv
+from .rtmdet_v1_basic import Conv
 
 
 # Single-level Head

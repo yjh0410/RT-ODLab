@@ -1,4 +1,5 @@
-# transform config
+# Transform config
+
 
 # ----------------------- YOLOv5-Style Transform -----------------------
 yolov5_huge_trans_config = {
@@ -115,6 +116,7 @@ yolov5_pico_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
+
 # ----------------------- YOLOX-Style Transform -----------------------
 yolox_huge_trans_config = {
     'aug_type': 'yolov5',
@@ -230,6 +232,7 @@ yolox_pico_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
+
 # ----------------------- SSD-Style Transform -----------------------
 ssd_trans_config = {
     'aug_type': 'ssd',
@@ -241,8 +244,9 @@ ssd_trans_config = {
     'mixup_scale': [0.5, 1.5]
 }
 
-# ----------------------- YOLOX's Transform without Rotation -----------------------
-yolovx_huge_trans_config = {
+
+# ----------------------- RTMDet-v1's Transform -----------------------
+rtmdet_v1_huge_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -261,7 +265,7 @@ yolovx_huge_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolovx_large_trans_config = {
+rtmdet_v1_large_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -280,7 +284,7 @@ yolovx_large_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolovx_medium_trans_config = {
+rtmdet_v1_medium_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -299,7 +303,7 @@ yolovx_medium_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolovx_small_trans_config = {
+rtmdet_v1_small_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -318,7 +322,7 @@ yolovx_small_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolovx_nano_trans_config = {
+rtmdet_v1_nano_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -337,7 +341,7 @@ yolovx_nano_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolovx_pico_trans_config = {
+rtmdet_v1_pico_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,

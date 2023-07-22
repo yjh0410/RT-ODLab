@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .yolovx_basic import Conv, ELANBlock, DownSample
+    from .rtmdet_v1_basic import Conv, ELANBlock, DownSample
 except:
-    from yolovx_basic import Conv, ELANBlock, DownSample
+    from rtmdet_v1_basic import Conv, ELANBlock, DownSample
 
 
 

@@ -9,7 +9,7 @@ from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
-from .yolovx.build import build_yolovx
+from .rtmdet_v1.build import build_rtmdet_v1
 # My custom YOLO
 from .yolox.build import build_yolox
 
@@ -45,15 +45,14 @@ def build_model(args,
     elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         model, criterion = build_yolov7(
             args, model_cfg, device, num_classes, trainable, deploy)
-    # YOLOvx
-    elif args.model in ['yolovx_n', 'yolovx_t', 'yolovx_s', 'yolovx_m', 'yolovx_l', 'yolovx_x']:
-        model, criterion = build_yolovx(
-            args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
-
+    # My RTMDet
+    elif args.model in ['rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
+        model, criterion = build_rtmdet_v1(
+            args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:
         # Load pretrained weight

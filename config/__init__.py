@@ -33,12 +33,12 @@ from .data_config.transform_config import (
     # SSD-Style
     ssd_trans_config,
     # YOLOvx-Style
-    yolovx_pico_trans_config,
-    yolovx_nano_trans_config,
-    yolovx_small_trans_config,
-    yolovx_medium_trans_config,
-    yolovx_large_trans_config,
-    yolovx_huge_trans_config,
+    rtmdet_v1_pico_trans_config,
+    rtmdet_v1_nano_trans_config,
+    rtmdet_v1_small_trans_config,
+    rtmdet_v1_medium_trans_config,
+    rtmdet_v1_large_trans_config,
+    rtmdet_v1_huge_trans_config,
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -78,18 +78,18 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolox_huge_trans_config
 
     # YOLOvx-style transform 
-    elif trans_config == 'yolovx_pico':
-        cfg = yolovx_pico_trans_config
-    elif trans_config == 'yolovx_nano':
-        cfg = yolovx_nano_trans_config
-    elif trans_config == 'yolovx_small':
-        cfg = yolovx_small_trans_config
-    elif trans_config == 'yolovx_medium':
-        cfg = yolovx_medium_trans_config
-    elif trans_config == 'yolovx_large':
-        cfg = yolovx_large_trans_config
-    elif trans_config == 'yolovx_huge':
-        cfg = yolovx_huge_trans_config
+    elif trans_config == 'rtmdet_v1_pico':
+        cfg = rtmdet_v1_pico_trans_config
+    elif trans_config == 'rtmdet_v1_nano':
+        cfg = rtmdet_v1_nano_trans_config
+    elif trans_config == 'rtmdet_v1_small':
+        cfg = rtmdet_v1_small_trans_config
+    elif trans_config == 'rtmdet_v1_medium':
+        cfg = rtmdet_v1_medium_trans_config
+    elif trans_config == 'rtmdet_v1_large':
+        cfg = rtmdet_v1_large_trans_config
+    elif trans_config == 'rtmdet_v1_huge':
+        cfg = rtmdet_v1_huge_trans_config
 
     print('Transform Config: {} \n'.format(cfg))
 
@@ -104,8 +104,8 @@ from .model_config.yolov3_config import yolov3_cfg
 from .model_config.yolov4_config import yolov4_cfg
 from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
-from .model_config.yolovx_config import yolovx_cfg
 from .model_config.yolox_config import yolox_cfg
+from .model_config.rtmdet_v1_config import rtmdet_v1_cfg
 
 
 def build_model_config(args):
@@ -133,8 +133,8 @@ def build_model_config(args):
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
     # YOLOvx
-    elif args.model in ['yolovx_n', 'yolovx_t', 'yolovx_s', 'yolovx_m', 'yolovx_l', 'yolovx_x']:
-        cfg = yolovx_cfg[args.model]
+    elif args.model in ['rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
+        cfg = rtmdet_v1_cfg[args.model]
 
     return cfg
 

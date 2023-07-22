@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .yolovx_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .rtmdet_v1_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
-# YOLO-Style PaFPN
-class YolovxPaFPN(nn.Module):
+# RTMDet-Style PaFPN
+class RTMDetPaFPN(nn.Module):
     def __init__(self, cfg, in_dims=[512, 1024, 1024], out_dim=None, input_proj=False):
-        super(YolovxPaFPN, self).__init__()
+        super(RTMDetPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
         if input_proj:
@@ -92,7 +92,7 @@ class YolovxPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None, input_proj=False):
     model = cfg['fpn']
     # build pafpn
-    if model == 'yolovx_pafpn':
-        fpn_net = YolovxPaFPN(cfg, in_dims, out_dim, input_proj)
+    if model == 'rtmdet_pafpn':
+        fpn_net = RTMDetPaFPN(cfg, in_dims, out_dim, input_proj)
 
     return fpn_net

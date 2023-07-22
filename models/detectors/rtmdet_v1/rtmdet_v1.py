@@ -3,18 +3,18 @@ import torch
 import torch.nn as nn
 
 # --------------- Model components ---------------
-from .yolovx_backbone import build_backbone
-from .yolovx_neck import build_neck
-from .yolovx_pafpn import build_fpn
-from .yolovx_head import build_det_head
-from .yolovx_pred import build_pred_layer
+from .rtmdet_v1_backbone import build_backbone
+from .rtmdet_v1_neck import build_neck
+from .rtmdet_v1_pafpn import build_fpn
+from .rtmdet_v1_head import build_det_head
+from .rtmdet_v1_pred import build_pred_layer
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
 
 
-# My YOLO
-class YOLOvx(nn.Module):
+# My RTMDet
+class RTMDet(nn.Module):
     def __init__(self, 
                  cfg,
                  device, 
@@ -24,7 +24,7 @@ class YOLOvx(nn.Module):
                  trainable = False, 
                  topk = 1000,
                  deploy = False):
-        super(YOLOvx, self).__init__()
+        super(RTMDet, self).__init__()
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device

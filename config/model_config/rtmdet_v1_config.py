@@ -1,8 +1,8 @@
 # YOLOvx Config
 
 
-yolovx_cfg = {
-    'yolovx_n':{
+rtmdet_v1_cfg = {
+    'rtmdet_v1_n':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -22,7 +22,7 @@ yolovx_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'yolovx_pafpn',
+        'fpn': 'rtmdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -41,7 +41,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolovx_nano',
+        'trans_type': 'rtmdet_v1_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -56,7 +56,7 @@ yolovx_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'yolovx_t':{
+    'rtmdet_v1_t':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -76,7 +76,7 @@ yolovx_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'yolovx_pafpn',
+        'fpn': 'rtmdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -95,7 +95,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolovx_nano',
+        'trans_type': 'rtmdet_v1_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -110,7 +110,7 @@ yolovx_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'yolovx_s':{
+    'rtmdet_v1_s':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -130,7 +130,7 @@ yolovx_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'yolovx_pafpn',
+        'fpn': 'rtmdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -149,7 +149,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolovx_small',
+        'trans_type': 'rtmdet_v1_small',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -164,7 +164,7 @@ yolovx_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'yolovx_m':{
+    'rtmdet_v1_m':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -184,7 +184,7 @@ yolovx_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'yolovx_pafpn',
+        'fpn': 'rtmdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -203,7 +203,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolovx_medium',
+        'trans_type': 'rtmdet_v1_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -218,7 +218,7 @@ yolovx_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'yolovx_l':{
+    'rtmdet_v1_l':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -238,7 +238,7 @@ yolovx_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'yolovx_pafpn',
+        'fpn': 'rtmdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -257,7 +257,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolovx_large',
+        'trans_type': 'rtmdet_v1_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -272,7 +272,7 @@ yolovx_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'yolovx_x':{
+    'rtmdet_v1_x':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -292,7 +292,7 @@ yolovx_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'yolovx_pafpn',
+        'fpn': 'rtmdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -311,7 +311,7 @@ yolovx_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolovx_huge',
+        'trans_type': 'rtmdet_v1_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
