@@ -51,11 +51,11 @@ def build_model(args,
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
     # My RTMDet-v1
-    elif args.model in ['rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
+    elif args.model in ['rtmdet_v1_p', 'rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
         model, criterion = build_rtmdet_v1(
             args, model_cfg, device, num_classes, trainable, deploy)
     # My RTMDet-v2
-    elif args.model in ['rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
+    elif args.model in ['rtmdet_v2_p', 'rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
         model, criterion = build_rtmdet_v2(
             args, model_cfg, device, num_classes, trainable, deploy)
 

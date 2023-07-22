@@ -135,10 +135,10 @@ def build_model_config(args):
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
     # My RTMDet-v1
-    elif args.model in ['rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
+    elif args.model in ['rtmdet_v1_p', 'rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
         cfg = rtmdet_v1_cfg[args.model]
     # My RTMDet-v2
-    elif args.model in ['rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
+    elif args.model in ['rtmdet_v2_p', 'rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
         cfg = rtmdet_v2_cfg[args.model]
 
     return cfg

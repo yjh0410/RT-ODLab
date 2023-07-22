@@ -3,7 +3,7 @@ python train.py \
         --cuda \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m yolovx_s \
+        -m rtmdet_v2_n \
         -bs 64 \
         -size 640 \
         --wp_epoch 3 \
