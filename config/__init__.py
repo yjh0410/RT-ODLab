@@ -32,7 +32,7 @@ from .data_config.transform_config import (
     yolox_huge_trans_config,
     # SSD-Style
     ssd_trans_config,
-    # YOLOvx-Style
+    # RTMDet-v1-Style
     rtmdet_v1_pico_trans_config,
     rtmdet_v1_nano_trans_config,
     rtmdet_v1_small_trans_config,
@@ -77,7 +77,7 @@ def build_trans_config(trans_config='ssd'):
     elif trans_config == 'yolox_huge':
         cfg = yolox_huge_trans_config
 
-    # YOLOvx-style transform 
+    # RTMDetv1-style transform 
     elif trans_config == 'rtmdet_v1_pico':
         cfg = rtmdet_v1_pico_trans_config
     elif trans_config == 'rtmdet_v1_nano':
@@ -105,7 +105,9 @@ from .model_config.yolov4_config import yolov4_cfg
 from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolox_config import yolox_cfg
+## My RTMDet series
 from .model_config.rtmdet_v1_config import rtmdet_v1_cfg
+from .model_config.rtmdet_v2_config import rtmdet_v2_cfg
 
 
 def build_model_config(args):
@@ -132,9 +134,12 @@ def build_model_config(args):
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
-    # YOLOvx
+    # My RTMDet-v1
     elif args.model in ['rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
         cfg = rtmdet_v1_cfg[args.model]
+    # My RTMDet-v2
+    elif args.model in ['rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
+        cfg = rtmdet_v2_cfg[args.model]
 
     return cfg
 

@@ -10,6 +10,7 @@ from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .rtmdet_v1.build import build_rtmdet_v1
+from .rtmdet_v2.build import build_rtmdet_v2
 # My custom YOLO
 from .yolox.build import build_yolox
 
@@ -49,9 +50,13 @@ def build_model(args,
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
-    # My RTMDet
+    # My RTMDet-v1
     elif args.model in ['rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
         model, criterion = build_rtmdet_v1(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # My RTMDet-v2
+    elif args.model in ['rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
+        model, criterion = build_rtmdet_v2(
             args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:
