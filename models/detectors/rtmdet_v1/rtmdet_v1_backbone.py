@@ -8,7 +8,6 @@ except:
 
 
 model_urls = {
-    'elannet_pico': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_pico.pth",
     'elannet_nano': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_nano.pth",
     'elannet_tiny': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_tiny.pth",
     'elannet_small': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_small.pth",
@@ -111,9 +110,7 @@ def build_backbone(cfg, pretrained=False):
         )
     # check whether to load imagenet pretrained weight
     if pretrained:
-        if cfg['width'] == 0.25 and cfg['depth'] == 0.34 and cfg['bk_dpw']:
-            backbone = load_weight(backbone, model_name='elannet_pico')
-        elif cfg['width'] == 0.25 and cfg['depth'] == 0.34:
+        if cfg['width'] == 0.25 and cfg['depth'] == 0.34:
             backbone = load_weight(backbone, model_name='elannet_nano')
         elif cfg['width'] == 0.375 and cfg['depth'] == 0.34:
             backbone = load_weight(backbone, model_name='elannet_tiny')

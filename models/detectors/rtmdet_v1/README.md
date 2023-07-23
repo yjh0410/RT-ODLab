@@ -2,7 +2,6 @@
 
 |   Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |------------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTMDetv1-P |  640  | 8xb16 |                         |                    |                        |                   |      4.4          |        1.5         |  |
 | RTMDetv1-N |  640  | 8xb16 |                         |                    |                        |                   |      9.1          |        2.4         |  |
 | RTMDetv1-T |  640  | 8xb16 |         40.5            |        59.1        |          40.3          |        59.1       |      19.0         |        5.1         | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/RTMDetv1_t_coco.pth) |
 | RTMDetv1-S |  640  | 8xb16 |         43.6            |        62.6        |          43.3          |        62.6       |      33.6         |        9.0         | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/RTMDetv1_s_coco.pth) |
