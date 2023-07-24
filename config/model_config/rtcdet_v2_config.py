@@ -55,9 +55,9 @@ rtcdet_v2_cfg = {
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.0,
+        'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
         'trainer_type': 'rtmdet',
     },
@@ -115,9 +115,9 @@ rtcdet_v2_cfg = {
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.0,
+        'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
         'trainer_type': 'rtmdet',
     },
