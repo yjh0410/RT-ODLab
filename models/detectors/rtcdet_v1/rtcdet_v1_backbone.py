@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtmdet_v1_basic import Conv, ELANBlock, DownSample
+    from .rtcdet_v1_basic import Conv, ELANBlock, DownSample
 except:
-    from rtmdet_v1_basic import Conv, ELANBlock, DownSample
+    from rtcdet_v1_basic import Conv, ELANBlock, DownSample
 
 
 

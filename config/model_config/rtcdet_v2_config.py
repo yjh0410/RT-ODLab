@@ -1,8 +1,8 @@
-# YOLOvx Config
+# RTCDet-v2 Config
 
 
-rtmdet_v2_cfg = {
-    'rtmdet_v2_n':{
+rtcdet_v2_cfg = {
+    'rtcdet_v2_n':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'mcnet',
@@ -23,7 +23,7 @@ rtmdet_v2_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'mcblock',
@@ -42,7 +42,7 @@ rtmdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtmdet_v1_nano',
+        'trans_type': 'rtcdet_v1_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'tal': {'topk': 10,
@@ -61,7 +61,7 @@ rtmdet_v2_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v2_l':{
+    'rtcdet_v2_l':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'mcnet',
@@ -82,7 +82,7 @@ rtmdet_v2_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'mcblock',
@@ -101,7 +101,7 @@ rtmdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'rtmdet_v1_large',
+        'trans_type': 'rtcdet_v1_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'tal': {'topk': 10,

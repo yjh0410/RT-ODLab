@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .rtmdet_v2_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .rtcdet_v2_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
-# RTMDet-Style PaFPN
-class RTMDetPaFPN(nn.Module):
+# RTCDet-Style PaFPN
+class RTCDetPaFPN(nn.Module):
     def __init__(self, cfg, in_dims=[256, 512, 1024], out_dim=None):
-        super(RTMDetPaFPN, self).__init__()
+        super(RTCDetPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
         self.fpn_dims = in_dims
@@ -84,7 +84,7 @@ class RTMDetPaFPN(nn.Module):
 def build_fpn(cfg, in_dims, out_dim=None):
     model = cfg['fpn']
     # build pafpn
-    if model == 'rtmdet_pafpn':
-        fpn_net = RTMDetPaFPN(cfg, in_dims, out_dim)
+    if model == 'rtcdet_pafpn':
+        fpn_net = RTCDetPaFPN(cfg, in_dims, out_dim)
 
     return fpn_net

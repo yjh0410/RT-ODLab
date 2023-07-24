@@ -246,7 +246,7 @@ ssd_trans_config = {
 
 
 # ----------------------- RTMDet-v1's Transform -----------------------
-rtmdet_v1_huge_trans_config = {
+rtcdet_v1_huge_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -265,7 +265,7 @@ rtmdet_v1_huge_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-rtmdet_v1_large_trans_config = {
+rtcdet_v1_large_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -284,7 +284,7 @@ rtmdet_v1_large_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-rtmdet_v1_medium_trans_config = {
+rtcdet_v1_medium_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -303,7 +303,7 @@ rtmdet_v1_medium_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-rtmdet_v1_small_trans_config = {
+rtcdet_v1_small_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -322,7 +322,7 @@ rtmdet_v1_small_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-rtmdet_v1_nano_trans_config = {
+rtcdet_v1_nano_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -341,7 +341,7 @@ rtmdet_v1_nano_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-rtmdet_v1_pico_trans_config = {
+rtcdet_v1_pico_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,

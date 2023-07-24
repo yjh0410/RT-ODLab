@@ -33,12 +33,12 @@ from .data_config.transform_config import (
     # SSD-Style
     ssd_trans_config,
     # RTMDet-v1-Style
-    rtmdet_v1_pico_trans_config,
-    rtmdet_v1_nano_trans_config,
-    rtmdet_v1_small_trans_config,
-    rtmdet_v1_medium_trans_config,
-    rtmdet_v1_large_trans_config,
-    rtmdet_v1_huge_trans_config,
+    rtcdet_v1_pico_trans_config,
+    rtcdet_v1_nano_trans_config,
+    rtcdet_v1_small_trans_config,
+    rtcdet_v1_medium_trans_config,
+    rtcdet_v1_large_trans_config,
+    rtcdet_v1_huge_trans_config,
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -78,18 +78,18 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolox_huge_trans_config
 
     # RTMDetv1-style transform 
-    elif trans_config == 'rtmdet_v1_pico':
-        cfg = rtmdet_v1_pico_trans_config
-    elif trans_config == 'rtmdet_v1_nano':
-        cfg = rtmdet_v1_nano_trans_config
-    elif trans_config == 'rtmdet_v1_small':
-        cfg = rtmdet_v1_small_trans_config
-    elif trans_config == 'rtmdet_v1_medium':
-        cfg = rtmdet_v1_medium_trans_config
-    elif trans_config == 'rtmdet_v1_large':
-        cfg = rtmdet_v1_large_trans_config
-    elif trans_config == 'rtmdet_v1_huge':
-        cfg = rtmdet_v1_huge_trans_config
+    elif trans_config == 'rtcdet_v1_pico':
+        cfg = rtcdet_v1_pico_trans_config
+    elif trans_config == 'rtcdet_v1_nano':
+        cfg = rtcdet_v1_nano_trans_config
+    elif trans_config == 'rtcdet_v1_small':
+        cfg = rtcdet_v1_small_trans_config
+    elif trans_config == 'rtcdet_v1_medium':
+        cfg = rtcdet_v1_medium_trans_config
+    elif trans_config == 'rtcdet_v1_large':
+        cfg = rtcdet_v1_large_trans_config
+    elif trans_config == 'rtcdet_v1_huge':
+        cfg = rtcdet_v1_huge_trans_config
 
     print('Transform Config: {} \n'.format(cfg))
 
@@ -106,8 +106,8 @@ from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolox_config import yolox_cfg
 ## My RTMDet series
-from .model_config.rtmdet_v1_config import rtmdet_v1_cfg
-from .model_config.rtmdet_v2_config import rtmdet_v2_cfg
+from .model_config.rtcdet_v1_config import rtcdet_v1_cfg
+from .model_config.rtcdet_v2_config import rtcdet_v2_cfg
 
 
 def build_model_config(args):
@@ -135,11 +135,11 @@ def build_model_config(args):
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
     # My RTMDet-v1
-    elif args.model in ['rtmdet_v1_p', 'rtmdet_v1_n', 'rtmdet_v1_t', 'rtmdet_v1_s', 'rtmdet_v1_m', 'rtmdet_v1_l', 'rtmdet_v1_x']:
-        cfg = rtmdet_v1_cfg[args.model]
+    elif args.model in ['rtcdet_v1_p', 'rtcdet_v1_n', 'rtcdet_v1_t', 'rtcdet_v1_s', 'rtcdet_v1_m', 'rtcdet_v1_l', 'rtcdet_v1_x']:
+        cfg = rtcdet_v1_cfg[args.model]
     # My RTMDet-v2
-    elif args.model in ['rtmdet_v2_p', 'rtmdet_v2_n', 'rtmdet_v2_t', 'rtmdet_v2_s', 'rtmdet_v2_m', 'rtmdet_v2_l', 'rtmdet_v2_x']:
-        cfg = rtmdet_v2_cfg[args.model]
+    elif args.model in ['rtcdet_v2_p', 'rtcdet_v2_n', 'rtcdet_v2_t', 'rtcdet_v2_s', 'rtcdet_v2_m', 'rtcdet_v2_l', 'rtcdet_v2_x']:
+        cfg = rtcdet_v2_cfg[args.model]
 
     return cfg
 

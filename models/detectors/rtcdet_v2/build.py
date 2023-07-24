@@ -5,16 +5,16 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .rtmdet_v2 import RTMDet
+from .rtcdet_v2 import RTCDet
 
 
 # build object detector
-def build_rtmdet_v2(args, cfg, device, num_classes=80, trainable=False, deploy=False):
+def build_rtcdet_v2(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
         
-    # -------------- Build RTMDet --------------
-    model = RTMDet(
+    # -------------- Build RTCDet --------------
+    model = RTCDet(
         cfg=cfg,
         device=device, 
         num_classes=num_classes,
@@ -25,7 +25,7 @@ def build_rtmdet_v2(args, cfg, device, num_classes=80, trainable=False, deploy=F
         deploy=deploy
         )
 
-    # -------------- Initialize RTMDet --------------
+    # -------------- Initialize RTCDet --------------
     for m in model.modules():
         if isinstance(m, nn.BatchNorm2d):
             m.eps = 1e-3

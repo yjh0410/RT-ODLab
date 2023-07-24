@@ -1,8 +1,8 @@
-# YOLOvx Config
+# RTCDet-v1 Config
 
 
-rtmdet_v1_cfg = {
-    'rtmdet_v1_p':{
+rtcdet_v1_cfg = {
+    'rtcdet_v1_p':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -22,7 +22,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': True,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -41,7 +41,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtmdet_v1_pico',
+        'trans_type': 'rtcdet_v1_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -56,7 +56,7 @@ rtmdet_v1_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v1_n':{
+    'rtcdet_v1_n':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -76,7 +76,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -95,7 +95,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtmdet_v1_nano',
+        'trans_type': 'rtcdet_v1_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -110,7 +110,7 @@ rtmdet_v1_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v1_t':{
+    'rtcdet_v1_t':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -130,7 +130,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -149,7 +149,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtmdet_v1_nano',
+        'trans_type': 'rtcdet_v1_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -164,7 +164,7 @@ rtmdet_v1_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v1_s':{
+    'rtcdet_v1_s':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -184,7 +184,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -203,7 +203,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtmdet_v1_small',
+        'trans_type': 'rtcdet_v1_small',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -218,7 +218,7 @@ rtmdet_v1_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v1_m':{
+    'rtcdet_v1_m':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -238,7 +238,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -257,7 +257,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtmdet_v1_medium',
+        'trans_type': 'rtcdet_v1_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -272,7 +272,7 @@ rtmdet_v1_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v1_l':{
+    'rtcdet_v1_l':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -292,7 +292,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -311,7 +311,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'rtmdet_v1_large',
+        'trans_type': 'rtcdet_v1_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -326,7 +326,7 @@ rtmdet_v1_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtmdet_v1_x':{
+    'rtcdet_v1_x':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
@@ -346,7 +346,7 @@ rtmdet_v1_cfg = {
         'neck_norm': 'BN',
         'neck_depthwise': False,
         ## Neck: PaFPN
-        'fpn': 'rtmdet_pafpn',
+        'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elanblock',
@@ -365,7 +365,7 @@ rtmdet_v1_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'rtmdet_v1_huge',
+        'trans_type': 'rtcdet_v1_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'center_sampling_radius': 2.5,
