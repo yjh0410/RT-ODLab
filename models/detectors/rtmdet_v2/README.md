@@ -9,6 +9,13 @@
 | RTMDetv2-L |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTMDetv2-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
 
+|   Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|------------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
+| RTMDetv2-P |  320  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTMDetv2-P |  416  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTMDetv2-P |  512  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTMDetv2-P |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+
 - For training, we train my RTMDetv2 series series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOX](https://github.com/ultralytics/yolov5), but we remove the rotation transformation which is used in YOLOX's strong augmentation.
 - For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64.

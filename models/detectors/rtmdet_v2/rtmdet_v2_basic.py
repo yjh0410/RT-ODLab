@@ -106,7 +106,6 @@ class MultiHeadMixedConv(nn.Module):
 
         return out + x if self.shortcut else out
 
-# ---------------------------- Base Blocks ----------------------------
 ## Mixed Convolution Block
 class MCBlock(nn.Module):
     def __init__(self, in_dim, out_dim, nblocks=1, num_heads=4, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
