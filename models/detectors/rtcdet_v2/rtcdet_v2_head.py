@@ -76,7 +76,7 @@ class MultiLevelHead(nn.Module):
             [SingleLevelHead(
                 in_dims[level],
                 max(out_dim, num_classes),   # cls head dim
-                max(out_dim//4, 4*reg_max),  # reg head dim
+                max(out_dim, 4*reg_max),  # reg head dim
                 cfg['num_cls_head'],
                 cfg['num_reg_head'],
                 cfg['head_act'],
