@@ -14,18 +14,21 @@ class Criterion(object):
         self.device = device
         self.num_classes = num_classes
         self.use_ema_update = cfg['ema_update']
-        # loss weight
+        # ---------------- Loss weight ----------------
         self.loss_cls_weight = cfg['loss_cls_weight']
         self.loss_box_weight = cfg['loss_box_weight']
         self.loss_dfl_weight = cfg['loss_dfl_weight']
-        # matcher
+        # ---------------- Matcher ----------------
         matcher_config = cfg['matcher']
+        self.switch_epoch = matcher_config['switch_epoch']
+        ## TAL assigner
         self.tal_matcher = TaskAlignedAssigner(
             topk=matcher_config['tal']['topk'],
             alpha=matcher_config['tal']['alpha'],
             beta=matcher_config['tal']['beta'],
             num_classes=num_classes
             )
+        ## SimOTA assigner
         self.ota_matcher = AlignedSimOTA(
             center_sampling_radius=matcher_config['ota']['center_sampling_radius'],
             topk_candidate=matcher_config['ota']['topk_candidate'],
@@ -33,7 +36,7 @@ class Criterion(object):
         )
 
     def __call__(self, outputs, targets, epoch=0):
-        if epoch < self.args.wp_epoch:
+        if epoch < self.switch_epoch:
             return self.ota_loss(outputs, targets)
         else:
             return self.tal_loss(outputs, targets)

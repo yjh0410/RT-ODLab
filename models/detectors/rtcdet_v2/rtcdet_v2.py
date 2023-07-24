@@ -52,7 +52,7 @@ class RTCDet(nn.Module):
 
         ## ----------- Heads -----------
         self.det_heads = build_det_head(
-            cfg, self.fpn_dims, self.head_dim, num_classes, num_levels=len(self.stride))
+            cfg, self.fpn_dims, self.head_dim, num_classes, self.reg_max, num_levels=len(self.stride))
 
         ## ----------- Preds -----------
         self.pred_layers = build_pred_layer(
