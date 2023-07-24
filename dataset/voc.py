@@ -249,33 +249,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='VOC-Dataset')
 
     # opt
-    parser.add_argument('--root', default='D:\\python_work\\object-detection\\dataset\\VOCdevkit',
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/VOCdevkit/',
                         help='data root')
+    parser.add_argument('-size', '--img_size', default=640, type=int,
+                        help='input image size.')
+    parser.add_argument('--mosaic', default=None, type=float,
+                        help='mosaic augmentation.')
+    parser.add_argument('--mixup', default=None, type=float,
+                        help='mixup augmentation.')
+    parser.add_argument('--is_train', action="store_true", default=False,
+                        help='mixup augmentation.')
+    
     
     args = parser.parse_args()
 
-    is_train = False
-    img_size = 640
-    yolov5_trans_config = {
-        'aug_type': 'yolov5',
-        # Basic Augment
-        'degrees': 0.0,
-        'translate': 0.2,
-        'scale': 0.9,
-        'shear': 0.0,
-        'perspective': 0.0,
-        'hsv_h': 0.015,
-        'hsv_s': 0.7,
-        'hsv_v': 0.4,
-        # Mosaic & Mixup
-        'mosaic_prob': 1.0,
-        'mixup_prob': 0.15,
-        'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolov5_mixup',
-        'mixup_scale': [0.5, 1.5]
-    }
-    yolox_trans_config = {
-        'aug_type': 'yolov5',
+    trans_config = {
+        'aug_type': 'yolov5',  # optional: ssd, yolov5
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
@@ -289,22 +278,17 @@ if __name__ == "__main__":
         'mosaic_prob': 1.0,
         'mixup_prob': 1.0,
         'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolox_mixup',
+        'mixup_type': 'yolov5_mixup',
         'mixup_scale': [0.5, 1.5]
     }
-    ssd_trans_config = {
-        'aug_type': 'ssd',
-        'mosaic_prob': 0.0,
-        'mixup_prob': 0.0
-    }
-    transform = build_transform(img_size, yolov5_trans_config, is_train)
+    transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
 
     dataset = VOCDetection(
-        img_size=img_size,
+        img_size=args.img_size,
         data_dir=args.root,
-        trans_config=yolov5_trans_config,
+        trans_config=trans_config,
         transform=transform,
-        is_train=is_train
+        is_train=args.is_train
         )
     
     np.random.seed(0)

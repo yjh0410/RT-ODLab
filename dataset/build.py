@@ -81,6 +81,8 @@ def build_transform(args, trans_config, max_stride=32, is_train=False):
             transform = SSDAugmentation(img_size=args.img_size,)
         else:
             transform = SSDBaseTransform(img_size=args.img_size,)
+        trans_config['mosaic_prob'] = 0.0
+        trans_config['mixup_prob'] = 0.0
 
     elif trans_config['aug_type'] == 'yolov5':
         if is_train:

@@ -5,6 +5,8 @@ import numpy as np
 import torch
 
 
+# ------------------------- Basic augmentations -------------------------
+## Spatial transform
 def random_perspective(image,
                        targets=(),
                        degrees=10,
@@ -78,7 +80,7 @@ def random_perspective(image,
 
     return image, targets
 
-
+## Color transform
 def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     r = np.random.uniform(-1, 1, 3) * [hgain, sgain, vgain] + 1  # random gains
     hue, sat, val = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
@@ -93,7 +95,8 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
 
-# YOLOv5-Mosaic
+# ------------------------- Strong augmentations -------------------------
+## YOLOv5-Mosaic
 def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params=None, is_train=False):
     assert len(image_list) == 4
 
@@ -180,8 +183,7 @@ def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params=None,
 
     return mosaic_img, mosaic_target
 
-
-# YOLOv5-Mixup
+## YOLOv5-Mixup
 def yolov5_mixup_augment(origin_image, origin_target, new_image, new_target):
     if origin_image.shape[:2] != new_image.shape[:2]:
         img_size = max(new_image.shape[:2])
@@ -218,8 +220,7 @@ def yolov5_mixup_augment(origin_image, origin_target, new_image, new_target):
     
     return mixup_image, mixup_target
     
-
-# YOLOX-Mixup
+## YOLOX-Mixup
 def yolox_mixup_augment(origin_img, origin_target, new_img, new_target, img_size, mixup_scale):
     jit_factor = random.uniform(*mixup_scale)
     FLIP = random.uniform(0, 1) > 0.5
@@ -299,7 +300,8 @@ def yolox_mixup_augment(origin_img, origin_target, new_img, new_target, img_size
     return origin_img.astype(np.uint8), mixup_target
         
 
-# YOLOv5-style TrainTransform
+# ------------------------- Preprocessers -------------------------
+## YOLOv5-style Transform for Train
 class YOLOv5Augmentation(object):
     def __init__(self, 
                  img_size=640,
@@ -374,8 +376,7 @@ class YOLOv5Augmentation(object):
 
         return pad_image, target, [dw, dh]
 
-
-# YOLOv5-style ValTransform
+## YOLOv5-style Transform for Eval
 class YOLOv5BaseTransform(object):
     def __init__(self, img_size=640, max_stride=32):
         self.img_size = img_size

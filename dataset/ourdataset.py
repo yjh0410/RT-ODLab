@@ -203,7 +203,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='FreeYOLOv2')
 
     # opt
-    parser.add_argument('--root', default='AnimalDataset',
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/AnimalDataset/',
                         help='data root')
     parser.add_argument('--split', default='train',
                         help='data split')
@@ -215,13 +215,13 @@ if __name__ == "__main__":
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=None, type=float,
                         help='mixup augmentation.')
-
-    args = parser.parse_args()
+    parser.add_argument('--is_train', action="store_true", default=False,
+                        help='mixup augmentation.')
     
-    img_size = 640
-    is_train = True
+    args = parser.parse_args()
+
     trans_config = {
-        'aug_type': 'yolov5',
+        'aug_type': 'yolov5',  # optional: ssd, yolov5
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
@@ -233,16 +233,16 @@ if __name__ == "__main__":
         'hsv_v': 0.4,
         # Mosaic & Mixup
         'mosaic_prob': 1.0,
-        'mosaic_9x_prob': 0.2,
-        'mixup_prob': 0.15,
+        'mixup_prob': 1.0,
         'mosaic_type': 'yolov5_mosaic',
         'mixup_type': 'yolov5_mixup',
         'mixup_scale': [0.5, 1.5]
     }
-    transform, trans_config = build_transform(args, trans_config, max_stride=32, is_train=is_train)
+
+    transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
 
     dataset = OurDataset(
-        img_size=img_size,
+        img_size=args.img_size,
         data_dir=args.root,
         image_set=args.split,
         transform=transform,
