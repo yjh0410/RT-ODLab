@@ -50,7 +50,7 @@ rtcdet_v2_cfg = {
                             'beta': 6.0},
                     'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
-                    'switch_epoch': 1,
+                    'switch_epoch': 5,
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
@@ -110,7 +110,7 @@ rtcdet_v2_cfg = {
                             'beta': 6.0},
                     'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
-                    'switch_epoch': 1,
+                    'switch_epoch': 5,
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
