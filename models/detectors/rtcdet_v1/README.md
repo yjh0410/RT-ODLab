@@ -7,7 +7,7 @@
 | RTCDetv1-S |  640  | 8xb16 |         43.6            |        62.6        |          43.3          |        62.6       |      33.6         |        9.0         | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_v1_s_coco.pth) |
 | RTCDetv1-M |  640  | 8xb16 |         48.3            |        67.0        |          48.1          |        66.9       |      87.4         |        23.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_v1_m_coco.pth) |
 | RTCDetv1-L |  640  | 8xb16 |         50.2            |        68.6        |          50.0          |        68.4       |      176.6        |        47.6        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_v1_l_coco.pth) |
-| RTCDetv1-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv1-X |  640  | 8xb12 |                         |                    |                        |                   |                   |                    |  |
 
 - For training, we train my RTCDetv1 series series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOX](https://github.com/ultralytics/yolov5), but we remove the rotation transformation which is used in YOLOX's strong augmentation.
