@@ -20,7 +20,6 @@ class Criterion(object):
         self.loss_dfl_weight = cfg['loss_dfl_weight']
         # ---------------- Matcher ----------------
         matcher_config = cfg['matcher']
-        self.switch_epoch = matcher_config['switch_epoch']
         ## TAL assigner
         self.tal_matcher = TaskAlignedAssigner(
             topk=matcher_config['tal']['topk'],
@@ -36,7 +35,7 @@ class Criterion(object):
         )
 
     def __call__(self, outputs, targets, epoch=0):
-        if epoch < self.switch_epoch:
+        if epoch < self.args.wp_epoch:
             return self.ota_loss(outputs, targets)
         else:
             return self.tal_loss(outputs, targets)

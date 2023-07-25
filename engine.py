@@ -66,6 +66,7 @@ class Yolov8Trainer(object):
 
         # ---------------------------- Build Optimizer ----------------------------
         accumulate = max(1, round(64 / self.args.batch_size))
+        print('Grad Accumulate: {}'.format(accumulate))
         self.optimizer_dict['weight_decay'] *= self.args.batch_size * accumulate / 64
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 

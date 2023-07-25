@@ -42,7 +42,7 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtcdet_v1_nano',
+        'trans_type': 'yolov5_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'tal': {'topk': 10,
@@ -50,7 +50,6 @@ rtcdet_v2_cfg = {
                             'beta': 6.0},
                     'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
-                    'switch_epoch': 5,
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
@@ -59,7 +58,7 @@ rtcdet_v2_cfg = {
         'loss_box_weight': 7.0,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_v2_l':{
@@ -102,7 +101,7 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'rtcdet_v1_large',
+        'trans_type': 'yolov5_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'tal': {'topk': 10,
@@ -110,7 +109,6 @@ rtcdet_v2_cfg = {
                             'beta': 6.0},
                     'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
-                    'switch_epoch': 5,
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
