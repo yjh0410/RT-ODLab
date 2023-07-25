@@ -9,7 +9,7 @@ except:
 
 model_urls = {
     'mcnet_p': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/mcnet_pico.pth",
-    'mcnet_n': None,
+    'mcnet_n': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/mcnet_nano.pth",
     'mcnet_t': None,
     'mcnet_s': None,
     'mcnet_m': None,

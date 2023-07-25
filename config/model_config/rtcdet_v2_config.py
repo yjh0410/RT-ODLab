@@ -42,23 +42,20 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'yolov5_nano',
+        'trans_type': 'rtcdet_v1_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'tal': {'topk': 10,
-                            'alpha': 0.5,
-                            'beta': 6.0},
-                    'ota': {'center_sampling_radius': 2.5,
+        'matcher': {'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
-        'loss_cls_weight': 0.5,
-        'loss_box_weight': 7.0,
-        'loss_dfl_weight': 1.5,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtmdet',
     },
 
     'rtcdet_v2_l':{
@@ -101,23 +98,20 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolov5_large',
+        'trans_type': 'rtcdet_v1_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'tal': {'topk': 10,
-                            'alpha': 0.5,
-                            'beta': 6.0},
-                    'ota': {'center_sampling_radius': 2.5,
+        'matcher': {'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
-        'loss_cls_weight': 0.5,
-        'loss_box_weight': 7.0,
-        'loss_dfl_weight': 1.5,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtmdet',
     },
 
 }
