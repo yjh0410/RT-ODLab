@@ -117,7 +117,7 @@ rtcdet_v2_cfg = {
         'loss_box_weight': 7.0,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolov8',
     },
 
 }
