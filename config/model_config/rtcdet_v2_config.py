@@ -42,10 +42,13 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5],   # 320 -> 960
-        'trans_type': 'rtcdet_v1_nano',
+        'trans_type': 'rtcdet_v2_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'ota': {'center_sampling_radius': 2.5,
+        'matcher': {'tal': {'topk': 10,
+                            'alpha': 0.5,
+                            'beta': 6.0},
+                    'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
                     },
         # ---------------- Loss config ----------------
@@ -98,10 +101,13 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'rtcdet_v1_large',
+        'trans_type': 'rtcdet_v2_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'ota': {'center_sampling_radius': 2.5,
+        'matcher': {'tal': {'topk': 10,
+                            'alpha': 0.5,
+                            'beta': 6.0},
+                    'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
                     },
         # ---------------- Loss config ----------------

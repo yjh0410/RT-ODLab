@@ -7,7 +7,7 @@ yolov5_huge_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -26,7 +26,7 @@ yolov5_large_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -45,7 +45,7 @@ yolov5_medium_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -64,7 +64,7 @@ yolov5_small_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -83,7 +83,7 @@ yolov5_nano_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.1,
-    'scale': 0.5,
+    'scale': [0.5, 1.5],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -102,7 +102,7 @@ yolov5_pico_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.1,
-    'scale': 0.5,
+    'scale': [0.5, 1.5],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -123,7 +123,7 @@ yolox_huge_trans_config = {
     # Basic Augment
     'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -142,7 +142,7 @@ yolox_large_trans_config = {
     # Basic Augment
     'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -161,7 +161,7 @@ yolox_medium_trans_config = {
     # Basic Augment
     'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -180,7 +180,7 @@ yolox_small_trans_config = {
     # Basic Augment
     'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -199,7 +199,7 @@ yolox_nano_trans_config = {
     # Basic Augment
     'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.5,
+    'scale': [0.5, 1.5],
     'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -218,7 +218,7 @@ yolox_pico_trans_config = {
     # Basic Augment
     'degrees': 10.0,
     'translate': 0.1,
-    'scale': 0.9,
+    'scale': [0.5, 1.5],
     'shear': 2.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -251,7 +251,7 @@ rtcdet_v1_huge_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -270,7 +270,7 @@ rtcdet_v1_large_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -289,7 +289,7 @@ rtcdet_v1_medium_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -308,7 +308,7 @@ rtcdet_v1_small_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.2,
-    'scale': 0.9,
+    'scale': [0.1, 2.0],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -327,7 +327,7 @@ rtcdet_v1_nano_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.1,
-    'scale': 0.5,
+    'scale': [0.5, 1.5],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -346,7 +346,7 @@ rtcdet_v1_pico_trans_config = {
     # Basic Augment
     'degrees': 0.0,
     'translate': 0.1,
-    'scale': 0.5,
+    'scale': [0.5, 1.5],
     'shear': 0.0,
     'perspective': 0.0,
     'hsv_h': 0.015,
@@ -357,5 +357,121 @@ rtcdet_v1_pico_trans_config = {
     'mixup_prob': 0.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+
+# ----------------------- RTMDet-v2's Transform -----------------------
+rtcdet_v2_huge_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.5, 2.0],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+rtcdet_v2_large_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.5, 2.0],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+rtcdet_v2_medium_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.5, 2.0],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+rtcdet_v2_small_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.5, 2.0],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 1.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+rtcdet_v2_nano_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.5, 1.5],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 1.0,
+    'mixup_prob': 0.5,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
+}
+
+rtcdet_v2_pico_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.5, 1.5],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 0.5,
+    'mixup_prob': 0.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }

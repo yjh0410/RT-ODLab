@@ -39,6 +39,13 @@ from .data_config.transform_config import (
     rtcdet_v1_medium_trans_config,
     rtcdet_v1_large_trans_config,
     rtcdet_v1_huge_trans_config,
+    # RTMDet-v2-Style
+    rtcdet_v2_pico_trans_config,
+    rtcdet_v2_nano_trans_config,
+    rtcdet_v2_small_trans_config,
+    rtcdet_v2_medium_trans_config,
+    rtcdet_v2_large_trans_config,
+    rtcdet_v2_huge_trans_config,
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -90,6 +97,20 @@ def build_trans_config(trans_config='ssd'):
         cfg = rtcdet_v1_large_trans_config
     elif trans_config == 'rtcdet_v1_huge':
         cfg = rtcdet_v1_huge_trans_config
+
+    # RTMDetv2-style transform 
+    elif trans_config == 'rtcdet_v2_pico':
+        cfg = rtcdet_v2_pico_trans_config
+    elif trans_config == 'rtcdet_v2_nano':
+        cfg = rtcdet_v2_nano_trans_config
+    elif trans_config == 'rtcdet_v2_small':
+        cfg = rtcdet_v2_small_trans_config
+    elif trans_config == 'rtcdet_v2_medium':
+        cfg = rtcdet_v2_medium_trans_config
+    elif trans_config == 'rtcdet_v2_large':
+        cfg = rtcdet_v2_large_trans_config
+    elif trans_config == 'rtcdet_v2_huge':
+        cfg = rtcdet_v2_huge_trans_config
 
     print('Transform Config: {} \n'.format(cfg))
 

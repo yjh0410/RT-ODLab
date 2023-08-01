@@ -11,7 +11,7 @@ def random_perspective(image,
                        targets=(),
                        degrees=10,
                        translate=.1,
-                       scale=.1,
+                       scale=[0.1, 2.0],
                        shear=10,
                        perspective=0.0,
                        border=(0, 0)):
@@ -35,7 +35,7 @@ def random_perspective(image,
     R = np.eye(3)
     a = random.uniform(-degrees, degrees)
     # a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
-    s = random.uniform(1 - scale, 1 + scale)
+    s = random.uniform(scale[0], scale[1])
     # s = 2 ** random.uniform(-scale, scale)
     R[:2] = cv2.getRotationMatrix2D(angle=a, center=(0, 0), scale=s)
 
@@ -97,7 +97,7 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
 
 # ------------------------- Strong augmentations -------------------------
 ## YOLOv5-Mosaic
-def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params=None, is_train=False):
+def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params, is_train=False):
     assert len(image_list) == 4
 
     mosaic_img = np.ones([img_size*2, img_size*2, image_list[0].shape[2]], dtype=np.uint8) * 114
