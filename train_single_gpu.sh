@@ -3,13 +3,14 @@ python train.py \
         --cuda \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
-        -m rtcdet_v2_n \
-        -bs 64 \
+        -m yolox_l \
+        -bs 16 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 20 \
+        --grad_accumulate 4 \
         --ema \
         --fp16 \
         --multi_scale \

@@ -90,10 +90,10 @@ python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 
 ## Train
 ### Single GPU
 ```Shell
-sh train.sh
+sh train_single_gpu.sh
 ```
 
-You can change the configurations of `train.sh`, according to your own situation.
+You can change the configurations of `train_single_gpu.sh`, according to your own situation.
 
 You also can add `--vis_tgt`  to check the images and targets during the training stage. For example:
 ```Shell
@@ -102,10 +102,10 @@ python train.py --cuda -d coco --root path/to/coco -m yolov1 --vis_tgt
 
 ### Multi GPUs
 ```Shell
-sh train_ddp.sh
+sh train_multi_gpus.sh
 ```
 
-You can change the configurations of `train_ddp.sh`, according to your own situation.
+You can change the configurations of `train_multi_gpus.sh`, according to your own situation.
 
 **In the event of a training interruption**, you can pass `--resume` the latest training
 weight path (`None` by default) to resume training. For example:

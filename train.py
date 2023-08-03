@@ -89,6 +89,8 @@ def parse_args():
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=None, type=float,
                         help='mixup augmentation.')
+    parser.add_argument('--grad_accumulate', default=1, type=int,
+                        help='gradient accumulation')
 
     # DDP train
     parser.add_argument('-dist', '--distributed', action='store_true', default=False,

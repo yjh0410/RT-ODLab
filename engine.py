@@ -364,6 +364,7 @@ class YoloxTrainer(object):
         self.device = device
         self.criterion = criterion
         self.world_size = world_size
+        self.grad_accumulate = args.grad_accumulate
         self.no_aug_epoch = args.no_aug_epoch
         self.heavy_eval = False
         self.second_stage = False
@@ -395,7 +396,7 @@ class YoloxTrainer(object):
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.optimizer_dict['lr0'] *= self.args.batch_size / 64
+        self.optimizer_dict['lr0'] *= self.args.batch_size * self.grad_accumulate / 64
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
@@ -531,6 +532,9 @@ class YoloxTrainer(object):
                 # Compute loss
                 loss_dict = self.criterion(outputs=outputs, targets=targets, epoch=self.epoch)
                 losses = loss_dict['losses']
+                # Grad Accu
+                if self.grad_accumulate > 1: 
+                    losses /= self.grad_accumulate
 
                 loss_dict_reduced = distributed_utils.reduce_dict(loss_dict)
 
@@ -538,12 +542,13 @@ class YoloxTrainer(object):
             self.scaler.scale(losses).backward()
 
             # Optimize
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
-            self.optimizer.zero_grad()
-            # ema
-            if self.model_ema is not None:
-                self.model_ema.update(model)
+            if ni % self.grad_accumulate == 0:
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+                self.optimizer.zero_grad()
+                # ema
+                if self.model_ema is not None:
+                    self.model_ema.update(model)
 
             # Logs
             if distributed_utils.is_main_process() and iter_i % 10 == 0:
