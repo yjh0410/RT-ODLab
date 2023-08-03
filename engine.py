@@ -112,6 +112,14 @@ class Yolov8Trainer(object):
             print(' - Close < perspective of rotation > ...')
             self.trans_cfg['perspective'] = 0.0
 
+        # close random affine
+        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
+            print(' - Close < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.0
+        if 'scale' in self.trans_cfg.keys():
+            print(' - Close < scale of affine >...')
+            self.trans_cfg['scale'] = [1.0, 1.0]
+
         # build a new transform for second stage
         print(' - Rebuild transforms ...')
         self.train_transform, self.trans_cfg = build_transform(
@@ -391,7 +399,7 @@ class YoloxTrainer(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch - self.no_aug_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume:
             self.lr_scheduler.step()
@@ -559,7 +567,8 @@ class YoloxTrainer(object):
                 t0 = time.time()
         
         # LR Schedule
-        self.lr_scheduler.step()
+        if not self.second_stage:
+            self.lr_scheduler.step()
         
 
     def check_second_stage(self):
