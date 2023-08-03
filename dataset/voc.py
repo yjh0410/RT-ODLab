@@ -97,7 +97,9 @@ class VOCDetection(data.Dataset):
                  image_sets=[('2007', 'trainval'), ('2012', 'trainval')],
                  trans_config=None,
                  transform=None,
-                 is_train=False):
+                 is_train=False,
+                 load_cache=False
+                 ):
         self.root = data_dir
         self.img_size = img_size
         self.image_set = image_sets
@@ -106,6 +108,7 @@ class VOCDetection(data.Dataset):
         self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
         self.ids = list()
         self.is_train = is_train
+        self.load_cache = load_cache
         for (year, name) in image_sets:
             rootpath = osp.join(self.root, 'VOC' + year)
             for line in open(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt')):
@@ -121,6 +124,10 @@ class VOCDetection(data.Dataset):
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
         print('==============================')
 
+        # load cache data
+        if load_cache:
+            self._load_cache()
+
 
     def __getitem__(self, index):
         image, target, deltas = self.pull_item(index)
@@ -131,24 +138,43 @@ class VOCDetection(data.Dataset):
         return len(self.ids)
 
 
-    def load_image_target(self, index):
-        # load an image
-        img_id = self.ids[index]
-        image = cv2.imread(self._imgpath % img_id)
-        height, width, channels = image.shape
+    def _load_cache(self):
+        # load image cache
+        self.image_list = None  # TODO: H5PY file
 
-        # laod an annotation
-        anno = ET.parse(self._annopath % img_id).getroot()
-        if self.target_transform is not None:
+        # load target cache
+        self.target_list = []
+        for img_id in self.ids:
+            anno = ET.parse(self._annopath % img_id).getroot()
             anno = self.target_transform(anno)
+            anno = np.array(anno).reshape(-1, 5)
+            self.target_list.append({"boxes": anno[:, :4], "labels": anno[:, 4]})
+        
 
-        # guard against no boxes via resizing
-        anno = np.array(anno).reshape(-1, 5)
-        target = {
-            "boxes": anno[:, :4],
-            "labels": anno[:, 4],
-            "orig_size": [height, width]
-        }
+    def load_image_target(self, index):
+        if self.load_cache:
+            image = self.image_list[index]
+            target = self.target_list[index]
+            height, width, channels = image.shape
+            target["orig_size"] = [height, width]
+        else:
+            # load an image
+            img_id = self.ids[index]
+            image = cv2.imread(self._imgpath % img_id)
+            height, width, channels = image.shape
+
+            # laod an annotation
+            anno = ET.parse(self._annopath % img_id).getroot()
+            if self.target_transform is not None:
+                anno = self.target_transform(anno)
+
+            # guard against no boxes via resizing
+            anno = np.array(anno).reshape(-1, 5)
+            target = {
+                "boxes": anno[:, :4],
+                "labels": anno[:, 4],
+                "orig_size": [height, width]
+            }
         
         return image, target
 
@@ -259,7 +285,8 @@ if __name__ == "__main__":
                         help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
-    
+    parser.add_argument('--load_cache', action="store_true", default=False,
+                        help='load cached data.')
     
     args = parser.parse_args()
 

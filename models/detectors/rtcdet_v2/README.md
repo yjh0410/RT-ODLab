@@ -2,19 +2,19 @@
 
 |   Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |------------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDetv2-N |  640  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-T |  640  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-S |  640  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-M |  640  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-L |  640  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-N |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-T |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-S |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-M |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-L |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDetv2-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
 
 |   Model    | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |------------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDetv2-P |  320  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-P |  416  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-P |  512  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDetv2-P |  640  | 4xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-P |  320  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-P |  416  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-P |  512  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDetv2-P |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 
 - For training, we train my RTCDetv2 series series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOX](https://github.com/ultralytics/yolov5), but we remove the rotation transformation which is used in YOLOX's strong augmentation.

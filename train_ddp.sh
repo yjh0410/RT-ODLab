@@ -11,9 +11,9 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --wp_epoch 3 \
                                                     --max_epoch 300 \
                                                     --eval_epoch 10 \
-                                                    --no_aug_epoch 20 \
+                                                    --no_aug_epoch 15 \
                                                     --ema \
                                                     --fp16 \
                                                     --sybn \
                                                     --multi_scale \
-                                                    # --resume weights/coco/yolovx_s/yolovx_s_best.pth \
+                                                     --resume weights/coco/yolox_l/yolox_l_best.pth \

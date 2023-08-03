@@ -507,7 +507,7 @@ class YoloxTrainer(object):
             images = images.to(self.device, non_blocking=True).float() / 255.
 
             # Multi scale
-            if self.args.multi_scale:
+            if self.args.multi_scale and ni % 10 == 0:
                 images, targets, img_size = self.rescale_image_targets(
                     images, targets, self.model_cfg['stride'], self.args.min_box_size, self.model_cfg['multi_scale'])
             else:
@@ -589,6 +589,14 @@ class YoloxTrainer(object):
         if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
             print(' - Close < perspective of rotation > ...')
             self.trans_cfg['perspective'] = 0.0
+
+        # close random affine
+        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
+            print(' - Close < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.0
+        if 'scale' in self.trans_cfg.keys():
+            print(' - Close < scale of affine >...')
+            self.trans_cfg['scale'] = [1.0, 1.0]
 
         # build a new transform for second stage
         print(' - Rebuild transforms ...')
