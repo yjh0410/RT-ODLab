@@ -35,3 +35,22 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
 #                                                     --sybn \
 #                                                     --multi_scale \
 #                                                     #  --resume weights/coco/yolov5_l/yolov5_l_best.pth \
+
+# -------------------------- Train My RTCDet series --------------------------
+# python -m torch.distributed.run --nproc_per_node=8 train.py \
+#                                                     --cuda \
+#                                                     -dist \
+#                                                     -d coco \
+#                                                     --root /data/datasets/ \
+#                                                     -m rtcdet_v1_l\
+#                                                     -bs 128 \
+#                                                     -size 640 \
+#                                                     --wp_epoch 3 \
+#                                                     --max_epoch 300 \
+#                                                     --eval_epoch 10 \
+#                                                     --no_aug_epoch 20 \
+#                                                     --ema \
+#                                                     --fp16 \
+#                                                     --sybn \
+#                                                     --multi_scale \
+#                                                     #  --resume weights/coco/rtcdet_v1_l/rtcdet_v1_l_best.pth \
