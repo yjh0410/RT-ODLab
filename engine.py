@@ -560,7 +560,10 @@ class YoloxTrainer(object):
                 log += '[lr: {:.6f}]'.format(cur_lr[2])
                 # loss infor
                 for k in loss_dict_reduced.keys():
-                    log += '[{}: {:.2f}]'.format(k, loss_dict_reduced[k])
+                    loss_val = loss_dict_reduced[k]
+                    if k == 'losses':
+                        loss_val *= self.grad_accumulate
+                    log += '[{}: {:.2f}]'.format(k, loss_val)
 
                 # other infor
                 log += '[time: {:.2f}]'.format(t1 - t0)
