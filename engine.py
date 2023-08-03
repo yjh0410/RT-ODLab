@@ -706,7 +706,7 @@ class RTMTrainer(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch - self.no_aug_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume:
             self.lr_scheduler.step()
@@ -880,7 +880,8 @@ class RTMTrainer(object):
                 t0 = time.time()
         
         # LR Schedule
-        self.lr_scheduler.step()
+        if not self.second_stage:
+            self.lr_scheduler.step()
         
 
     def check_second_stage(self):
