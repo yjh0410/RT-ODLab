@@ -4,13 +4,13 @@ python train.py \
         -d coco \
         --root /mnt/share/ssd2/dataset/ \
         -m yolox_l \
-        -bs 16 \
+        -bs 8 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 20 \
-        --grad_accumulate 4 \
+        --grad_accumulate 8 \
         --ema \
         --fp16 \
         --multi_scale \
