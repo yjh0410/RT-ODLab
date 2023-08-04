@@ -40,7 +40,7 @@ print('Data length: ', len(dataset))
 
 
 # ---------------------- Main Process ----------------------
-image_dict = []
+cached_image = []
 dataset_size = len(dataset)
 for i in range(len(dataset)):
     if i % 5000 == 0:
@@ -59,7 +59,7 @@ for i in range(len(dataset)):
     else:
         image = cv2.resize(image, (int(args.img_size), int(args.img_size)))
 
-    image_dict.append(image)
+    cached_image.append(image)
     if args.show:
         cv2.imshow('image', image)
         # cv2.imwrite(str(i)+'.jpg', img)
@@ -67,4 +67,4 @@ for i in range(len(dataset)):
 
 save_path = "dataset/cache/"
 os.makedirs(save_path, exist_ok=True)
-np.save(save_path + '{}_train_images.npy'.format(args.dataset))
+np.save(save_path + '{}_train_images.npy'.format(args.dataset), cached_image)
