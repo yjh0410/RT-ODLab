@@ -145,7 +145,7 @@ class VOCDetection(data.Dataset):
         dataset_size = len(self.ids)
 
         for i in range(dataset_size):
-            if (i+1) % 5000 == 0:
+            if i % 5000 == 0:
                 print("[{} / {}]".format(i, dataset_size))
             # load an image
             image, image_id = self.pull_image(i)
