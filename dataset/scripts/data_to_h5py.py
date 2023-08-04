@@ -38,6 +38,7 @@ print('Data length: ', len(dataset))
 
 
 # ---------------------- Main Process ----------------------
+image_dict = dict()
 for i in range(len(dataset)):
     # load an image
     image, image_id = dataset.pull_image(i)
@@ -50,11 +51,10 @@ for i in range(len(dataset)):
             interp = cv2.INTER_LINEAR
             new_size = (int(orig_w * r), int(orig_h * r))
             image = cv2.resize(image, new_size, interpolation=interp)
-        pad_image = np.ones([args.img_size, args.img_size, image.shape[2]], dtype=image.dtype) * 114
-        pad_image[:new_size[1], :new_size[0]] = image
-        image = pad_image
     else:
         image = cv2.resize(image, (int(args.img_size), int(args.img_size)))
+
+    image_dict[image_id] = image
 
     cv2.imshow('image', image)
     # cv2.imwrite(str(i)+'.jpg', img)
