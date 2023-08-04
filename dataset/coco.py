@@ -102,11 +102,11 @@ class COCODataset(Dataset):
         self.cached_images = []
         self.cached_targets = []
         dataset_size = len(self.ids)
+
         print('loading data into cache ...')
         for i in range(dataset_size):
-            if i % 5000 == 0 and i > 0:
+            if i % 5000 == 0:
                 print("[{} / {}]".format(i, dataset_size))
-                break
             # load an image
             image, image_id = self.pull_image(i)
             orig_h, orig_w, _ = image.shape
