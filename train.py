@@ -77,6 +77,8 @@ def parse_args():
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc, widerface, crowdhuman')
+    parser.add_argument('--load_cache', action='store_true', default=False,
+                        help='load data into memory.')
     
     # Train trick
     parser.add_argument('-ms', '--multi_scale', action='store_true', default=False,

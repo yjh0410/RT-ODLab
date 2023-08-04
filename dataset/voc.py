@@ -153,7 +153,7 @@ class VOCDetection(data.Dataset):
             orig_h, orig_w, _ = image.shape
 
             # resize image
-            r = args.img_size / max(orig_h, orig_w)
+            r = self.img_size / max(orig_h, orig_w)
             if r != 1: 
                 interp = cv2.INTER_LINEAR
                 new_size = (int(orig_w * r), int(orig_h * r))
