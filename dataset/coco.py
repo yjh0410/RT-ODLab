@@ -72,6 +72,7 @@ class COCODataset(Dataset):
         self.ids = self.coco.getImgIds()
         self.class_ids = sorted(self.coco.getCatIds())
         self.is_train = is_train
+        self.load_cache = load_cache
 
         # augmentation
         self.transform = transform
