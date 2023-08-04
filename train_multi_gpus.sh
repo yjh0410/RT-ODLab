@@ -15,7 +15,8 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --fp16 \
                                                     --sybn \
                                                     --multi_scale \
-                                                    #  --resume weights/coco/yolox_l/yolox_l_best.pth \
+                                                    # --load_cache \
+                                                    # --resume weights/coco/yolox_l/yolox_l_best.pth \
 
 # -------------------------- Train YOLOv1~v5 & v7 series --------------------------
 # python -m torch.distributed.run --nproc_per_node=8 train.py \
@@ -34,7 +35,8 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
 #                                                     --fp16 \
 #                                                     --sybn \
 #                                                     --multi_scale \
-#                                                     #  --resume weights/coco/yolov5_l/yolov5_l_best.pth \
+#                                                     # --load_cache
+#                                                     # --resume weights/coco/yolov5_l/yolov5_l_best.pth \
 
 # -------------------------- Train My RTCDet series --------------------------
 # python -m torch.distributed.run --nproc_per_node=8 train.py \
@@ -53,4 +55,5 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
 #                                                     --fp16 \
 #                                                     --sybn \
 #                                                     --multi_scale \
+#                                                     # --load_cache
 #                                                     #  --resume weights/coco/rtcdet_v1_l/rtcdet_v1_l_best.pth \

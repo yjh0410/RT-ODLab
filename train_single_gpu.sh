@@ -14,6 +14,7 @@ python train.py \
         --ema \
         --fp16 \
         --multi_scale \
+        # --load_cache \
         # --resume weights/coco/yolox_m/yolox_m_best.pth \
         # --eval_first
 
@@ -32,6 +33,7 @@ python train.py \
 #         --ema \
 #         --fp16 \
 #         --multi_scale \
+#         # --load_cache \
 #         # --resume weights/coco/yolov5_l/yolov5_l_best.pth \
 #         # --eval_first
 
@@ -51,5 +53,6 @@ python train.py \
 #         --ema \
 #         --fp16 \
 #         --multi_scale \
+#         # --load_cache \
 #         # --resume weights/coco/rtcdet_v1_l/rtcdet_v1_l_best.pth \
 #         # --eval_first
