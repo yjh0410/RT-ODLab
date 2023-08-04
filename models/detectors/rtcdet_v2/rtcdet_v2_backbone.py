@@ -1,33 +1,39 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtcdet_v2_basic import Conv, MCBlock, DSBlock
+    from .rtcdet_v2_basic import Conv, FasterBlock, DSBlock
 except:
-    from rtcdet_v2_basic import Conv, MCBlock, DSBlock
+    from rtcdet_v2_basic import Conv, FasterBlock, DSBlock
 
 
 
 model_urls = {
-    'mcnet_p': None,
-    'mcnet_n': None,
-    'mcnet_t': None,
-    'mcnet_s': None,
-    'mcnet_m': None,
-    'mcnet_l': None,
-    'mcnet_x': None,
+    'fasternet_n': None,
+    'fasternet_t': None,
+    'fasternet_s': None,
+    'fasternet_m': None,
+    'fasternet_l': None,
+    'fasternet_x': None,
 }
 
 
 # ---------------------------- Backbones ----------------------------
-class MixedConvNet(nn.Module):
-    def __init__(self, width=1.0, depth=1.0, num_heads=4, act_type='silu', norm_type='BN', depthwise=False):
-        super(MixedConvNet, self).__init__()
+# Modified FasterNet
+class FasterConvNet(nn.Module):
+    def __init__(self, width=1.0, depth=1.0, split_ratio=0.25, act_type='silu', norm_type='BN', depthwise=False):
+        super(FasterConvNet, self).__init__()
         # ------------------ Basic parameters ------------------
-        self.feat_dims_base = [64, 128, 256, 512, 1024]
-        self.nblocks_base = [3, 6, 9, 3]
-        self.feat_dims = [round(dim * width) for dim in self.feat_dims_base]
-        self.nblocks = [round(nblock * depth) for nblock in self.nblocks_base]
-        self.num_heads = num_heads
+        ## scale factor
+        self.width = width
+        self.depth = depth
+        self.split_ratio = split_ratio
+        ## pyramid feats
+        self.base_dims = [64, 128, 256, 512, 1024]
+        self.feat_dims = [round(dim * width) for dim in self.base_dims]
+        ## block depth
+        self.base_depth = [3, 9, 9, 3]
+        self.feat_depth = [round(num * depth) for num in self.base_depth]
+        ## nonlinear
         self.act_type = act_type
         self.norm_type = norm_type
         self.depthwise = depthwise
@@ -35,28 +41,28 @@ class MixedConvNet(nn.Module):
         # ------------------ Network parameters ------------------
         ## P1/2
         self.layer_1 = nn.Sequential(
-            Conv(3, self.feat_dims[0], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type),
+            Conv(3, self.feat_dims[0], k=6, p=2, s=2, act_type=self.act_type, norm_type=self.norm_type),
             Conv(self.feat_dims[0], self.feat_dims[0], k=3, p=1, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
         )
         ## P2/4
         self.layer_2 = nn.Sequential(   
             Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type),
-            MCBlock(self.feat_dims[1], self.feat_dims[1], self.nblocks[0], self.num_heads, True, self.act_type, self.norm_type, self.depthwise)
+            FasterBlock(self.feat_dims[1], self.feat_dims[1], self.split_ratio, self.feat_depth[0], True, self.act_type, self.norm_type)
         )
         ## P3/8
         self.layer_3 = nn.Sequential(
-            DSBlock(self.feat_dims[1], self.feat_dims[2], self.num_heads, self.act_type, self.norm_type, self.depthwise),             
-            MCBlock(self.feat_dims[2], self.feat_dims[2], self.nblocks[1], self.num_heads, True, self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[1], self.feat_dims[2], self.act_type, self.norm_type, self.depthwise),             
+            FasterBlock(self.feat_dims[2], self.feat_dims[2], self.split_ratio, self.feat_depth[1], True, self.act_type, self.norm_type)
         )
         ## P4/16
         self.layer_4 = nn.Sequential(
-            DSBlock(self.feat_dims[2], self.feat_dims[3], self.num_heads, self.act_type, self.norm_type, self.depthwise),             
-            MCBlock(self.feat_dims[3], self.feat_dims[3], self.nblocks[2], self.num_heads, True, self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[2], self.feat_dims[3], self.act_type, self.norm_type, self.depthwise),             
+            FasterBlock(self.feat_dims[3], self.feat_dims[3], self.split_ratio, self.feat_depth[2], True, self.act_type, self.norm_type)
         )
         ## P5/32
         self.layer_5 = nn.Sequential(
-            DSBlock(self.feat_dims[3], self.feat_dims[4], self.num_heads, self.act_type, self.norm_type, self.depthwise),             
-            MCBlock(self.feat_dims[4], self.feat_dims[4], self.nblocks[3], self.num_heads, True, self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[3], self.feat_dims[4], self.act_type, self.norm_type, self.depthwise),             
+            FasterBlock(self.feat_dims[4], self.feat_dims[4], self.split_ratio, self.feat_depth[3], True, self.act_type, self.norm_type)
         )
 
 
@@ -106,24 +112,22 @@ def load_weight(model, model_name):
 ## build MCNet
 def build_backbone(cfg, pretrained=False):
     # model
-    backbone = MixedConvNet(cfg['width'], cfg['depth'], cfg['bk_num_heads'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
+    backbone = FasterConvNet(cfg['width'], cfg['depth'], cfg['bk_split_ratio'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
 
     # check whether to load imagenet pretrained weight
     if pretrained:
-        if cfg['width'] == 0.25 and cfg['depth'] == 0.34 and cfg['bk_depthwise']:
-            backbone = load_weight(backbone, model_name='mcnet_p')
-        elif cfg['width'] == 0.25 and cfg['depth'] == 0.34:
-            backbone = load_weight(backbone, model_name='mcnet_n')
+        if cfg['width'] == 0.25 and cfg['depth'] == 0.34:
+            backbone = load_weight(backbone, model_name='fasternet_n')
         elif cfg['width'] == 0.375 and cfg['depth'] == 0.34:
-            backbone = load_weight(backbone, model_name='mcnet_t')
+            backbone = load_weight(backbone, model_name='fasternet_t')
         elif cfg['width'] == 0.5 and cfg['depth'] == 0.34:
-            backbone = load_weight(backbone, model_name='mcnet_s')
+            backbone = load_weight(backbone, model_name='fasternet_s')
         elif cfg['width'] == 0.75 and cfg['depth'] == 0.67:
-            backbone = load_weight(backbone, model_name='mcnet_m')
+            backbone = load_weight(backbone, model_name='fasternet_m')
         elif cfg['width'] == 1.0 and cfg['depth'] == 1.0:
-            backbone = load_weight(backbone, model_name='mcnet_l')
+            backbone = load_weight(backbone, model_name='fasternet_l')
         elif cfg['width'] == 1.25 and cfg['depth'] == 1.34:
-            backbone = load_weight(backbone, model_name='mcnet_x')
+            backbone = load_weight(backbone, model_name='fasternet_x')
     feat_dims = backbone.feat_dims[-3:]
 
     return backbone, feat_dims
@@ -139,9 +143,9 @@ if __name__ == '__main__':
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
-        'bk_num_heads': 4,
-        'width': 0.25,
-        'depth': 0.34,
+        'bk_split_ratio': 0.25,
+        'width': 1.0,
+        'depth': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
     }

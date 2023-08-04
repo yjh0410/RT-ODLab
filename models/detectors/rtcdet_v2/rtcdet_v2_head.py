@@ -75,8 +75,8 @@ class MultiLevelHead(nn.Module):
         self.multi_level_heads = nn.ModuleList(
             [SingleLevelHead(
                 in_dims[level],
-                max(out_dim, num_classes),   # cls head dim
-                max(out_dim, 4*reg_max),     # reg head dim
+                out_dim,            # cls head dim
+                out_dim,            # reg head dim
                 cfg['num_cls_head'],
                 cfg['num_reg_head'],
                 cfg['head_act'],
