@@ -103,7 +103,7 @@ class COCODataset(Dataset):
         self.cached_targets = []
         dataset_size = len(self.ids)
 
-        print('loading data into cache ...')
+        print('loading data into memory ...')
         for i in range(dataset_size):
             if i % 5000 == 0:
                 print("[{} / {}]".format(i, dataset_size))
