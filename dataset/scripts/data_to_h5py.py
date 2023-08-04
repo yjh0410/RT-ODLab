@@ -43,7 +43,7 @@ print('Data length: ', len(dataset))
 image_dict = dict()
 dataset_size = len(dataset)
 for i in range(len(dataset)):
-    if i % 1000 == 0:
+    if i % 5000 == 0:
         print("[{} / {}]".format(i, dataset_size))
     # load an image
     image, image_id = dataset.pull_image(i)
