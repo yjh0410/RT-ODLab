@@ -103,8 +103,9 @@ class COCODataset(Dataset):
         dataset_size = len(self.ids)
 
         for i in range(dataset_size):
-            if i % 5000 == 0:
+            if i % 5000 == 0 and i > 0:
                 print("[{} / {}]".format(i, dataset_size))
+                break
             # load an image
             image, image_id = self.pull_image(i)
             orig_h, orig_w, _ = image.shape
