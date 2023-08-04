@@ -23,6 +23,8 @@ parser.add_argument('--mixup', default=None, type=float,
                     help='mixup augmentation.')
 parser.add_argument('--keep_ratio', action="store_true", default=False,
                     help='keep aspect ratio.')
+parser.add_argument('--show', action="store_true", default=False,
+                    help='keep aspect ratio.')
 
 args = parser.parse_args()
 
@@ -39,7 +41,10 @@ print('Data length: ', len(dataset))
 
 # ---------------------- Main Process ----------------------
 image_dict = dict()
+dataset_size = len(dataset)
 for i in range(len(dataset)):
+    if i % 1000 == 0:
+        print("[{} / {}]".format(i, dataset_size))
     # load an image
     image, image_id = dataset.pull_image(i)
     orig_h, orig_w, _ = image.shape
@@ -55,7 +60,7 @@ for i in range(len(dataset)):
         image = cv2.resize(image, (int(args.img_size), int(args.img_size)))
 
     image_dict[image_id] = image
-
-    cv2.imshow('image', image)
-    # cv2.imwrite(str(i)+'.jpg', img)
-    cv2.waitKey(0)
+    if args.show:
+        cv2.imshow('image', image)
+        # cv2.imwrite(str(i)+'.jpg', img)
+        cv2.waitKey(0)
