@@ -40,7 +40,7 @@ print('Data length: ', len(dataset))
 
 
 # ---------------------- Main Process ----------------------
-image_dict = dict()
+image_dict = []
 dataset_size = len(dataset)
 for i in range(len(dataset)):
     if i % 5000 == 0:
@@ -59,7 +59,7 @@ for i in range(len(dataset)):
     else:
         image = cv2.resize(image, (int(args.img_size), int(args.img_size)))
 
-    image_dict[image_id] = image
+    image_dict.append(image)
     if args.show:
         cv2.imshow('image', image)
         # cv2.imwrite(str(i)+'.jpg', img)
