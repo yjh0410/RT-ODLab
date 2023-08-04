@@ -64,3 +64,7 @@ for i in range(len(dataset)):
         cv2.imshow('image', image)
         # cv2.imwrite(str(i)+'.jpg', img)
         cv2.waitKey(0)
+
+save_path = "dataset/cache/"
+os.makedirs(save_path, exist_ok=True)
+np.save(save_path + '{}_train_images.npy'.format(args.dataset))
