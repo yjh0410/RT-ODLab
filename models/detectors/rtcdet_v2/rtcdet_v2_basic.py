@@ -102,24 +102,47 @@ class PartialConv(nn.Module):
         x = torch.cat((x1, x2), 1)
 
         return x
-        
+
+## Channel Shuffle
+class ChannelShuffle(nn.Module):
+    def __init__(self, groups=1) -> None:
+        super().__init__()
+        self.groups = groups
+
+    def forward(self, x):
+        # type: (torch.Tensor, int) -> torch.Tensor
+        batchsize, num_channels, height, width = x.data.size()
+        channels_per_group = num_channels // self.groups
+
+        # reshape
+        x = x.view(batchsize, self.groups,
+                channels_per_group, height, width)
+
+        x = torch.transpose(x, 1, 2).contiguous()
+
+        # flatten
+        x = x.view(batchsize, -1, height, width)
+
+        return x
+
 
 # ---------------------------- Base Modules ----------------------------
 ## Faster Module
 class FasterModule(nn.Module):
-    def __init__(self, in_dim, out_dim, split_ratio=0.25, kernel_size=3, stride=1, shortcut=True, act_type='silu', norm_type='BN'):
+    def __init__(self, in_dim, out_dim, split_ratio=0.25, kernel_size=3, shortcut=True, act_type='silu', norm_type='BN'):
         super().__init__()
         # ----------- Basic Parameters -----------
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.split_ratio = split_ratio
+        self.expand_dim = in_dim * 2
         self.shortcut = True if shortcut and in_dim == out_dim else False
         self.act_type = act_type
         self.norm_type = norm_type
         # ----------- Network Parameters -----------
-        self.partial_conv = PartialConv(in_dim, in_dim, split_ratio, kernel_size, stride, act_type=None, norm_type=None)
-        self.expand_layer = Conv(in_dim, in_dim*2, k=1, act_type=act_type, norm_type=norm_type)
-        self.project_layer = Conv(in_dim*2, out_dim, k=1, act_type=None, norm_type=None)
+        self.partial_conv = PartialConv(in_dim, in_dim, split_ratio, kernel_size, stride=1, act_type=None, norm_type=None)
+        self.expand_layer = Conv(in_dim, self.expand_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.project_layer = Conv(self.expand_dim, out_dim, k=1, act_type=None, norm_type=None)
 
     def forward(self, x):
         h = self.project_layer(self.expand_layer(self.partial_conv(x)))
@@ -127,20 +150,19 @@ class FasterModule(nn.Module):
         return x + h if self.shortcut else h
 
 ## CSP-style FasterBlock
-class FasterBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, split_ratio=0.5, num_blocks=1, shortcut=True, act_type='silu', norm_type='BN'):
+class CSPFasterStage(nn.Module):
+    def __init__(self, in_dim, out_dim, num_blocks=1, kernel_size=3, shortcut=True, act_type='silu', norm_type='BN'):
         super().__init__()
         # -------------- Basic parameters --------------
         self.in_dim = in_dim
         self.out_dim = out_dim
-        self.split_ratio = split_ratio
         self.num_blocks = num_blocks
         self.inter_dim = in_dim // 2
         # -------------- Network parameters --------------
         self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.blocks = nn.Sequential(*[
-            FasterModule(self.inter_dim, self.inter_dim, split_ratio, 3, 1, shortcut, act_type, norm_type)
+            FasterModule(self.inter_dim, self.inter_dim, 0.5, kernel_size, shortcut, act_type, norm_type)
             for _ in range(self.num_blocks)])
         self.out_proj = Conv(self.inter_dim*2, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
@@ -150,7 +172,7 @@ class FasterBlock(nn.Module):
         x2 = self.blocks(self.cv2(x))
 
         return self.out_proj(torch.cat([x1, x2], dim=1))
-
+    
 ## DownSample Block
 class DSBlock(nn.Module):
     def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
@@ -185,14 +207,14 @@ class DSBlock(nn.Module):
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'faster_block':
-        layer = FasterBlock(in_dim      = in_dim,
-                            out_dim     = out_dim,
-                            split_ratio = cfg['fpn_split_ratio'],
-                            num_blocks  = round(3 * cfg['depth']),
-                            shortcut    = False,
-                            act_type    = cfg['fpn_act'],
-                            norm_type   = cfg['fpn_norm'],
-                            )
+        layer = CSPFasterStage(in_dim      = in_dim,
+                               out_dim     = out_dim,
+                               num_blocks  = round(3 * cfg['depth']),
+                               kernel_size = 3,
+                               shortcut    = False,
+                               act_type    = cfg['fpn_act'],
+                               norm_type   = cfg['fpn_norm'],
+                               )
         
     return layer
 
@@ -212,7 +234,6 @@ def build_downsample_layer(cfg, in_dim, out_dim):
         assert in_dim == out_dim
         layer = nn.MaxPool2d((2, 2), stride=2)
     elif cfg['fpn_downsample_layer'] == 'dsblock':
-        layer = DSBlock(in_dim, out_dim, num_heads=cfg['fpn_num_heads'],
-                        act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'], depthwise=cfg['fpn_depthwise'])
+        layer = DSBlock(in_dim, out_dim, cfg['fpn_act'], cfg['fpn_norm'], cfg['fpn_depthwise'])
         
     return layer

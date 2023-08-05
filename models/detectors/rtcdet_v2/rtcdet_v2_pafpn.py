@@ -13,7 +13,7 @@ class RTCDetPaFPN(nn.Module):
         self.in_dims = in_dims
         self.fpn_dims = in_dims
         
-        # --------------------------- Top-down FPN---------------------------
+        # --------------------------- Top-down FPN ---------------------------
         ## P5 -> P4
         self.reduce_layer_1 = build_reduce_layer(cfg, self.fpn_dims[2], self.fpn_dims[2]//2)
         self.top_down_layer_1 = build_fpn_block(cfg, self.fpn_dims[1] + self.fpn_dims[2]//2, self.fpn_dims[1])

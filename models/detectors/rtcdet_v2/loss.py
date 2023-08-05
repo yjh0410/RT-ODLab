@@ -202,9 +202,9 @@ class Criterion(object):
         loss_dfl = loss_dfl.sum() / normalizer
 
         # total loss
-        losses = self.loss_cls_weight * loss_cls + \
-                 self.loss_box_weight * loss_box + \
-                 self.loss_dfl_weight * loss_dfl
+        losses = self.loss_cls_weight['tal'] * loss_cls + \
+                 self.loss_box_weight['tal'] * loss_box + \
+                 self.loss_dfl_weight['tal'] * loss_dfl
 
         loss_dict = dict(
                 loss_cls = loss_cls,
@@ -310,9 +310,9 @@ class Criterion(object):
         loss_dfl = loss_dfl.sum() / normalizer
 
         # total loss
-        losses = self.loss_cls_weight * loss_cls + \
-                 self.loss_box_weight * loss_box + \
-                 self.loss_dfl_weight * loss_dfl
+        losses = self.loss_cls_weight['ota'] * loss_cls + \
+                 self.loss_box_weight['ota'] * loss_box + \
+                 self.loss_dfl_weight['ota'] * loss_dfl
 
         loss_dict = dict(
                 loss_cls = loss_cls,

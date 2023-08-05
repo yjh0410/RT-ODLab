@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtcdet_v2_basic import Conv, FasterBlock, DSBlock
+    from .rtcdet_v2_basic import Conv, CSPFasterStage, DSBlock
 except:
-    from rtcdet_v2_basic import Conv, FasterBlock, DSBlock
+    from rtcdet_v2_basic import Conv, CSPFasterStage, DSBlock
 
 
 
@@ -20,19 +20,18 @@ model_urls = {
 # ---------------------------- Backbones ----------------------------
 # Modified FasterNet
 class FasterConvNet(nn.Module):
-    def __init__(self, width=1.0, depth=1.0, split_ratio=0.25, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
         super(FasterConvNet, self).__init__()
         # ------------------ Basic parameters ------------------
         ## scale factor
         self.width = width
         self.depth = depth
-        self.split_ratio = split_ratio
         ## pyramid feats
         self.base_dims = [64, 128, 256, 512, 1024]
         self.feat_dims = [round(dim * width) for dim in self.base_dims]
         ## block depth
-        self.base_depth = [3, 9, 9, 3]
-        self.feat_depth = [round(num * depth) for num in self.base_depth]
+        self.base_blocks = [3, 9, 9, 3]
+        self.feat_blocks = [round(nblock * depth) for nblock in self.base_blocks]
         ## nonlinear
         self.act_type = act_type
         self.norm_type = norm_type
@@ -46,23 +45,23 @@ class FasterConvNet(nn.Module):
         )
         ## P2/4
         self.layer_2 = nn.Sequential(   
-            Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type),
-            FasterBlock(self.feat_dims[1], self.feat_dims[1], self.split_ratio, self.feat_depth[0], True, self.act_type, self.norm_type)
+            Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            CSPFasterStage(self.feat_dims[1], self.feat_dims[1], self.feat_blocks[0], 3, True, self.act_type, self.norm_type)
         )
         ## P3/8
         self.layer_3 = nn.Sequential(
-            DSBlock(self.feat_dims[1], self.feat_dims[2], self.act_type, self.norm_type, self.depthwise),             
-            FasterBlock(self.feat_dims[2], self.feat_dims[2], self.split_ratio, self.feat_depth[1], True, self.act_type, self.norm_type)
+            DSBlock(self.feat_dims[1], self.feat_dims[2], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            CSPFasterStage(self.feat_dims[2], self.feat_dims[2], self.feat_blocks[1], 3, True, self.act_type, self.norm_type)
         )
         ## P4/16
         self.layer_4 = nn.Sequential(
-            DSBlock(self.feat_dims[2], self.feat_dims[3], self.act_type, self.norm_type, self.depthwise),             
-            FasterBlock(self.feat_dims[3], self.feat_dims[3], self.split_ratio, self.feat_depth[2], True, self.act_type, self.norm_type)
+            DSBlock(self.feat_dims[2], self.feat_dims[3], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            CSPFasterStage(self.feat_dims[3], self.feat_dims[3], self.feat_blocks[2], 3, True, self.act_type, self.norm_type)
         )
         ## P5/32
         self.layer_5 = nn.Sequential(
-            DSBlock(self.feat_dims[3], self.feat_dims[4], self.act_type, self.norm_type, self.depthwise),             
-            FasterBlock(self.feat_dims[4], self.feat_dims[4], self.split_ratio, self.feat_depth[3], True, self.act_type, self.norm_type)
+            DSBlock(self.feat_dims[3], self.feat_dims[4], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            CSPFasterStage(self.feat_dims[4], self.feat_dims[4], self.feat_blocks[3], 3, True, self.act_type, self.norm_type)
         )
 
 
@@ -112,7 +111,7 @@ def load_weight(model, model_name):
 ## build MCNet
 def build_backbone(cfg, pretrained=False):
     # model
-    backbone = FasterConvNet(cfg['width'], cfg['depth'], cfg['bk_split_ratio'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
+    backbone = FasterConvNet(cfg['width'], cfg['depth'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
 
     # check whether to load imagenet pretrained weight
     if pretrained:
@@ -143,7 +142,6 @@ if __name__ == '__main__':
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
-        'bk_split_ratio': 0.25,
         'width': 1.0,
         'depth': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5

@@ -24,6 +24,31 @@ class SPPF(nn.Module):
 
         return self.cv2(torch.cat((x, y1, y2, self.m(y2)), 1))
 
+# Mixed Spatial Pyramid Pooling
+class MixedSPP(nn.Module):
+    def __init__(self, cfg, in_dim, out_dim, expand_ratio=2.0):
+        super().__init__()
+        # ------------- Basic parameters -------------
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.expand_dim = round(in_dim * expand_ratio)
+        self.num_maxpools = len(cfg['pooling_size']) + 1
+        # ------------- Network parameters -------------
+        self.input_proj = Conv(in_dim, self.expand_dim, k=1, act_type=cfg['neck_act'], norm_type=cfg['neck_norm'])
+        self.maxpools = nn.ModuleList()
+        for ksize in cfg['pooling_size']:
+            self.maxpools.append(nn.MaxPool2d(kernel_size=ksize, stride=1, padding=ksize// 2))
+        self.output_proj = Conv(self.expand_dim, out_dim, k=1, act_type=cfg['neck_act'], norm_type=cfg['neck_norm'])
+
+    def forward(self, x):
+        x = self.input_proj(x)
+        x_chunks = torch.chunk(x, self.num_maxpools, dim=1)
+        out = [x_chunks[0]]
+        for x_chunk, maxpool in zip(x_chunks[1:], self.maxpools):
+            out.append(maxpool(x_chunk))
+        out = torch.cat(out, dim=1)
+
+        return self.output_proj(out)
 
 # SPPF block with CSP module
 class SPPFBlockCSP(nn.Module):
@@ -67,6 +92,8 @@ def build_neck(cfg, in_dim, out_dim):
         neck = SPPF(cfg, in_dim, out_dim, cfg['neck_expand_ratio'])
     elif model == 'csp_sppf':
         neck = SPPFBlockCSP(cfg, in_dim, out_dim, cfg['neck_expand_ratio'])
+    elif model == 'mixed_spp':
+        neck = MixedSPP(cfg, in_dim, out_dim, cfg['neck_expand_ratio'])
 
     return neck
         
