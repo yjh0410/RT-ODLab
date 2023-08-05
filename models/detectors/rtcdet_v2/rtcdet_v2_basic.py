@@ -53,22 +53,22 @@ class Conv(nn.Module):
         if depthwise:
             convs.append(get_conv2d(c1, c1, k=k, p=p, s=s, d=d, g=c1, bias=add_bias))
             # depthwise conv
-            if norm_type:
+            if norm_type is not None:
                 convs.append(get_norm(norm_type, c1))
-            if act_type:
+            if act_type is not None:
                 convs.append(get_activation(act_type))
             # pointwise conv
             convs.append(get_conv2d(c1, c2, k=1, p=0, s=1, d=d, g=1, bias=add_bias))
-            if norm_type:
+            if norm_type is not None:
                 convs.append(get_norm(norm_type, c2))
-            if act_type:
+            if act_type is not None:
                 convs.append(get_activation(act_type))
 
         else:
             convs.append(get_conv2d(c1, c2, k=k, p=p, s=s, d=d, g=1, bias=add_bias))
-            if norm_type:
+            if norm_type is not None:
                 convs.append(get_norm(norm_type, c2))
-            if act_type:
+            if act_type is not None:
                 convs.append(get_activation(act_type))
             
         self.convs = nn.Sequential(*convs)
@@ -125,33 +125,62 @@ class ChannelShuffle(nn.Module):
 
         return x
 
+## Inverse BottleNeck
+class InverseBottleneck(nn.Module):
+    def __init__(self,
+                 in_dim,
+                 out_dim,
+                 expand_ratio=2.0,
+                 shortcut=False,
+                 act_type='silu',
+                 norm_type='BN',
+                 depthwise=False):
+        super(InverseBottleneck, self).__init__()
+        # ----------- Basic Parameters -----------
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.expand_dim = int(in_dim * expand_ratio)           
+        # ----------- Network Parameters -----------
+        self.cv1 = Conv(in_dim, in_dim, k=3, p=1, act_type=None, norm_type=norm_type, depthwise=depthwise)
+        self.cv2 = Conv(in_dim, self.expand_dim, k=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.cv3 = Conv(self.expand_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.shortcut = shortcut and in_dim == out_dim
+
+    def forward(self, x):
+        h = self.cv3(self.cv2(self.cv1(x)))
+
+        return x + h if self.shortcut else h
+
 
 # ---------------------------- Base Modules ----------------------------
-## Faster Module
-class FasterModule(nn.Module):
-    def __init__(self, in_dim, out_dim, split_ratio=0.25, kernel_size=3, shortcut=True, act_type='silu', norm_type='BN'):
+## ELAN Block
+class ELANBlock(nn.Module):
+    def __init__(self, in_dim, out_dim, squeeze_ratio=0.25, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
         # ----------- Basic Parameters -----------
         self.in_dim = in_dim
         self.out_dim = out_dim
-        self.split_ratio = split_ratio
-        self.expand_dim = in_dim * 2
-        self.shortcut = True if shortcut and in_dim == out_dim else False
-        self.act_type = act_type
-        self.norm_type = norm_type
+        self.inter_dim = round(in_dim * squeeze_ratio)
         # ----------- Network Parameters -----------
-        self.partial_conv = PartialConv(in_dim, in_dim, split_ratio, kernel_size, stride=1, act_type=None, norm_type=None)
-        self.expand_layer = Conv(in_dim, self.expand_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.project_layer = Conv(self.expand_dim, out_dim, k=1, act_type=None, norm_type=None)
+        self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.cv3 = InverseBottleneck(self.inter_dim, self.inter_dim, expand_ratio=2, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.cv4 = InverseBottleneck(self.inter_dim, self.inter_dim, expand_ratio=2, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        # output
+        self.out_conv = Conv(self.inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
-        h = self.project_layer(self.expand_layer(self.partial_conv(x)))
+        x1 = self.cv1(x)
+        x2 = self.cv2(x)
+        x3 = self.cv3(x2)
+        x4 = self.cv4(x3)
+        out = self.out_conv(torch.cat([x1, x2, x3, x4], dim=1))
 
-        return x + h if self.shortcut else h
+        return out
 
-## CSP-style FasterBlock
-class CSPFasterStage(nn.Module):
-    def __init__(self, in_dim, out_dim, num_blocks=1, kernel_size=3, shortcut=True, act_type='silu', norm_type='BN'):
+## ELAN Stage
+class ELANStage(nn.Module):
+    def __init__(self, in_dim, out_dim, num_blocks=1, squeeze_ratio=0.25, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
         # -------------- Basic parameters --------------
         self.in_dim = in_dim
@@ -159,19 +188,16 @@ class CSPFasterStage(nn.Module):
         self.num_blocks = num_blocks
         self.inter_dim = in_dim // 2
         # -------------- Network parameters --------------
-        self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.blocks = nn.Sequential(*[
-            FasterModule(self.inter_dim, self.inter_dim, 0.5, kernel_size, shortcut, act_type, norm_type)
-            for _ in range(self.num_blocks)])
-        self.out_proj = Conv(self.inter_dim*2, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.stage_blocks = nn.Sequential()
+        for i in range(self.num_blocks):
+            if i == 0:
+                self.stage_blocks.append(ELANBlock(in_dim, out_dim, squeeze_ratio, act_type, norm_type, depthwise))
+            else:
+                self.stage_blocks.append(ELANBlock(out_dim, out_dim, squeeze_ratio, act_type, norm_type, depthwise))
 
 
     def forward(self, x):
-        x1 = self.cv1(x)
-        x2 = self.blocks(self.cv2(x))
-
-        return self.out_proj(torch.cat([x1, x2], dim=1))
+        return self.stage_blocks(x)
     
 ## DownSample Block
 class DSBlock(nn.Module):
@@ -206,15 +232,15 @@ class DSBlock(nn.Module):
 # ---------------------------- FPN Modules ----------------------------
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
-    if cfg['fpn_core_block'] == 'faster_block':
-        layer = CSPFasterStage(in_dim      = in_dim,
-                               out_dim     = out_dim,
-                               num_blocks  = round(3 * cfg['depth']),
-                               kernel_size = 3,
-                               shortcut    = False,
-                               act_type    = cfg['fpn_act'],
-                               norm_type   = cfg['fpn_norm'],
-                               )
+    if cfg['fpn_core_block'] == 'elan_block':
+        layer = ELANStage(in_dim        = in_dim,
+                          out_dim       = out_dim,
+                          num_blocks    = round(3 * cfg['depth']),
+                          squeeze_ratio = cfg['fpn_squeeze_ratio'],
+                          act_type      = cfg['fpn_act'],
+                          norm_type     = cfg['fpn_norm'],
+                          depthwise     = cfg['fpn_depthwise']
+                          )
         
     return layer
 

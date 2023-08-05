@@ -5,7 +5,7 @@ rtcdet_v2_cfg = {
     'rtcdet_v2_l':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'fasternet',
+        'backbone': 'elannet',
         'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -15,9 +15,9 @@ rtcdet_v2_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'mixed_spp',
-        'neck_expand_ratio': 2.0,
-        'pooling_size': [5, 9, 13],
+        'neck': 'sppf',
+        'neck_expand_ratio': 0.5,
+        'pooling_size': 5,
         'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': False,
@@ -25,7 +25,8 @@ rtcdet_v2_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'faster_block',
+        'fpn_core_block': 'elan_block',
+        'fpn_squeeze_ratio': 0.25,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,

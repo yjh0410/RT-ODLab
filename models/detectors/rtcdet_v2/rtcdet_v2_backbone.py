@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtcdet_v2_basic import Conv, CSPFasterStage, DSBlock
+    from .rtcdet_v2_basic import Conv, ELANStage, DSBlock
 except:
-    from rtcdet_v2_basic import Conv, CSPFasterStage, DSBlock
-
+    from rtcdet_v2_basic import Conv, ELANStage, DSBlock
 
 
 model_urls = {
@@ -18,19 +17,20 @@ model_urls = {
 
 
 # ---------------------------- Backbones ----------------------------
-# Modified FasterNet
-class FasterConvNet(nn.Module):
+## Modified FasterNet
+class ELANNet(nn.Module):
     def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
-        super(FasterConvNet, self).__init__()
+        super(ELANNet, self).__init__()
         # ------------------ Basic parameters ------------------
         ## scale factor
         self.width = width
         self.depth = depth
+        self.squeeze_ratio = [0.5, 0.25, 0.25, 0.25]
         ## pyramid feats
         self.base_dims = [64, 128, 256, 512, 1024]
         self.feat_dims = [round(dim * width) for dim in self.base_dims]
         ## block depth
-        self.base_blocks = [3, 9, 9, 3]
+        self.base_blocks = [3, 6, 6, 3]
         self.feat_blocks = [round(nblock * depth) for nblock in self.base_blocks]
         ## nonlinear
         self.act_type = act_type
@@ -45,23 +45,23 @@ class FasterConvNet(nn.Module):
         )
         ## P2/4
         self.layer_2 = nn.Sequential(   
-            Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            CSPFasterStage(self.feat_dims[1], self.feat_dims[1], self.feat_blocks[0], 3, True, self.act_type, self.norm_type)
+            DSBlock(self.feat_dims[0], self.feat_dims[1], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            ELANStage(self.feat_dims[1], self.feat_dims[1], self.feat_blocks[0], self.squeeze_ratio[0], self.act_type, self.norm_type, self.depthwise)
         )
         ## P3/8
         self.layer_3 = nn.Sequential(
             DSBlock(self.feat_dims[1], self.feat_dims[2], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            CSPFasterStage(self.feat_dims[2], self.feat_dims[2], self.feat_blocks[1], 3, True, self.act_type, self.norm_type)
+            ELANStage(self.feat_dims[2], self.feat_dims[2], self.feat_blocks[1], self.squeeze_ratio[1], self.act_type, self.norm_type, self.depthwise)
         )
         ## P4/16
         self.layer_4 = nn.Sequential(
             DSBlock(self.feat_dims[2], self.feat_dims[3], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            CSPFasterStage(self.feat_dims[3], self.feat_dims[3], self.feat_blocks[2], 3, True, self.act_type, self.norm_type)
+            ELANStage(self.feat_dims[3], self.feat_dims[3], self.feat_blocks[2], self.squeeze_ratio[2], self.act_type, self.norm_type, self.depthwise)
         )
         ## P5/32
         self.layer_5 = nn.Sequential(
             DSBlock(self.feat_dims[3], self.feat_dims[4], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            CSPFasterStage(self.feat_dims[4], self.feat_dims[4], self.feat_blocks[3], 5, True, self.act_type, self.norm_type)
+            ELANStage(self.feat_dims[4], self.feat_dims[4], self.feat_blocks[3], self.squeeze_ratio[3], self.act_type, self.norm_type, self.depthwise)
         )
 
 
@@ -111,7 +111,7 @@ def load_weight(model, model_name):
 ## build MCNet
 def build_backbone(cfg, pretrained=False):
     # model
-    backbone = FasterConvNet(cfg['width'], cfg['depth'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
+    backbone = ELANNet(cfg['width'], cfg['depth'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
 
     # check whether to load imagenet pretrained weight
     if pretrained:
