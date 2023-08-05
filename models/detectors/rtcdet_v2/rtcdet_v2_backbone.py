@@ -61,7 +61,7 @@ class FasterConvNet(nn.Module):
         ## P5/32
         self.layer_5 = nn.Sequential(
             DSBlock(self.feat_dims[3], self.feat_dims[4], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            CSPFasterStage(self.feat_dims[4], self.feat_dims[4], self.feat_blocks[3], 3, True, self.act_type, self.norm_type)
+            CSPFasterStage(self.feat_dims[4], self.feat_dims[4], self.feat_blocks[3], 5, True, self.act_type, self.norm_type)
         )
 
 
