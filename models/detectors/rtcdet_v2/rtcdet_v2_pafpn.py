@@ -2,7 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .rtcdet_v2_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+try:
+    from .rtcdet_v2_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+except:
+    from rtcdet_v2_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
 # RTCDet-Style PaFPN
@@ -34,10 +37,8 @@ class RTCDetPaFPN(nn.Module):
         # --------------------------- Output proj ---------------------------
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
-                Conv(in_dim, out_dim, k=1,
-                     act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-                     for in_dim in self.fpn_dims
-                     ])
+                Conv(in_dim, out_dim, k=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+                for in_dim in self.fpn_dims])
             self.out_dim = [out_dim] * 3
         else:
             self.out_layers = None
@@ -88,3 +89,37 @@ def build_fpn(cfg, in_dims, out_dim=None):
         fpn_net = RTCDetPaFPN(cfg, in_dims, out_dim)
 
     return fpn_net
+
+
+if __name__ == '__main__':
+    import time
+    from thop import profile
+    cfg = {
+        'width': 1.0,
+        'depth': 1.0,
+        'fpn': 'rtcdet_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'elan_block',
+        'fpn_squeeze_ratio': 0.25,
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+    }
+    fpn_dims = [256, 512, 1024]
+    out_dim = 256
+    # Head-1
+    model = build_fpn(cfg, fpn_dims, out_dim)
+    fpn_feats = [torch.randn(1, fpn_dims[0], 80, 80), torch.randn(1, fpn_dims[1], 40, 40), torch.randn(1, fpn_dims[2], 20, 20)]
+    t0 = time.time()
+    outputs = model(fpn_feats)
+    t1 = time.time()
+    print('Time: ', t1 - t0)
+    # for out in outputs:
+    #     print(out.shape)
+
+    print('==============================')
+    flops, params = profile(model, inputs=(fpn_feats, ), verbose=False)
+    print('==============================')
+    print('FPN: GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
+    print('FPN: Params : {:.2f} M'.format(params / 1e6))

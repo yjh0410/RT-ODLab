@@ -1,37 +1,34 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtcdet_v2_basic import Conv, ELANStage, DSBlock
+    from .rtcdet_v2_basic import Conv, ELAN_Stage, DSBlock
 except:
-    from rtcdet_v2_basic import Conv, ELANStage, DSBlock
+    from rtcdet_v2_basic import Conv, ELAN_Stage, DSBlock
 
 
 model_urls = {
-    'fasternet_n': None,
-    'fasternet_t': None,
-    'fasternet_s': None,
-    'fasternet_m': None,
-    'fasternet_l': None,
-    'fasternet_x': None,
+    'elannet_v2_n': None,
+    'elannet_v2_t': None,
+    'elannet_v2_s': None,
+    'elannet_v2_m': None,
+    'elannet_v2_l': None,
+    'elannet_v2_x': None,
 }
 
 
 # ---------------------------- Backbones ----------------------------
-## Modified FasterNet
-class ELANNet(nn.Module):
+## Modified ELANNet-v2
+class ELANNetv2(nn.Module):
     def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
-        super(ELANNet, self).__init__()
+        super(ELANNetv2, self).__init__()
         # ------------------ Basic parameters ------------------
         ## scale factor
         self.width = width
         self.depth = depth
-        self.squeeze_ratio = [0.5, 0.25, 0.25, 0.25]
+        self.squeeze_ratio = [0.5, 0.5, 0.375, 0.25]
         ## pyramid feats
-        self.base_dims = [64, 128, 256, 512, 1024]
-        self.feat_dims = [round(dim * width) for dim in self.base_dims]
-        ## block depth
-        self.base_blocks = [3, 6, 6, 3]
-        self.feat_blocks = [round(nblock * depth) for nblock in self.base_blocks]
+        self.feat_dims = [round(dim * width) for dim in [64, 128, 256, 512, 1024]]
+        self.branch_depths = [round(dep * depth) for dep in [3, 6, 6, 3]]
         ## nonlinear
         self.act_type = act_type
         self.norm_type = norm_type
@@ -45,23 +42,23 @@ class ELANNet(nn.Module):
         )
         ## P2/4
         self.layer_2 = nn.Sequential(   
-            DSBlock(self.feat_dims[0], self.feat_dims[1], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELANStage(self.feat_dims[1], self.feat_dims[1], self.feat_blocks[0], self.squeeze_ratio[0], self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[0], self.feat_dims[1], self.act_type, self.norm_type, self.depthwise),
+            ELAN_Stage(self.feat_dims[1], self.feat_dims[1], self.squeeze_ratio[0], self.branch_depths[0], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P3/8
         self.layer_3 = nn.Sequential(
-            DSBlock(self.feat_dims[1], self.feat_dims[2], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELANStage(self.feat_dims[2], self.feat_dims[2], self.feat_blocks[1], self.squeeze_ratio[1], self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[1], self.feat_dims[2], self.act_type, self.norm_type, self.depthwise),
+            ELAN_Stage(self.feat_dims[2], self.feat_dims[2], self.squeeze_ratio[1], self.branch_depths[1], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P4/16
         self.layer_4 = nn.Sequential(
-            DSBlock(self.feat_dims[2], self.feat_dims[3], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELANStage(self.feat_dims[3], self.feat_dims[3], self.feat_blocks[2], self.squeeze_ratio[2], self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[2], self.feat_dims[3], self.act_type, self.norm_type, self.depthwise),
+            ELAN_Stage(self.feat_dims[3], self.feat_dims[3], self.squeeze_ratio[2], self.branch_depths[2], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P5/32
         self.layer_5 = nn.Sequential(
-            DSBlock(self.feat_dims[3], self.feat_dims[4], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELANStage(self.feat_dims[4], self.feat_dims[4], self.feat_blocks[3], self.squeeze_ratio[3], self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[3], self.feat_dims[4], self.act_type, self.norm_type, self.depthwise),
+            ELAN_Stage(self.feat_dims[4], self.feat_dims[4], self.squeeze_ratio[3], self.branch_depths[3], True, self.act_type, self.norm_type, self.depthwise)
         )
 
 
@@ -111,22 +108,22 @@ def load_weight(model, model_name):
 ## build MCNet
 def build_backbone(cfg, pretrained=False):
     # model
-    backbone = ELANNet(cfg['width'], cfg['depth'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
+    backbone = ELANNetv2(cfg['width'], cfg['depth'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
 
     # check whether to load imagenet pretrained weight
     if pretrained:
         if cfg['width'] == 0.25 and cfg['depth'] == 0.34:
-            backbone = load_weight(backbone, model_name='fasternet_n')
+            backbone = load_weight(backbone, model_name='elannet_v2_n')
         elif cfg['width'] == 0.375 and cfg['depth'] == 0.34:
-            backbone = load_weight(backbone, model_name='fasternet_t')
+            backbone = load_weight(backbone, model_name='elannet_v2_t')
         elif cfg['width'] == 0.5 and cfg['depth'] == 0.34:
-            backbone = load_weight(backbone, model_name='fasternet_s')
+            backbone = load_weight(backbone, model_name='elannet_v2_s')
         elif cfg['width'] == 0.75 and cfg['depth'] == 0.67:
-            backbone = load_weight(backbone, model_name='fasternet_m')
+            backbone = load_weight(backbone, model_name='elannet_v2_m')
         elif cfg['width'] == 1.0 and cfg['depth'] == 1.0:
-            backbone = load_weight(backbone, model_name='fasternet_l')
+            backbone = load_weight(backbone, model_name='elannet_v2_l')
         elif cfg['width'] == 1.25 and cfg['depth'] == 1.34:
-            backbone = load_weight(backbone, model_name='fasternet_x')
+            backbone = load_weight(backbone, model_name='elannet_v2_x')
     feat_dims = backbone.feat_dims[-3:]
 
     return backbone, feat_dims
@@ -137,8 +134,8 @@ if __name__ == '__main__':
     from thop import profile
     cfg = {
         ## Backbone
-        'backbone': 'mcnet',
-        'pretrained': True,
+        'backbone': 'elannet',
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,

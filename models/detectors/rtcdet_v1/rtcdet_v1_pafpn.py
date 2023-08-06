@@ -51,8 +51,8 @@ class RTCDetPaFPN(nn.Module):
             self.out_dim = self.fpn_dims
 
 
-    def forward(self, features):
-        fpn_feats = [layer(feat) for feat, layer in zip(features, self.input_projs)]
+    def forward(self, fpn_feats):
+        fpn_feats = [layer(feat) for feat, layer in zip(fpn_feats, self.input_projs)]
         c3, c4, c5 = fpn_feats
 
         # Top down

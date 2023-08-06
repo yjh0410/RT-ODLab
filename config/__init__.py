@@ -1,4 +1,4 @@
-# ------------------------ Dataset Config ------------------------
+# ------------------ Dataset Config ------------------
 from .data_config.dataset_config import dataset_cfg
 
 
@@ -14,7 +14,7 @@ def build_dataset_config(args):
     return cfg
 
 
-# ------------------ Transform Config ----------------------
+# ------------------ Transform Config ------------------
 from .data_config.transform_config import (
     # YOLOv5-Style
     yolov5_pico_trans_config,
@@ -39,6 +39,13 @@ from .data_config.transform_config import (
     rtcdet_v1_medium_trans_config,
     rtcdet_v1_large_trans_config,
     rtcdet_v1_huge_trans_config,
+    # RTMDet-v2-Style
+    rtcdet_v2_pico_trans_config,
+    rtcdet_v2_nano_trans_config,
+    rtcdet_v2_small_trans_config,
+    rtcdet_v2_medium_trans_config,
+    rtcdet_v2_large_trans_config,
+    rtcdet_v2_huge_trans_config,
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -91,12 +98,26 @@ def build_trans_config(trans_config='ssd'):
     elif trans_config == 'rtcdet_v1_huge':
         cfg = rtcdet_v1_huge_trans_config
 
+    # RTMDetv2-style transform 
+    elif trans_config == 'rtcdet_v2_pico':
+        cfg = rtcdet_v2_pico_trans_config
+    elif trans_config == 'rtcdet_v2_nano':
+        cfg = rtcdet_v2_nano_trans_config
+    elif trans_config == 'rtcdet_v2_small':
+        cfg = rtcdet_v2_small_trans_config
+    elif trans_config == 'rtcdet_v2_medium':
+        cfg = rtcdet_v2_medium_trans_config
+    elif trans_config == 'rtcdet_v2_large':
+        cfg = rtcdet_v2_large_trans_config
+    elif trans_config == 'rtcdet_v2_huge':
+        cfg = rtcdet_v2_huge_trans_config
+
     print('Transform Config: {} \n'.format(cfg))
 
     return cfg
 
 
-# ------------------ Model Config ----------------------
+# ------------------ Model Config ------------------
 ## YOLO series
 from .model_config.yolov1_config import yolov1_cfg
 from .model_config.yolov2_config import yolov2_cfg

@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
 
-from .rtcdet_v2_basic import Conv
+try:
+    from .rtcdet_v2_basic import Conv
+except:
+    from rtcdet_v2_basic import Conv
 
 
 # Single-level Head
@@ -114,3 +117,34 @@ def build_det_head(cfg, in_dim, out_dim, num_classes=80, reg_max=16, num_levels=
         head = MultiLevelHead(cfg, in_dim, out_dim, num_classes, reg_max, num_levels) 
 
     return head
+
+
+if __name__ == '__main__':
+    import time
+    from thop import profile
+    cfg = {
+        'head': 'decoupled_head',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'head_depthwise': False,
+        'reg_max': 16,
+    }
+    fpn_dims = [256, 256, 256]
+    out_dim = 256
+    # Head-1
+    model = build_det_head(cfg, fpn_dims, out_dim, num_classes=80, reg_max=16, num_levels=3)
+    fpn_feats = [torch.randn(1, fpn_dims[0], 80, 80), torch.randn(1, fpn_dims[1], 40, 40), torch.randn(1, fpn_dims[2], 20, 20)]
+    t0 = time.time()
+    outputs = model(fpn_feats)
+    t1 = time.time()
+    print('Time: ', t1 - t0)
+    # for out in outputs:
+    #     print(out.shape)
+
+    print('==============================')
+    flops, params = profile(model, inputs=(fpn_feats, ), verbose=False)
+    print('==============================')
+    print('Head-1: GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
+    print('Head-1: Params : {:.2f} M'.format(params / 1e6))

@@ -151,22 +151,55 @@ class InverseBottleneck(nn.Module):
 
         return x + h if self.shortcut else h
 
+## YOLO-style BottleNeck
+class YoloBottleneck(nn.Module):
+    def __init__(self,
+                 in_dim,
+                 out_dim,
+                 expand_ratio=0.5,
+                 shortcut=False,
+                 act_type='silu',
+                 norm_type='BN',
+                 depthwise=False):
+        super(YoloBottleneck, self).__init__()
+        # ------------------ Basic parameters ------------------
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.inter_dim = int(out_dim * expand_ratio)
+        self.shortcut = shortcut and in_dim == out_dim
+        # ------------------ Network parameters ------------------
+        self.cv1 = Conv(in_dim, self.inter_dim, k=1, norm_type=norm_type, act_type=act_type)
+        self.cv2 = Conv(self.inter_dim, out_dim, k=3, p=1, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
+
+    def forward(self, x):
+        h = self.cv2(self.cv1(x))
+
+        return x + h if self.shortcut else h
+
 
 # ---------------------------- Base Modules ----------------------------
-## ELAN Block
-class ELANBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, squeeze_ratio=0.25, act_type='silu', norm_type='BN', depthwise=False):
+## ELAN Stage of Backbone
+class ELAN_Stage(nn.Module):
+    def __init__(self, in_dim, out_dim, squeeze_ratio :float=0.5, branch_depth :int=1, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
         # ----------- Basic Parameters -----------
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.inter_dim = round(in_dim * squeeze_ratio)
+        self.squeeze_ratio = squeeze_ratio
+        self.branch_depth = branch_depth
         # ----------- Network Parameters -----------
         self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.cv3 = InverseBottleneck(self.inter_dim, self.inter_dim, expand_ratio=2, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.cv4 = InverseBottleneck(self.inter_dim, self.inter_dim, expand_ratio=2, shortcut=True, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        # output
+        self.cv3 = nn.Sequential(*[
+            YoloBottleneck(self.inter_dim, self.inter_dim, 1.0, shortcut, act_type, norm_type, depthwise)
+            for _ in range(branch_depth)
+        ])
+        self.cv4 = nn.Sequential(*[
+            YoloBottleneck(self.inter_dim, self.inter_dim, 1.0, shortcut, act_type, norm_type, depthwise)
+            for _ in range(branch_depth)
+        ])
+        ## output
         self.out_conv = Conv(self.inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
@@ -177,27 +210,6 @@ class ELANBlock(nn.Module):
         out = self.out_conv(torch.cat([x1, x2, x3, x4], dim=1))
 
         return out
-
-## ELAN Stage
-class ELANStage(nn.Module):
-    def __init__(self, in_dim, out_dim, num_blocks=1, squeeze_ratio=0.25, act_type='silu', norm_type='BN', depthwise=False):
-        super().__init__()
-        # -------------- Basic parameters --------------
-        self.in_dim = in_dim
-        self.out_dim = out_dim
-        self.num_blocks = num_blocks
-        self.inter_dim = in_dim // 2
-        # -------------- Network parameters --------------
-        self.stage_blocks = nn.Sequential()
-        for i in range(self.num_blocks):
-            if i == 0:
-                self.stage_blocks.append(ELANBlock(in_dim, out_dim, squeeze_ratio, act_type, norm_type, depthwise))
-            else:
-                self.stage_blocks.append(ELANBlock(out_dim, out_dim, squeeze_ratio, act_type, norm_type, depthwise))
-
-
-    def forward(self, x):
-        return self.stage_blocks(x)
     
 ## DownSample Block
 class DSBlock(nn.Module):
@@ -233,14 +245,15 @@ class DSBlock(nn.Module):
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'elan_block':
-        layer = ELANStage(in_dim        = in_dim,
-                          out_dim       = out_dim,
-                          num_blocks    = round(3 * cfg['depth']),
-                          squeeze_ratio = cfg['fpn_squeeze_ratio'],
-                          act_type      = cfg['fpn_act'],
-                          norm_type     = cfg['fpn_norm'],
-                          depthwise     = cfg['fpn_depthwise']
-                          )
+        layer = ELAN_Stage(in_dim        = in_dim,
+                           out_dim       = out_dim,
+                           squeeze_ratio = cfg['fpn_squeeze_ratio'],
+                           branch_depth  = round(3 * cfg['depth']),
+                           shortcut      = False,
+                           act_type      = cfg['fpn_act'],
+                           norm_type     = cfg['fpn_norm'],
+                           depthwise     = cfg['fpn_depthwise']
+                           )
         
     return layer
 
@@ -259,7 +272,5 @@ def build_downsample_layer(cfg, in_dim, out_dim):
     elif cfg['fpn_downsample_layer'] == 'maxpool':
         assert in_dim == out_dim
         layer = nn.MaxPool2d((2, 2), stride=2)
-    elif cfg['fpn_downsample_layer'] == 'dsblock':
-        layer = DSBlock(in_dim, out_dim, cfg['fpn_act'], cfg['fpn_norm'], cfg['fpn_depthwise'])
         
     return layer
