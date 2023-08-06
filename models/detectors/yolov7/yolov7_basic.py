@@ -11,12 +11,10 @@ class SiLU(nn.Module):
     def forward(x):
         return x * torch.sigmoid(x)
 
-
 def get_conv2d(c1, c2, k, p, s, d, g, bias=False):
     conv = nn.Conv2d(c1, c2, k, stride=s, padding=p, dilation=d, groups=g, bias=bias)
 
     return conv
-
 
 def get_activation(act_type=None):
     if act_type == 'relu':
@@ -28,13 +26,11 @@ def get_activation(act_type=None):
     elif act_type == 'silu':
         return nn.SiLU(inplace=True)
 
-
 def get_norm(norm_type, dim):
     if norm_type == 'BN':
         return nn.BatchNorm2d(dim)
     elif norm_type == 'GN':
         return nn.GroupNorm(num_groups=32, num_channels=dim)
-
 
 ## Basic conv layer
 class Conv(nn.Module):
@@ -82,18 +78,18 @@ class Conv(nn.Module):
 # ---------------------------- YOLOv7 Modules ----------------------------
 ## ELAN-Block proposed by YOLOv7
 class ELANBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, expand_ratio=0.5, depth=2.0, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, in_dim, out_dim, squeeze_ratio=0.5, branch_depth :int=2, act_type='silu', norm_type='BN', depthwise=False):
         super(ELANBlock, self).__init__()
-        inter_dim = int(in_dim * expand_ratio)
+        inter_dim = int(in_dim * squeeze_ratio)
         self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv3 = nn.Sequential(*[
             Conv(inter_dim, inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            for _ in range(round(depth))
+            for _ in range(round(branch_depth))
         ])
         self.cv4 = nn.Sequential(*[
             Conv(inter_dim, inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-            for _ in range(round(depth))
+            for _ in range(round(branch_depth))
         ])
 
         self.out = Conv(inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
@@ -109,26 +105,25 @@ class ELANBlock(nn.Module):
 
         return out
 
-
 ## PaFPN's ELAN-Block proposed by YOLOv7
 class ELANBlockFPN(nn.Module):
-    def __init__(self, in_dim, out_dim, expand_ratio=0.5, nbranch=4, depth=1, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, in_dim, out_dim, squeeze_ratio=0.5, branch_width :int=4, branch_depth :int=1, act_type='silu', norm_type='BN', depthwise=False):
         super(ELANBlockFPN, self).__init__()
         # Basic parameters
-        inter_dim = int(in_dim * expand_ratio)
-        inter_dim2 = int(inter_dim * expand_ratio) 
+        inter_dim = int(in_dim * squeeze_ratio)
+        inter_dim2 = int(inter_dim * squeeze_ratio) 
         # Network structure
         self.cv1 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv3 = nn.ModuleList()
-        for idx in range(round(nbranch)):
+        for idx in range(round(branch_width)):
             if idx == 0:
                 cvs = [Conv(inter_dim, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)]
             else:
                 cvs = [Conv(inter_dim2, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)]
             # deeper
-            if round(depth) > 1:
-                for _ in range(1, round(depth)):
+            if round(branch_depth) > 1:
+                for _ in range(1, round(branch_depth)):
                     cvs.append(Conv(inter_dim2, inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
                 self.cv3.append(nn.Sequential(*cvs))
             else:
@@ -148,7 +143,6 @@ class ELANBlockFPN(nn.Module):
         out = self.out(torch.cat(inter_outs, dim=1))
 
         return out
-
 
 ## DownSample Block proposed by YOLOv7
 class DownSample(nn.Module):

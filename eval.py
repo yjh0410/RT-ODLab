@@ -52,6 +52,8 @@ def parse_args():
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=None, type=float,
                         help='mixup augmentation.')
+    parser.add_argument('--load_cache', action='store_true', default=False,
+                        help='load data into memory.')
 
     # TTA
     parser.add_argument('-tta', '--test_aug', action='store_true', default=False,
