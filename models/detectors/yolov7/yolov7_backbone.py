@@ -24,7 +24,7 @@ class ELANNet_Tiny(nn.Module):
         super(ELANNet_Tiny, self).__init__()
         # -------------- Basic parameters --------------
         self.feat_dims = [32, 64, 128, 256, 512]
-        self.squeeze_ratios = [0.5, 0.5, 0.5, 0.5]  # Stage-1 -> Stage-4
+        self.squeeze_ratios = [0.5, 0.5, 0.5, 0.5]   # Stage-1 -> Stage-4
         self.branch_depths = [1, 1, 1, 1]            # Stage-1 -> Stage-4
         
         # -------------- Network parameters --------------
@@ -69,7 +69,7 @@ class ELANNet_Lagre(nn.Module):
         super(ELANNet_Lagre, self).__init__()
         # -------------------- Basic parameters --------------------
         self.feat_dims = [32, 64, 128, 256, 512, 1024, 1024]
-        self.squeeze_ratios = [0.5, 0.5, 0.5, 0.25] # Stage-1 -> Stage-4
+        self.squeeze_ratios = [0.5, 0.5, 0.5, 0.25]  # Stage-1 -> Stage-4
         self.branch_depths = [2, 2, 2, 2]            # Stage-1 -> Stage-4
 
         # -------------------- Network parameters --------------------
@@ -118,7 +118,7 @@ class ELANNet_Huge(nn.Module):
         super(ELANNet_Huge, self).__init__()
         # -------------------- Basic parameters --------------------
         self.feat_dims = [40, 80, 160, 320, 640, 1280, 1280]
-        self.squeeze_ratios = [0.5, 0.5, 0.5, 0.25] # Stage-1 -> Stage-4
+        self.squeeze_ratios = [0.5, 0.5, 0.5, 0.25]  # Stage-1 -> Stage-4
         self.branch_depths = [3, 3, 3, 3]            # Stage-1 -> Stage-4
 
         # -------------------- Network parameters --------------------
