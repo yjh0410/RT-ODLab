@@ -35,8 +35,8 @@ yolov7_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolox_small',
-        'multi_scale': [0.7, 1.25], # 448 -> 800
+        'trans_type': 'yolov5_small',
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -47,7 +47,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'yolov8',
     },
 
     'yolov7':{
@@ -84,8 +84,8 @@ yolov7_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolox_large',
-        'multi_scale': [0.7, 1.25], # 448 -> 800
+        'trans_type': 'yolov5_large',
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -96,7 +96,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'yolov8',
     },
 
     'yolov7_x':{
@@ -133,8 +133,8 @@ yolov7_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolox_huge',
-        'multi_scale': [0.7, 1.25], # 448 -> 800
+        'trans_type': 'yolov5_huge',
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -145,7 +145,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'yolov8',
     },
 
 }
