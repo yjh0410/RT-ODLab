@@ -52,6 +52,20 @@ class Criterion(object):
         return loss_box
 
 
+    def loss_bboxes_aux(self, pred_reg, gt_box, anchors, stride_tensors):
+        # xyxy -> cxcy&bwbh
+        gt_cxcy = (gt_box[..., :2] + gt_box[..., 2:]) * 0.5
+        gt_bwbh = gt_box[..., 2:] - gt_box[..., :2]
+        # encode gt box
+        gt_cxcy_encode = (gt_cxcy - anchors) / stride_tensors
+        gt_bwbh_encode = torch.log(gt_bwbh / stride_tensors)
+        gt_box_encode = torch.cat([gt_cxcy_encode, gt_bwbh_encode], dim=-1)
+        # l1 loss
+        loss_box_aux = F.l1_loss(pred_reg, gt_box_encode, reduction='none')
+
+        return loss_box_aux
+
+
     def __call__(self, outputs, targets, epoch=0):        
         """
             outputs['pred_obj']: List(Tensor) [B, M, 1]
@@ -145,13 +159,40 @@ class Criterion(object):
                  self.loss_cls_weight * loss_cls + \
                  self.loss_box_weight * loss_box
 
+        # ------------------ Aux regression loss ------------------
+        loss_box_aux = None
+        if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
+            ## reg_preds
+            reg_preds = torch.cat(outputs['pred_reg'], dim=1)
+            reg_preds_pos = reg_preds.view(-1, 4)[fg_masks]
+            ## anchor tensors
+            anchors_tensors = torch.cat(outputs['anchors'], dim=0)[None].repeat(bs, 1, 1)
+            anchors_tensors_pos = anchors_tensors.view(-1, 2)[fg_masks]
+            ## stride tensors
+            stride_tensors = torch.cat(outputs['stride_tensors'], dim=0)[None].repeat(bs, 1, 1)
+            stride_tensors_pos = stride_tensors.view(-1, 1)[fg_masks]
+            ## aux loss
+            loss_box_aux = self.loss_bboxes_aux(reg_preds_pos, box_targets, anchors_tensors_pos, stride_tensors_pos)
+            loss_box_aux = loss_box_aux.sum() / num_fgs
+
+            losses += loss_box_aux
+
         # Loss dict
-        loss_dict = dict(
-                loss_obj = loss_obj,
-                loss_cls = loss_cls,
-                loss_box = loss_box,
-                losses = losses
-        )
+        if loss_box_aux is None:
+            loss_dict = dict(
+                    loss_obj = loss_obj,
+                    loss_cls = loss_cls,
+                    loss_box = loss_box,
+                    losses = losses
+            )
+        else:
+            loss_dict = dict(
+                    loss_obj = loss_obj,
+                    loss_cls = loss_cls,
+                    loss_box = loss_box,
+                    loss_box_aux = loss_box_aux,
+                    losses = losses
+                    )
 
         return loss_dict
     
