@@ -13,6 +13,8 @@ class Criterion(object):
         self.args = args
         self.device = device
         self.num_classes = num_classes
+        self.max_epoch = args.max_epoch
+        self.no_aug_epoch = args.no_aug_epoch
         self.use_ema_update = cfg['ema_update']
         # ---------------- Loss weight ----------------
         self.loss_cls_weight = cfg['loss_cls_weight']
@@ -105,9 +107,18 @@ class Criterion(object):
             loss_dfl *= bbox_weight
 
         return loss_dfl
-    
+
+    def loss_bboxes_aux(self, pred_delta, gt_box, anchors, stride_tensors):
+        gt_delta_tl = (anchors - gt_box[..., :2]) / stride_tensors
+        gt_delta_rb = (gt_box[..., 2:] - anchors) / stride_tensors
+        gt_delta = torch.cat([gt_delta_tl, gt_delta_rb], dim=1)
+        loss_box_aux = F.l1_loss(pred_delta, gt_delta, reduction='none')
+
+        return loss_box_aux
+
+
     # ----------------- Loss with TAL assigner -----------------
-    def tal_loss(self, outputs, targets):
+    def tal_loss(self, outputs, targets, epoch=0):
         """ Compute loss with TAL assigner """
         bs = outputs['pred_cls'][0].shape[0]
         device = outputs['pred_cls'][0].device
@@ -213,10 +224,28 @@ class Criterion(object):
                 losses = losses
         )
 
+        # ------------------ Aux regression loss ------------------
+        if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
+            ## delta_preds
+            delta_preds = torch.cat(outputs['pred_delta'], dim=1)
+            delta_preds_pos = delta_preds.view(-1, 4)[fg_masks]
+            ## anchor tensors
+            anchors_tensors = torch.cat(outputs['anchors'], dim=0)[None].repeat(bs, 1, 1)
+            anchors_tensors_pos = anchors_tensors.view(-1, 2)[fg_masks]
+            ## stride tensors
+            stride_tensors = torch.cat(outputs['stride_tensors'], dim=0)[None].repeat(bs, 1, 1)
+            stride_tensors_pos = stride_tensors.view(-1, 1)[fg_masks]
+            ## aux loss
+            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets_pos, anchors_pos, strides_pos)
+            loss_box_aux = loss_box_aux.sum() / num_fgs
+
+            losses += loss_box_aux
+            loss_dict['loss_box_aux'] = loss_box_aux
+
         return loss_dict
     
     # ----------------- Loss with SimOTA assigner -----------------
-    def ota_loss(self, outputs, targets):
+    def ota_loss(self, outputs, targets, epoch=0):
         """ Compute loss with SimOTA assigner """
         bs = outputs['pred_cls'][0].shape[0]
         device = outputs['pred_cls'][0].device
@@ -320,6 +349,19 @@ class Criterion(object):
                 loss_dfl = loss_dfl,
                 losses = losses
         )
+
+        # ------------------ Aux regression loss ------------------
+        if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
+            ## delta_preds
+            delta_preds = torch.cat(outputs['pred_delta'], dim=1)
+            delta_preds_pos = delta_preds.view(-1, 4)[fg_masks]
+            ## aux loss
+            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets, anchors_pos, strides_pos)
+            loss_box_aux = loss_box_aux.sum() / num_fgs
+
+            losses += loss_box_aux
+            loss_dict['loss_box_aux'] = loss_box_aux
+
 
         return loss_dict
 
