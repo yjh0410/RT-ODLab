@@ -53,6 +53,7 @@ rtcdet_v2_cfg = {
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
+        'loss_box_aux': False,
         'loss_cls_weight': {'tal': 0.5, 'ota': 1.0},
         'loss_box_weight': {'tal': 7.0, 'ota': 5.0},
         'loss_dfl_weight': {'tal': 1.5, 'ota': 1.0},
