@@ -938,6 +938,14 @@ class RTMTrainer(object):
             print(' - Close < perspective of rotation > ...')
             self.trans_cfg['perspective'] = 0.0
 
+        # close random affine
+        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
+            print(' - Close < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.0
+        if 'scale' in self.trans_cfg.keys():
+            print(' - Close < scale of affine >...')
+            self.trans_cfg['scale'] = [1.0, 1.0]
+
         # build a new transform for second stage
         print(' - Rebuild transforms ...')
         self.train_transform, self.trans_cfg = build_transform(

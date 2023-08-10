@@ -15,7 +15,7 @@ rtcdet_v2_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'csp_sppf',
+        'neck': 'sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -26,7 +26,7 @@ rtcdet_v2_cfg = {
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elan_block',
-        'fpn_squeeze_ratio': 0.25,
+        'fpn_expand_ratio': 0.25,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -41,7 +41,7 @@ rtcdet_v2_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'rtcdet_v1_large',
+        'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': {'tal': {'topk': 10,

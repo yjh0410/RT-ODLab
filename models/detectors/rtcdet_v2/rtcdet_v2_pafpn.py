@@ -14,8 +14,12 @@ class RTCDetPaFPN(nn.Module):
         super(RTCDetPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
-        self.fpn_dims = in_dims
-        
+        self.fpn_dims = [round(256*cfg['width']), round(512*cfg['width']), round(1024*cfg['width'])]
+
+        # --------------------------- Input proj ---------------------------
+        self.input_projs = nn.ModuleList([nn.Conv2d(in_dim, fpn_dim, kernel_size=1)
+                                          for in_dim, fpn_dim in zip(in_dims, self.fpn_dims)])
+                
         # --------------------------- Top-down FPN ---------------------------
         ## P5 -> P4
         self.reduce_layer_1 = build_reduce_layer(cfg, self.fpn_dims[2], self.fpn_dims[2]//2)
@@ -46,6 +50,7 @@ class RTCDetPaFPN(nn.Module):
 
 
     def forward(self, fpn_feats):
+        fpn_feats = [layer(feat) for feat, layer in zip(fpn_feats, self.input_projs)]
         c3, c4, c5 = fpn_feats
 
         # Top down
@@ -101,12 +106,12 @@ if __name__ == '__main__':
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elan_block',
-        'fpn_squeeze_ratio': 0.25,
+        'fpn_expand_ratio': 0.25,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
     }
-    fpn_dims = [256, 512, 1024]
+    fpn_dims = [512, 1024, 1024]
     out_dim = 256
     # Head-1
     model = build_fpn(cfg, fpn_dims, out_dim)
