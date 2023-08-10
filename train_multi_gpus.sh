@@ -4,7 +4,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     -dist \
                                                     -d coco \
                                                     --root /data/datasets/ \
-                                                    -m yolox_m\
+                                                    -m yolox_s\
                                                     -bs 64 \
                                                     -size 640 \
                                                     --wp_epoch 3 \
