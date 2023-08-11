@@ -37,6 +37,10 @@ class Yolov8Trainer(object):
         self.world_size = world_size
         self.heavy_eval = False
         self.second_stage = False
+        # path to save model
+        self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
+        os.makedirs(self.path_to_save, exist_ok=True)
+
         # ---------------------------- Hyperparameters refer to YOLOv8 ----------------------------
         self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.937, 'weight_decay': 5e-4, 'lr0': 0.01}
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
@@ -84,49 +88,6 @@ class Yolov8Trainer(object):
             self.model_ema = None
 
 
-    def check_second_stage(self):
-        # set second stage
-        print('============== Second stage of Training ==============')
-        self.second_stage = True
-
-        # close mosaic augmentation
-        if self.train_loader.dataset.mosaic_prob > 0.:
-            print(' - Close < Mosaic Augmentation > ...')
-            self.train_loader.dataset.mosaic_prob = 0.
-            self.heavy_eval = True
-
-        # close mixup augmentation
-        if self.train_loader.dataset.mixup_prob > 0.:
-            print(' - Close < Mixup Augmentation > ...')
-            self.train_loader.dataset.mixup_prob = 0.
-            self.heavy_eval = True
-
-        # close rotation augmentation
-        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
-            print(' - Close < degress of rotation > ...')
-            self.trans_cfg['degrees'] = 0.0
-        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
-            print(' - Close < shear of rotation >...')
-            self.trans_cfg['shear'] = 0.0
-        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
-            print(' - Close < perspective of rotation > ...')
-            self.trans_cfg['perspective'] = 0.0
-
-        # close random affine
-        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
-            print(' - Close < translate of affine > ...')
-            self.trans_cfg['translate'] = 0.0
-        if 'scale' in self.trans_cfg.keys():
-            print(' - Close < scale of affine >...')
-            self.trans_cfg['scale'] = [1.0, 1.0]
-
-        # build a new transform for second stage
-        print(' - Rebuild transforms ...')
-        self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
-        self.train_loader.dataset.transform = self.train_transform
-        
-
     def train(self, model):
         for epoch in range(self.start_epoch, self.args.max_epoch):
             if self.args.distributed:
@@ -135,6 +96,17 @@ class Yolov8Trainer(object):
             # check second stage
             if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
                 self.check_second_stage()
+                # save model of the last mosaic epoch
+                weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
+                if not os.path.exists(checkpoint_path):
+                    print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
+                    torch.save({'model': model.state_dict(),
+                                'mAP': round(self.evaluator.map*100, 1),
+                                'optimizer': self.optimizer.state_dict(),
+                                'epoch': self.epoch,
+                                'args': self.args}, 
+                                checkpoint_path)                      
 
             # train one epoch
             self.epoch = epoch
@@ -154,17 +126,13 @@ class Yolov8Trainer(object):
         # chech model
         model_eval = model if self.model_ema is None else self.model_ema.ema
 
-        # path to save model
-        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
-        os.makedirs(path_to_save, exist_ok=True)
-
         if distributed_utils.is_main_process():
             # check evaluator
             if self.evaluator is None:
                 print('No evaluator ... save model and go on training.')
                 print('Saving state, epoch: {}'.format(self.epoch + 1))
                 weight_name = '{}_no_eval.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(path_to_save, weight_name)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
                 torch.save({'model': model_eval.state_dict(),
                             'mAP': -1.,
                             'optimizer': self.optimizer.state_dict(),
@@ -189,7 +157,7 @@ class Yolov8Trainer(object):
                     # save model
                     print('Saving state, epoch:', self.epoch + 1)
                     weight_name = '{}_best.pth'.format(self.args.model)
-                    checkpoint_path = os.path.join(path_to_save, weight_name)
+                    checkpoint_path = os.path.join(self.path_to_save, weight_name)
                     torch.save({'model': model_eval.state_dict(),
                                 'mAP': round(self.best_map*100, 1),
                                 'optimizer': self.optimizer.state_dict(),
@@ -299,6 +267,49 @@ class Yolov8Trainer(object):
         self.lr_scheduler.step()
         
 
+    def check_second_stage(self):
+        # set second stage
+        print('============== Second stage of Training ==============')
+        self.second_stage = True
+
+        # close mosaic augmentation
+        if self.train_loader.dataset.mosaic_prob > 0.:
+            print(' - Close < Mosaic Augmentation > ...')
+            self.train_loader.dataset.mosaic_prob = 0.
+            self.heavy_eval = True
+
+        # close mixup augmentation
+        if self.train_loader.dataset.mixup_prob > 0.:
+            print(' - Close < Mixup Augmentation > ...')
+            self.train_loader.dataset.mixup_prob = 0.
+            self.heavy_eval = True
+
+        # close rotation augmentation
+        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
+            print(' - Close < degress of rotation > ...')
+            self.trans_cfg['degrees'] = 0.0
+        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
+            print(' - Close < shear of rotation >...')
+            self.trans_cfg['shear'] = 0.0
+        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
+            print(' - Close < perspective of rotation > ...')
+            self.trans_cfg['perspective'] = 0.0
+
+        # close random affine
+        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
+            print(' - Close < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.0
+        if 'scale' in self.trans_cfg.keys():
+            print(' - Close < scale of affine >...')
+            self.trans_cfg['scale'] = [1.0, 1.0]
+
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
+
     def refine_targets(self, targets, min_box_size):
         # rescale targets
         for tgt in targets:
@@ -368,9 +379,13 @@ class YoloxTrainer(object):
         self.no_aug_epoch = args.no_aug_epoch
         self.heavy_eval = False
         self.second_stage = False
+        # path to save model
+        self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
+        os.makedirs(self.path_to_save, exist_ok=True)
+
         # ---------------------------- Hyperparameters refer to YOLOX ----------------------------
         self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.9, 'weight_decay': 5e-4, 'lr0': 0.01}
-        self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
+        self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
@@ -421,7 +436,18 @@ class YoloxTrainer(object):
             # check second stage
             if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
                 self.check_second_stage()
-
+                # save model of the last mosaic epoch
+                weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
+                if not os.path.exists(checkpoint_path):
+                    print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
+                    torch.save({'model': model.state_dict(),
+                                'mAP': round(self.evaluator.map*100, 1),
+                                'optimizer': self.optimizer.state_dict(),
+                                'epoch': self.epoch,
+                                'args': self.args}, 
+                                checkpoint_path)                      
+                
             # train one epoch
             self.epoch = epoch
             self.train_one_epoch(model)
@@ -440,17 +466,13 @@ class YoloxTrainer(object):
         # chech model
         model_eval = model if self.model_ema is None else self.model_ema.ema
 
-        # path to save model
-        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
-        os.makedirs(path_to_save, exist_ok=True)
-
         if distributed_utils.is_main_process():
             # check evaluator
             if self.evaluator is None:
                 print('No evaluator ... save model and go on training.')
                 print('Saving state, epoch: {}'.format(self.epoch + 1))
                 weight_name = '{}_no_eval.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(path_to_save, weight_name)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
                 torch.save({'model': model_eval.state_dict(),
                             'mAP': -1.,
                             'optimizer': self.optimizer.state_dict(),
@@ -475,7 +497,7 @@ class YoloxTrainer(object):
                     # save model
                     print('Saving state, epoch:', self.epoch + 1)
                     weight_name = '{}_best.pth'.format(self.args.model)
-                    checkpoint_path = os.path.join(path_to_save, weight_name)
+                    checkpoint_path = os.path.join(self.path_to_save, weight_name)
                     torch.save({'model': model_eval.state_dict(),
                                 'mAP': round(self.best_map*100, 1),
                                 'optimizer': self.optimizer.state_dict(),
@@ -692,6 +714,10 @@ class RTMTrainer(object):
         self.clip_grad = 35
         self.heavy_eval = False
         self.second_stage = False
+        # path to save model
+        self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
+        os.makedirs(self.path_to_save, exist_ok=True)
+
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
@@ -745,6 +771,17 @@ class RTMTrainer(object):
             # check second stage
             if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
                 self.check_second_stage()
+                # save model of the last mosaic epoch
+                weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
+                if not os.path.exists(checkpoint_path):
+                    print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
+                    torch.save({'model': model.state_dict(),
+                                'mAP': round(self.evaluator.map*100, 1),
+                                'optimizer': self.optimizer.state_dict(),
+                                'epoch': self.epoch,
+                                'args': self.args}, 
+                                checkpoint_path)                      
 
             # train one epoch
             self.epoch = epoch
@@ -764,17 +801,13 @@ class RTMTrainer(object):
         # chech model
         model_eval = model if self.model_ema is None else self.model_ema.ema
 
-        # path to save model
-        path_to_save = os.path.join(self.args.save_folder, self.args.dataset, self.args.model)
-        os.makedirs(path_to_save, exist_ok=True)
-
         if distributed_utils.is_main_process():
             # check evaluator
             if self.evaluator is None:
                 print('No evaluator ... save model and go on training.')
                 print('Saving state, epoch: {}'.format(self.epoch + 1))
                 weight_name = '{}_no_eval.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(path_to_save, weight_name)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
                 torch.save({'model': model_eval.state_dict(),
                             'mAP': -1.,
                             'optimizer': self.optimizer.state_dict(),
@@ -799,7 +832,7 @@ class RTMTrainer(object):
                     # save model
                     print('Saving state, epoch:', self.epoch + 1)
                     weight_name = '{}_best.pth'.format(self.args.model)
-                    checkpoint_path = os.path.join(path_to_save, weight_name)
+                    checkpoint_path = os.path.join(self.path_to_save, weight_name)
                     torch.save({'model': model_eval.state_dict(),
                                 'mAP': round(self.best_map*100, 1),
                                 'optimizer': self.optimizer.state_dict(),

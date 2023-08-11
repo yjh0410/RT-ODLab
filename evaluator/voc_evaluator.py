@@ -30,6 +30,7 @@ class VOCAPIEvaluator():
         self.set_type = set_type
         self.year = year
         self.display = display
+        self.map = 0.
 
         # transform
         self.transform = transform
