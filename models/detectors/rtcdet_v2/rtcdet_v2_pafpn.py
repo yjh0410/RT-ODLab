@@ -17,8 +17,11 @@ class RTCDetPaFPN(nn.Module):
         self.fpn_dims = [round(256*cfg['width']), round(512*cfg['width']), round(1024*cfg['width'])]
 
         # --------------------------- Input proj ---------------------------
-        self.input_projs = nn.ModuleList([nn.Conv2d(in_dim, fpn_dim, kernel_size=1)
-                                          for in_dim, fpn_dim in zip(in_dims, self.fpn_dims)])
+        if in_dims == self.fpn_dims:
+            self.input_projs = nn.ModuleList([nn.Identity() for _ in range(len(in_dims))])
+        else:
+            self.input_projs = nn.ModuleList([nn.Conv2d(in_dim, fpn_dim, kernel_size=1)
+                                            for in_dim, fpn_dim in zip(in_dims, self.fpn_dims)])
                 
         # --------------------------- Top-down FPN ---------------------------
         ## P5 -> P4
