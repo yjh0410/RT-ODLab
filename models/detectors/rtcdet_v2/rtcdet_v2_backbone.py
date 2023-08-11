@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtcdet_v2_basic import Conv, ELAN_Stage, DSBlock
+    from .rtcdet_v2_basic import Conv, ELANBlock, DSBlock
 except:
-    from rtcdet_v2_basic import Conv, ELAN_Stage, DSBlock
+    from rtcdet_v2_basic import Conv, ELANBlock, DSBlock
 
 
 model_urls = {
@@ -26,9 +26,9 @@ class ELANNetv2(nn.Module):
         self.width = width
         self.depth = depth
         self.expand_ratio = [0.5, 0.5, 0.5, 0.25]
+        self.branch_depths = [round(dep * depth) for dep in [3, 3, 3, 3]]
         ## pyramid feats
         self.feat_dims = [round(dim * width) for dim in [64, 128, 256, 512, 1024, 1024]]
-        self.branch_depths = [round(dep * depth) for dep in [3, 3, 3, 3]]
         ## nonlinear
         self.act_type = act_type
         self.norm_type = norm_type
@@ -42,23 +42,23 @@ class ELANNetv2(nn.Module):
         )
         ## P2/4
         self.layer_2 = nn.Sequential(   
-            DSBlock(self.feat_dims[0], self.feat_dims[1], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELAN_Stage(self.feat_dims[1], self.feat_dims[2], self.expand_ratio[0], self.branch_depths[0], True, self.act_type, self.norm_type, self.depthwise)
+            Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            ELANBlock(self.feat_dims[1], self.feat_dims[2], self.expand_ratio[0], self.branch_depths[0], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P3/8
         self.layer_3 = nn.Sequential(
-            Conv(self.feat_dims[2], self.feat_dims[2], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELAN_Stage(self.feat_dims[2], self.feat_dims[3], self.expand_ratio[1], self.branch_depths[1], True, self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[2], self.feat_dims[2], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            ELANBlock(self.feat_dims[2], self.feat_dims[3], self.expand_ratio[1], self.branch_depths[1], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P4/16
         self.layer_4 = nn.Sequential(
-            Conv(self.feat_dims[3], self.feat_dims[3], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELAN_Stage(self.feat_dims[3], self.feat_dims[4], self.expand_ratio[2], self.branch_depths[2], True, self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[3], self.feat_dims[3], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            ELANBlock(self.feat_dims[3], self.feat_dims[4], self.expand_ratio[2], self.branch_depths[2], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P5/32
         self.layer_5 = nn.Sequential(
-            Conv(self.feat_dims[4], self.feat_dims[4], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
-            ELAN_Stage(self.feat_dims[4], self.feat_dims[5], self.expand_ratio[3], self.branch_depths[3], True, self.act_type, self.norm_type, self.depthwise)
+            DSBlock(self.feat_dims[4], self.feat_dims[4], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            ELANBlock(self.feat_dims[4], self.feat_dims[5], self.expand_ratio[3], self.branch_depths[3], True, self.act_type, self.norm_type, self.depthwise)
         )
 
 

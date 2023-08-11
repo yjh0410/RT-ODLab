@@ -134,9 +134,9 @@ if __name__ == '__main__':
         'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
-        'bk_dpw': True,
-        'width': 0.25,
-        'depth': 0.34,
+        'bk_dpw': False,
+        'width': 1.0,
+        'depth': 1.0,
     }
     model, feats = build_backbone(cfg)
     x = torch.randn(1, 3, 640, 640)

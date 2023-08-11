@@ -180,8 +180,8 @@ class YoloBottleneck(nn.Module):
 
 
 # ---------------------------- Base Modules ----------------------------
-## ELAN Stage of Backbone
-class ELAN_Stage(nn.Module):
+## ELAN Block
+class ELANBlock(nn.Module):
     def __init__(self, in_dim, out_dim, expand_ratio :float=0.5, branch_depth :int=1, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
         # ----------- Basic Parameters -----------
@@ -190,26 +190,28 @@ class ELAN_Stage(nn.Module):
         self.inter_dim = round(in_dim * expand_ratio)
         self.expand_ratio = expand_ratio
         self.branch_depth = branch_depth
+        self.shortcut = shortcut
         # ----------- Network Parameters -----------
         self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv3 = nn.Sequential(*[
-            YoloBottleneck(self.inter_dim, self.inter_dim, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
+            Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
             for _ in range(branch_depth)
         ])
         self.cv4 = nn.Sequential(*[
-            YoloBottleneck(self.inter_dim, self.inter_dim, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
+            Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
             for _ in range(branch_depth)
         ])
-        ## output
-        self.out_conv = Conv(self.inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.out = Conv(self.inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
         x1 = self.cv1(x)
         x2 = self.cv2(x)
-        x3 = self.cv3(x2)
-        x4 = self.cv4(x3)
-        out = self.out_conv(torch.cat([x1, x2, x3, x4], dim=1))
+        x3 = self.cv3(x2) + x2 if self.shortcut else self.cv3(x2)
+        x4 = self.cv4(x3) + x3 if self.shortcut else self.cv4(x3)
+
+        # [B, C, H, W] -> [B, 2C, H, W]
+        out = self.out(torch.cat([x1, x2, x3, x4], dim=1))
 
         return out
     
@@ -217,23 +219,20 @@ class ELAN_Stage(nn.Module):
 class DSBlock(nn.Module):
     def __init__(self, in_dim, out_dim, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
-        self.in_dim = in_dim
-        self.out_dim = out_dim
-        # branch-1
-        self.maxpool = nn.MaxPool2d((2, 2), 2)
-        # branch-2
-        self.ds_conv = Conv(in_dim, in_dim, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        # output
-        self.out_conv = Conv(in_dim*2, out_dim, k=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-
+        inter_dim = out_dim // 2
+        self.branch_1 = nn.Sequential(
+            nn.MaxPool2d((2, 2), 2),
+            Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        )
+        self.branch_2 = nn.Sequential(
+            Conv(in_dim, inter_dim, k=1, act_type=act_type, norm_type=norm_type),
+            Conv(inter_dim, inter_dim, k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        )
 
     def forward(self, x):
-        # branch-1
-        x1 = self.maxpool(x)
-        # branch-2
-        x2 = self.ds_conv(x)
-        # out-proj
-        out = self.out_conv(torch.cat([x1, x2], dim=1))
+        x1 = self.branch_1(x)
+        x2 = self.branch_2(x)
+        out = torch.cat([x1, x2], dim=1)
 
         return out
 
@@ -242,15 +241,15 @@ class DSBlock(nn.Module):
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'elan_block':
-        layer = ELAN_Stage(in_dim        = in_dim,
-                           out_dim       = out_dim,
-                           expand_ratio  = cfg['fpn_expand_ratio'],
-                           branch_depth  = round(3 * cfg['depth']),
-                           shortcut      = False,
-                           act_type      = cfg['fpn_act'],
-                           norm_type     = cfg['fpn_norm'],
-                           depthwise     = cfg['fpn_depthwise']
-                           )
+        layer = ELANBlock(in_dim        = in_dim,
+                          out_dim       = out_dim,
+                          expand_ratio  = cfg['fpn_expand_ratio'],
+                          branch_depth  = round(3 * cfg['depth']),
+                          shortcut      = False,
+                          act_type      = cfg['fpn_act'],
+                          norm_type     = cfg['fpn_norm'],
+                          depthwise     = cfg['fpn_depthwise']
+                          )
         
     return layer
 
