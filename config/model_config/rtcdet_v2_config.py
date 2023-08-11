@@ -44,19 +44,16 @@ rtcdet_v2_cfg = {
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'tal': {'topk': 10,
-                            'alpha': 0.5,
-                            'beta': 6.0},
-                    'ota': {'center_sampling_radius': 2.5,
+        'matcher': {'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': {'tal': 0.5, 'ota': 1.0},
-        'loss_box_weight': {'tal': 7.0, 'ota': 5.0},
-        'loss_dfl_weight': {'tal': 1.5, 'ota': 1.0},
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'yolox',
     },
@@ -103,19 +100,16 @@ rtcdet_v2_cfg = {
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'tal': {'topk': 10,
-                            'alpha': 0.5,
-                            'beta': 6.0},
-                    'ota': {'center_sampling_radius': 2.5,
+        'matcher': {'ota': {'center_sampling_radius': 2.5,
                              'topk_candidate': 10},
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': {'tal': 0.5, 'ota': 1.0},
-        'loss_box_weight': {'tal': 7.0, 'ota': 5.0},
-        'loss_dfl_weight': {'tal': 1.5, 'ota': 1.0},
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'yolox',
     },
