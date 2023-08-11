@@ -4,13 +4,13 @@ python train.py \
         -d coco \
         --root /data/datasets/ \
         -m rtcdet_v2_l \
-        -bs 16 \
+        -bs 64 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 15 \
-        --grad_accumulate 1 \
+        --grad_accumulate 2 \
         --ema \
         --fp16 \
         --multi_scale \

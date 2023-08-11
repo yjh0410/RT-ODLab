@@ -10,8 +10,8 @@ rtcdet_v2_cfg = {
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
-        'width': 1.0,
-        'depth': 1.0,
+        'width': 0.25,
+        'depth': 0.34,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
