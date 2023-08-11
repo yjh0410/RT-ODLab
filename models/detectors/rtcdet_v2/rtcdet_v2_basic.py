@@ -180,7 +180,7 @@ class YoloBottleneck(nn.Module):
 
 
 # ---------------------------- Base Modules ----------------------------
-## ELAN Block
+## ELAN Block for Backbone
 class ELANBlock(nn.Module):
     def __init__(self, in_dim, out_dim, expand_ratio :float=0.5, branch_depth :int=1, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
         super().__init__()
@@ -192,16 +192,21 @@ class ELANBlock(nn.Module):
         self.branch_depth = branch_depth
         self.shortcut = shortcut
         # ----------- Network Parameters -----------
+        ## branch-1
         self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        ## branch-2
         self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        ## branch-3
         self.cv3 = nn.Sequential(*[
             Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
             for _ in range(branch_depth)
         ])
+        ## branch-4
         self.cv4 = nn.Sequential(*[
             Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
             for _ in range(branch_depth)
         ])
+        ## output proj
         self.out = Conv(self.inter_dim*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
@@ -212,6 +217,60 @@ class ELANBlock(nn.Module):
 
         # [B, C, H, W] -> [B, 2C, H, W]
         out = self.out(torch.cat([x1, x2, x3, x4], dim=1))
+
+        return out
+
+## ELAN Block for FPN
+class ELANBlockFPN(nn.Module):
+    def __init__(self, in_dim, out_dim, expand_ratio :float=0.5, branch_depth :int=1, shortcut=False, act_type='silu', norm_type='BN', depthwise=False):
+        super().__init__()
+        # ----------- Basic Parameters -----------
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.inter_dim1 = round(out_dim * expand_ratio)
+        self.inter_dim2 = round(self.inter_dim1 * expand_ratio)
+        self.expand_ratio = expand_ratio
+        self.branch_depth = branch_depth
+        self.shortcut = shortcut
+        # ----------- Network Parameters -----------
+        ## branch-1
+        self.cv1 = Conv(in_dim, self.inter_dim1, k=1, act_type=act_type, norm_type=norm_type)
+        ## branch-2
+        self.cv2 = Conv(in_dim, self.inter_dim1, k=1, act_type=act_type, norm_type=norm_type)
+        ## branch-3
+        for i in range(branch_depth):
+            if i == 0:
+                self.cv3 = nn.Sequential(Conv(self.inter_dim1, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
+            else:
+                self.cv3.append(Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
+        ## branch-4
+        self.cv4 = nn.Sequential(*[
+            Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            for _ in range(branch_depth)
+        ])
+        ## branch-5
+        self.cv5 = nn.Sequential(*[
+            Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            for _ in range(branch_depth)
+        ])
+        ## branch-6
+        self.cv6 = nn.Sequential(*[
+            Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            for _ in range(branch_depth)
+        ])
+        ## output proj
+        self.out = Conv(self.inter_dim1*2 + self.inter_dim2*4, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+
+    def forward(self, x):
+        x1 = self.cv1(x)
+        x2 = self.cv2(x)
+        x3 = self.cv3(x2)
+        x4 = self.cv4(x3)
+        x5 = self.cv5(x4)
+        x6 = self.cv6(x5)
+
+        # [B, C, H, W] -> [B, 2C, H, W]
+        out = self.out(torch.cat([x1, x2, x3, x4, x5, x6], dim=1))
 
         return out
     
@@ -241,15 +300,15 @@ class DSBlock(nn.Module):
 ## build fpn's core block
 def build_fpn_block(cfg, in_dim, out_dim):
     if cfg['fpn_core_block'] == 'elan_block':
-        layer = ELANBlock(in_dim        = in_dim,
-                          out_dim       = out_dim,
-                          expand_ratio  = cfg['fpn_expand_ratio'],
-                          branch_depth  = round(3 * cfg['depth']),
-                          shortcut      = False,
-                          act_type      = cfg['fpn_act'],
-                          norm_type     = cfg['fpn_norm'],
-                          depthwise     = cfg['fpn_depthwise']
-                          )
+        layer = ELANBlockFPN(in_dim        = in_dim,
+                             out_dim       = out_dim,
+                             expand_ratio  = cfg['fpn_expand_ratio'],
+                             branch_depth  = round(3 * cfg['depth']),
+                             shortcut      = False,
+                             act_type      = cfg['fpn_act'],
+                             norm_type     = cfg['fpn_norm'],
+                             depthwise     = cfg['fpn_depthwise']
+                             )
         
     return layer
 

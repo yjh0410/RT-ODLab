@@ -110,7 +110,7 @@ if __name__ == '__main__':
         'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elan_block',
         'fpn_branch_depth': 3,
-        'fpn_expand_ratio': 0.25,
+        'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
