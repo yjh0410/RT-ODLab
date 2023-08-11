@@ -58,7 +58,7 @@ rtcdet_v2_cfg = {
         'loss_box_weight': {'tal': 7.0, 'ota': 5.0},
         'loss_dfl_weight': {'tal': 1.5, 'ota': 1.0},
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'rtmdet',
     },
 
 }

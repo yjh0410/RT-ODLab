@@ -2,9 +2,9 @@
 python train.py \
         --cuda \
         -d coco \
-        --root /mnt/share/ssd2/dataset/ \
-        -m yolox_s \
-        -bs 8 \
+        --root /data/datasets/ \
+        -m rtcdet_v2_l \
+        -bs 16 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
