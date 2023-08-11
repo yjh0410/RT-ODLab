@@ -10,7 +10,7 @@ python train.py \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 15 \
-        --grad_accumulate 8 \
+        --grad_accumulate 1 \
         --ema \
         --fp16 \
         --multi_scale \
