@@ -710,10 +710,13 @@ class RTMTrainer(object):
         self.criterion = criterion
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
-        self.no_aug_epoch = args.no_aug_epoch
         self.clip_grad = 35
         self.heavy_eval = False
+        # weak augmentatino stage
         self.second_stage = False
+        self.third_stage = False
+        self.second_stage_epoch = args.no_aug_epoch
+        self.third_stage_epoch = args.no_aug_epoch // 3
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -731,26 +734,26 @@ class RTMTrainer(object):
 
         # ---------------------------- Build Transform ----------------------------
         self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
         self.val_transform, _ = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
+            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
-        self.dataset, self.dataset_info = build_dataset(self.args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
-        self.train_loader = build_dataloader(self.args, self.dataset, self.args.batch_size // self.world_size, CollateFunc())
+        self.dataset, self.dataset_info = build_dataset(args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
+        self.train_loader = build_dataloader(args, self.dataset, self.args.batch_size // self.world_size, CollateFunc())
 
         # ---------------------------- Build Evaluator ----------------------------
-        self.evaluator = build_evluator(self.args, self.data_cfg, self.val_transform, self.device)
+        self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.optimizer_dict['lr0'] *= self.args.batch_size * self.grad_accumulate / 64
-        self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
+        self.optimizer_dict['lr0'] *= args.batch_size * self.grad_accumulate / 64
+        self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch - self.no_aug_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch - args.no_aug_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume:
             self.lr_scheduler.step()
@@ -769,19 +772,32 @@ class RTMTrainer(object):
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
             # check second stage
-            if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
+            if epoch >= (self.args.max_epoch - self.second_stage_epoch - 1) and not self.second_stage:
                 self.check_second_stage()
                 # save model of the last mosaic epoch
                 weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
                 checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                if not os.path.exists(checkpoint_path):
-                    print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
-                    torch.save({'model': model.state_dict(),
-                                'mAP': round(self.evaluator.map*100, 1),
-                                'optimizer': self.optimizer.state_dict(),
-                                'epoch': self.epoch,
-                                'args': self.args}, 
-                                checkpoint_path)                      
+                print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
+                torch.save({'model': model.state_dict(),
+                            'mAP': round(self.evaluator.map*100, 1),
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)
+
+            # check third stage
+            if epoch >= (self.args.max_epoch - self.third_stage_epoch - 1) and not self.third_stage:
+                self.check_third_stage()
+                # save model of the last mosaic epoch
+                weight_name = '{}_last_weak_augment_epoch.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
+                print('Saving state of the last weak augment epoch-{}.'.format(self.epoch + 1))
+                torch.save({'model': model.state_dict(),
+                            'mAP': round(self.evaluator.map*100, 1),
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)
 
             # train one epoch
             self.epoch = epoch
@@ -943,49 +959,6 @@ class RTMTrainer(object):
             self.lr_scheduler.step()
         
 
-    def check_second_stage(self):
-        # set second stage
-        print('============== Second stage of Training ==============')
-        self.second_stage = True
-
-        # close mosaic augmentation
-        if self.train_loader.dataset.mosaic_prob > 0.:
-            print(' - Close < Mosaic Augmentation > ...')
-            self.train_loader.dataset.mosaic_prob = 0.
-            self.heavy_eval = True
-
-        # close mixup augmentation
-        if self.train_loader.dataset.mixup_prob > 0.:
-            print(' - Close < Mixup Augmentation > ...')
-            self.train_loader.dataset.mixup_prob = 0.
-            self.heavy_eval = True
-
-        # close rotation augmentation
-        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
-            print(' - Close < degress of rotation > ...')
-            self.trans_cfg['degrees'] = 0.0
-        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
-            print(' - Close < shear of rotation >...')
-            self.trans_cfg['shear'] = 0.0
-        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
-            print(' - Close < perspective of rotation > ...')
-            self.trans_cfg['perspective'] = 0.0
-
-        # close random affine
-        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
-            print(' - Weaken < translate of affine > ...')
-            self.trans_cfg['translate'] = 0.2
-        if 'scale' in self.trans_cfg.keys():
-            print(' - Weaken < scale of affine >...')
-            self.trans_cfg['scale'] = [0.5, 2.0]
-
-        # build a new transform for second stage
-        print(' - Rebuild transforms ...')
-        self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
-        self.train_loader.dataset.transform = self.train_transform
-        
-
     def refine_targets(self, targets, min_box_size):
         # rescale targets
         for tgt in targets:
@@ -1040,6 +1013,69 @@ class RTMTrainer(object):
 
         return images, targets, new_img_size
 
+
+    def check_second_stage(self):
+        # set second stage
+        print('============== Second stage of Training ==============')
+        self.second_stage = True
+
+        # close mosaic augmentation
+        if self.train_loader.dataset.mosaic_prob > 0.:
+            print(' - Close < Mosaic Augmentation > ...')
+            self.train_loader.dataset.mosaic_prob = 0.
+            self.heavy_eval = True
+
+        # close mixup augmentation
+        if self.train_loader.dataset.mixup_prob > 0.:
+            print(' - Close < Mixup Augmentation > ...')
+            self.train_loader.dataset.mixup_prob = 0.
+            self.heavy_eval = True
+
+        # close rotation augmentation
+        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
+            print(' - Close < degress of rotation > ...')
+            self.trans_cfg['degrees'] = 0.0
+        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
+            print(' - Close < shear of rotation >...')
+            self.trans_cfg['shear'] = 0.0
+        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
+            print(' - Close < perspective of rotation > ...')
+            self.trans_cfg['perspective'] = 0.0
+
+        # weaken random affine
+        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
+            print(' - Weaken < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.2
+        if 'scale' in self.trans_cfg.keys():
+            print(' - Weaken < scale of affine >...')
+            self.trans_cfg['scale'] = [0.5, 2.0]
+
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
+
+    def check_third_stage(self):
+        # set third stage
+        print('============== Third stage of Training ==============')
+        self.third_stage = True
+
+        # close random affine
+        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
+            print(' - Close < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.0
+        if 'scale' in self.trans_cfg.keys():
+            print(' - Close < scale of affine >...')
+            self.trans_cfg['scale'] = [1.0, 1.0]
+
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
 
 # Trainer for DETR
 class DetrTrainer(object):
