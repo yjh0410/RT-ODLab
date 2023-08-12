@@ -721,7 +721,7 @@ class RTMTrainer(object):
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
-        self.lr_schedule_dict = {'scheduler': 'linear', 'lrf': 0.01}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -973,11 +973,11 @@ class RTMTrainer(object):
 
         # close random affine
         if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
-            print(' - Close < translate of affine > ...')
-            self.trans_cfg['translate'] = 0.0
+            print(' - Weaken < translate of affine > ...')
+            self.trans_cfg['translate'] = 0.2
         if 'scale' in self.trans_cfg.keys():
-            print(' - Close < scale of affine >...')
-            self.trans_cfg['scale'] = [1.0, 1.0]
+            print(' - Weaken < scale of affine >...')
+            self.trans_cfg['scale'] = [0.5, 2.0]
 
         # build a new transform for second stage
         print(' - Rebuild transforms ...')
