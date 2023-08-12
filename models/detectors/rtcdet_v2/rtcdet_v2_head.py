@@ -72,7 +72,7 @@ class SingleLevelHead(nn.Module):
 
 # Multi-level Head
 class MultiLevelHead(nn.Module):
-    def __init__(self, cfg, in_dims, out_dim, num_classes=80, reg_max=16, num_levels=3):
+    def __init__(self, cfg, in_dims, out_dim, num_classes=80, num_levels=3):
         super().__init__()
         ## ----------- Network Parameters -----------
         self.multi_level_heads = nn.ModuleList(
@@ -112,9 +112,9 @@ class MultiLevelHead(nn.Module):
     
 
 # build detection head
-def build_det_head(cfg, in_dim, out_dim, num_classes=80, reg_max=16, num_levels=3):
+def build_det_head(cfg, in_dim, out_dim, num_classes=80, num_levels=3):
     if cfg['head'] == 'decoupled_head':
-        head = MultiLevelHead(cfg, in_dim, out_dim, num_classes, reg_max, num_levels) 
+        head = MultiLevelHead(cfg, in_dim, out_dim, num_classes, num_levels) 
 
     return head
 

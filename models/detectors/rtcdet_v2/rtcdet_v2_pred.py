@@ -49,7 +49,7 @@ class SingleLevelPredLayer(nn.Module):
 
 # Multi-level pred layer
 class MultiLevelPredLayer(nn.Module):
-    def __init__(self, cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3, reg_max=16):
+    def __init__(self, cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3):
         super().__init__()
         # --------- Basic Parameters ----------
         self.cls_dim = cls_dim
@@ -58,7 +58,6 @@ class MultiLevelPredLayer(nn.Module):
         self.num_classes = num_classes
         self.num_coords = num_coords
         self.num_levels = num_levels
-        self.reg_max = reg_max
 
         # ----------- Network Parameters -----------
         ## pred layers
@@ -67,13 +66,9 @@ class MultiLevelPredLayer(nn.Module):
                 cls_dim,
                 reg_dim,
                 num_classes,
-                num_coords * self.reg_max)
+                num_coords)
                 for _ in range(num_levels)
             ])
-        ## proj conv
-        self.proj = nn.Parameter(torch.linspace(0, reg_max, reg_max), requires_grad=False)
-        self.proj_conv = nn.Conv2d(self.reg_max, 1, kernel_size=1, bias=False)
-        self.proj_conv.weight = nn.Parameter(self.proj.view([1, reg_max, 1, 1]).clone().detach(), requires_grad=False)
 
 
     def generate_anchors(self, level, fmp_size):
@@ -97,7 +92,6 @@ class MultiLevelPredLayer(nn.Module):
         all_cls_preds = []
         all_reg_preds = []
         all_box_preds = []
-        all_delta_preds = []
         for level in range(self.num_levels):
             # pred
             cls_pred, reg_pred = self.multi_level_preds[level](cls_feats[level], reg_feats[level])
@@ -112,27 +106,18 @@ class MultiLevelPredLayer(nn.Module):
             
             # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
             cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
-            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
+            reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
 
             # ----------------------- Decode bbox -----------------------
-            B, M = reg_pred.shape[:2]
-            # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max] -> [B, 4, M, reg_max]
-            delta_pred = reg_pred.reshape([B, M, 4, self.reg_max])
-            # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
-            delta_pred = delta_pred.permute(0, 3, 2, 1).contiguous()
-            # [B, reg_max, 4, M] -> [B, 1, 4, M]
-            delta_pred = self.proj_conv(F.softmax(delta_pred, dim=1))
-            # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
-            delta_pred = delta_pred.view(B, 4, M).permute(0, 2, 1).contiguous()
-            ## tlbr -> xyxy
-            x1y1_pred = anchors[None] - delta_pred[..., :2] * self.strides[level]
-            x2y2_pred = anchors[None] + delta_pred[..., 2:] * self.strides[level]
-            box_pred = torch.cat([x1y1_pred, x2y2_pred], dim=-1)
+            ctr_pred = reg_pred[..., :2] * self.strides[level] + anchors[..., :2]
+            wh_pred = torch.exp(reg_pred[..., 2:]) * self.strides[level]
+            pred_x1y1 = ctr_pred - wh_pred * 0.5
+            pred_x2y2 = ctr_pred + wh_pred * 0.5
+            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
 
             all_cls_preds.append(cls_pred)
             all_reg_preds.append(reg_pred)
             all_box_preds.append(box_pred)
-            all_delta_preds.append(delta_pred)
             all_anchors.append(anchors)
             all_strides.append(stride_tensor)
         
@@ -140,10 +125,9 @@ class MultiLevelPredLayer(nn.Module):
         outputs = {"pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
                    "pred_reg": all_reg_preds,        # List(Tensor) [B, M, 4*(reg_max)]
                    "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
-                   "pred_delta": all_delta_preds,    # List(Tensor) [B, M, 4]
                    "anchors": all_anchors,           # List(Tensor) [M, 2]
                    "strides": self.strides,          # List(Int) = [8, 16, 32]
-                   "stride_tensor": all_strides      # List(Tensor) [M, 1]
+                   "stride_tensors": all_strides      # List(Tensor) [M, 1]
                    }
 
         return outputs

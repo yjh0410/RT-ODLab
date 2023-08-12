@@ -19,15 +19,15 @@ class Criterion(object):
         # ---------------- Loss weight ----------------
         self.loss_cls_weight = cfg['loss_cls_weight']
         self.loss_box_weight = cfg['loss_box_weight']
-        self.loss_dfl_weight = cfg['loss_dfl_weight']
         self.loss_box_aux    = cfg['loss_box_aux']
         # ---------------- Matcher ----------------
         matcher_config = cfg['matcher']
-        ## SimOTA assigner
+        ## Aligned SimOTA assigner
         self.ota_matcher = AlignedSimOTA(
-            center_sampling_radius=matcher_config['ota']['center_sampling_radius'],
-            topk_candidate=matcher_config['ota']['topk_candidate'],
-            num_classes=num_classes
+            num_classes=num_classes,
+            soft_center_radius=matcher_config['soft_center_radius'],
+            topk_candidate=matcher_config['topk_candidate'],
+            iou_weight=matcher_config['iou_weight']
         )
 
 
@@ -41,76 +41,56 @@ class Criterion(object):
         return new
 
 
-    def loss_classes(self, pred_cls, gt_score, gt_label=None, vfl=False):
-        if vfl:
-            assert gt_label is not None
-            # compute varifocal loss
-            alpha, gamma = 0.75, 2.0
-            focal_weight = alpha * pred_cls.sigmoid().pow(gamma) * (1 - gt_label) + gt_score * gt_label
-            bce_loss = F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
-            loss_cls = bce_loss * focal_weight
-        else:
-            # compute bce loss
-            loss_cls = F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
+    def loss_classes(self, pred_cls, target, beta=2.0):
+        # Quality FocalLoss
+        """
+            pred_cls: (torch.Tensor): [N, C]。
+            target:   (tuple([torch.Tensor], [torch.Tensor])): label -> [N,], score -> [N,]
+        """
+        label, score = target
+        pred_sigmoid = pred_cls.sigmoid()
+        scale_factor = pred_sigmoid
+        zerolabel = scale_factor.new_zeros(pred_cls.shape)
 
-        return loss_cls
+        ce_loss = F.binary_cross_entropy_with_logits(
+            pred_cls, zerolabel, reduction='none') * scale_factor.pow(beta)
+        
+        bg_class_ind = pred_cls.shape[-1]
+        pos = ((label >= 0) & (label < bg_class_ind)).nonzero().squeeze(1)
+        pos_label = label[pos].long()
 
+        scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
 
-    def loss_bboxes(self, pred_box, gt_box, bbox_weight=None):
+        ce_loss[pos, pos_label] = F.binary_cross_entropy_with_logits(
+            pred_cls[pos, pos_label], score[pos],
+            reduction='none') * scale_factor.abs().pow(beta)
+
+        return ce_loss
+    
+
+    def loss_bboxes(self, pred_box, gt_box):
         # regression loss
         ious = get_ious(pred_box, gt_box, 'xyxy', 'giou')
         loss_box = 1.0 - ious
 
-        if bbox_weight is not None:
-            loss_box *= bbox_weight
-
         return loss_box
 
 
-    def loss_dfl(self, pred_reg, gt_box, anchor, stride, bbox_weight=None):
-        # rescale coords by stride
-        gt_box_s = gt_box / stride
-        anchor_s = anchor / stride
-
-        # compute deltas
-        gt_ltrb_s = bbox2dist(anchor_s, gt_box_s, self.cfg['reg_max'] - 1)
-
-        gt_left = gt_ltrb_s.to(torch.long)
-        gt_right = gt_left + 1
-
-        weight_left = gt_right.to(torch.float) - gt_ltrb_s
-        weight_right = 1 - weight_left
-
-        # loss left
-        loss_left = F.cross_entropy(
-            pred_reg.view(-1, self.cfg['reg_max']),
-            gt_left.view(-1),
-            reduction='none').view(gt_left.shape) * weight_left
-        # loss right
-        loss_right = F.cross_entropy(
-            pred_reg.view(-1, self.cfg['reg_max']),
-            gt_right.view(-1),
-            reduction='none').view(gt_left.shape) * weight_right
-
-        loss_dfl = (loss_left + loss_right).mean(-1)
-        
-        if bbox_weight is not None:
-            loss_dfl *= bbox_weight
-
-        return loss_dfl
-
-
-    def loss_bboxes_aux(self, pred_delta, gt_box, anchors, stride_tensors):
-        gt_delta_tl = (anchors - gt_box[..., :2]) / stride_tensors
-        gt_delta_rb = (gt_box[..., 2:] - anchors) / stride_tensors
-        gt_delta = torch.cat([gt_delta_tl, gt_delta_rb], dim=1)
-        loss_box_aux = F.l1_loss(pred_delta, gt_delta, reduction='none')
+    def loss_bboxes_aux(self, pred_reg, gt_box, anchors, stride_tensors):
+        # xyxy -> cxcy&bwbh
+        gt_cxcy = (gt_box[..., :2] + gt_box[..., 2:]) * 0.5
+        gt_bwbh = gt_box[..., 2:] - gt_box[..., :2]
+        # encode gt box
+        gt_cxcy_encode = (gt_cxcy - anchors) / stride_tensors
+        gt_bwbh_encode = torch.log(gt_bwbh / stride_tensors)
+        gt_box_encode = torch.cat([gt_cxcy_encode, gt_bwbh_encode], dim=-1)
+        # l1 loss
+        loss_box_aux = F.l1_loss(pred_reg, gt_box_encode, reduction='none')
 
         return loss_box_aux
 
 
     def __call__(self, outputs, targets, epoch=0):
-        """ Compute loss with SimOTA assigner """
         bs = outputs['pred_cls'][0].shape[0]
         device = outputs['pred_cls'][0].device
         fpn_strides = outputs['strides']
@@ -124,48 +104,31 @@ class Criterion(object):
         # --------------- label assignment ---------------
         cls_targets = []
         box_targets = []
-        fg_masks = []
+        assign_metrics = []
         for batch_idx in range(bs):
-            tgt_labels = targets[batch_idx]["labels"].to(device)
-            tgt_bboxes = targets[batch_idx]["boxes"].to(device)
+            tgt_labels = targets[batch_idx]["labels"].to(device)  # [N,]
+            tgt_bboxes = targets[batch_idx]["boxes"].to(device)   # [N, 4]
+            # label assignment
+            assigned_result = self.ota_matcher(fpn_strides=fpn_strides,
+                                               anchors=anchors,
+                                               pred_cls=cls_preds[batch_idx].detach(),
+                                               pred_box=box_preds[batch_idx].detach(),
+                                               gt_labels=tgt_labels,
+                                               gt_bboxes=tgt_bboxes
+                                              )
+            cls_targets.append(assigned_result['assigned_labels'])
+            box_targets.append(assigned_result['assigned_bboxes'])
+            assign_metrics.append(assigned_result['assign_metrics'])
+        
+        cls_targets = torch.cat(cls_targets, dim=0)
+        box_targets = torch.cat(box_targets, dim=0)
+        assign_metrics = torch.cat(assign_metrics, dim=0)
 
-            # check target
-            if len(tgt_labels) == 0 or tgt_bboxes.max().item() == 0.:
-                # There is no valid gt
-                cls_target = cls_preds.new_zeros((num_anchors, self.num_classes))
-                box_target = cls_preds.new_zeros((0, 4))
-                fg_mask = cls_preds.new_zeros(num_anchors).bool()
-            else:
-                (
-                    fg_mask,
-                    assigned_labels,
-                    assigned_ious,
-                    assigned_indexs
-                ) = self.ota_matcher(
-                    fpn_strides = fpn_strides,
-                    anchors = anchors,
-                    pred_cls = cls_preds[batch_idx], 
-                    pred_box = box_preds[batch_idx],
-                    tgt_labels = tgt_labels,
-                    tgt_bboxes = tgt_bboxes
-                    )
-                # prepare cls targets
-                assigned_labels = F.one_hot(assigned_labels.long(), self.num_classes)
-                assigned_labels = assigned_labels * assigned_ious.unsqueeze(-1)
-                cls_target = assigned_labels.new_zeros((num_anchors, self.num_classes))
-                cls_target[fg_mask] = assigned_labels
-                # prepare box targets
-                box_target = tgt_bboxes[assigned_indexs]
-
-            cls_targets.append(cls_target)
-            box_targets.append(box_target)
-            fg_masks.append(fg_mask)
-
-        cls_targets = torch.cat(cls_targets, 0)
-        box_targets = torch.cat(box_targets, 0)
-        fg_masks = torch.cat(fg_masks, 0)
-        num_fgs = fg_masks.sum()
-
+        # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
+        bg_class_ind = self.num_classes
+        pos_inds = ((cls_targets >= 0) & (cls_targets < bg_class_ind)).nonzero().squeeze(1)
+        num_fgs = assign_metrics.sum()
+        
         # average loss normalizer across all the GPUs
         if is_dist_avail_and_initialized():
             torch.distributed.all_reduce(num_fgs)
@@ -179,49 +142,38 @@ class Criterion(object):
         
         # ------------------ Classification loss ------------------
         cls_preds = cls_preds.view(-1, self.num_classes)
-        loss_cls = self.loss_classes(cls_preds, cls_targets)
+        loss_cls = self.loss_classes(cls_preds, (cls_targets, assign_metrics))
         loss_cls = loss_cls.sum() / normalizer
 
         # ------------------ Regression loss ------------------
-        box_preds_pos = box_preds.view(-1, 4)[fg_masks]
-        loss_box = self.loss_bboxes(box_preds_pos, box_targets)
+        box_preds_pos = box_preds.view(-1, 4)[pos_inds]
+        box_targets_pos = box_targets[pos_inds]
+        loss_box = self.loss_bboxes(box_preds_pos, box_targets_pos)
         loss_box = loss_box.sum() / normalizer
 
-        # ------------------ Distribution focal loss  ------------------
-        ## process anchors
-        anchors = torch.cat(anchors, dim=0)
-        anchors = anchors[None].repeat(bs, 1, 1).view(-1, 2)
-        ## process stride tensors
-        strides = torch.cat(outputs['stride_tensor'], dim=0)
-        strides = strides.unsqueeze(0).repeat(bs, 1, 1).view(-1, 1)
-        ## fg preds
-        reg_preds_pos = reg_preds.view(-1, 4*self.cfg['reg_max'])[fg_masks]
-        anchors_pos = anchors[fg_masks]
-        strides_pos = strides[fg_masks]
-        ## compute dfl
-        loss_dfl = self.loss_dfl(reg_preds_pos, box_targets, anchors_pos, strides_pos)
-        loss_dfl = loss_dfl.sum() / normalizer
-
-        # total loss
         losses = self.loss_cls_weight * loss_cls + \
-                 self.loss_box_weight * loss_box + \
-                 self.loss_dfl_weight * loss_dfl
+                 self.loss_box_weight * loss_box
 
         loss_dict = dict(
                 loss_cls = loss_cls,
                 loss_box = loss_box,
-                loss_dfl = loss_dfl,
                 losses = losses
         )
 
         # ------------------ Aux regression loss ------------------
-        if epoch >= (self.max_epoch - self.no_aug_epoch - 1) and self.loss_box_aux:
-            ## delta_preds
-            delta_preds = torch.cat(outputs['pred_delta'], dim=1)
-            delta_preds_pos = delta_preds.view(-1, 4)[fg_masks]
+        if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
+            ## reg_preds
+            reg_preds = torch.cat(outputs['pred_reg'], dim=1)
+            reg_preds_pos = reg_preds.view(-1, 4)[pos_inds]
+            ## anchor tensors
+            anchors_tensors = torch.cat(outputs['anchors'], dim=0)[None].repeat(bs, 1, 1)
+            anchors_tensors_pos = anchors_tensors.view(-1, 2)[pos_inds]
+            ## stride tensors
+            stride_tensors = torch.cat(outputs['stride_tensors'], dim=0)[None].repeat(bs, 1, 1)
+            stride_tensors_pos = stride_tensors.view(-1, 1)[pos_inds]
             ## aux loss
-            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets, anchors_pos, strides_pos)
-            loss_box_aux = loss_box_aux.sum() / num_fgs
+            loss_box_aux = self.loss_bboxes_aux(reg_preds_pos, box_targets_pos, anchors_tensors_pos, stride_tensors_pos)
+            loss_box_aux = loss_box_aux.sum() / normalizer
 
             losses += loss_box_aux
             loss_dict['loss_box_aux'] = loss_box_aux

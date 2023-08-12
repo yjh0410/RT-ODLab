@@ -38,25 +38,24 @@ rtcdet_v2_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
-        'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'ota': {'center_sampling_radius': 2.5,
-                             'topk_candidate': 10},
+        'matcher': {'soft_center_radius': 3.0,
+                    'topk_candidate': 13,
+                    'iou_weight': 3.0
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_box_weight': 2.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'rtmdet',
     },
 
     'rtcdet_v2_l':{
@@ -95,25 +94,24 @@ rtcdet_v2_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
-        'reg_max': 16,
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'ota': {'center_sampling_radius': 2.5,
-                             'topk_candidate': 10},
+        'matcher': {'soft_center_radius': 3.0,
+                    'topk_candidate': 13,
+                    'iou_weight': 3.0
                     },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_box_weight': 2.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'rtmdet',
     },
 
 }
