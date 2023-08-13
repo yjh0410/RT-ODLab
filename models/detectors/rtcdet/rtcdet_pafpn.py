@@ -14,14 +14,6 @@ class RTCDetPaFPN(nn.Module):
         super(RTCDetPaFPN, self).__init__()
         # --------------------------- Basic Parameters ---------------------------
         self.in_dims = in_dims
-        self.fpn_dims = [round(256*cfg['width']), round(512*cfg['width']), round(1024*cfg['width'])]
-
-        # --------------------------- Input proj ---------------------------
-        if in_dims == self.fpn_dims:
-            self.input_projs = nn.ModuleList([nn.Identity() for _ in range(len(in_dims))])
-        else:
-            self.input_projs = nn.ModuleList([nn.Conv2d(in_dim, fpn_dim, kernel_size=1)
-                                            for in_dim, fpn_dim in zip(in_dims, self.fpn_dims)])
                 
         # --------------------------- Top-down FPN ---------------------------
         ## P5 -> P4
@@ -43,15 +35,20 @@ class RTCDetPaFPN(nn.Module):
         self.downsample_layer_2 = build_downsample_layer(cfg, round(256*cfg['width']), round(512*cfg['width']))
         self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*cfg['width']) + in_dims[2], round(512*cfg['width']))
                 
+        ## Head convs
+        self.head_conv_1 = Conv(round(128*cfg['width']), round(256*cfg['width']), k=3, s=1, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        self.head_conv_2 = Conv(round(256*cfg['width']), round(512*cfg['width']), k=3, s=1, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        self.head_conv_3 = Conv(round(512*cfg['width']), round(1024*cfg['width']), k=3, s=1, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
+        
         # --------------------------- Output proj ---------------------------
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
                 Conv(in_dim, out_dim, k=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-                for in_dim in [round(128*cfg['width']), round(256*cfg['width']), round(512*cfg['width'])]])
+                for in_dim in [round(256*cfg['width']), round(512*cfg['width']), round(1024*cfg['width'])]])
             self.out_dim = [out_dim] * 3
         else:
             self.out_layers = None
-            self.out_dim = [round(128*cfg['width']), round(256*cfg['width']), round(512*cfg['width'])]
+            self.out_dim = [round(256*cfg['width']), round(512*cfg['width']), round(1024*cfg['width'])]
 
 
     def forward(self, fpn_feats):
@@ -79,7 +76,10 @@ class RTCDetPaFPN(nn.Module):
         c18 = torch.cat([c17, c5], dim=1)
         c19 = self.bottom_up_layer_2(c18)
 
-        out_feats = [c13, c16, c19] # [P3, P4, P5]
+        c20 = self.head_conv_1(c13)
+        c21 = self.head_conv_2(c16)
+        c22 = self.head_conv_3(c19)
+        out_feats = [c20, c21, c22] # [P3, P4, P5]
         
         # output proj layers
         if self.out_layers is not None:

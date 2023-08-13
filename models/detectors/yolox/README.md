@@ -11,4 +11,4 @@
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation.
 - For optimizer, we use SGD with weight decay 0.0005 and base per image lr 0.01 / 64,.
 - For learning rate scheduler, we use Cosine decay scheduler.
-- I am trying to retrain **YOLOX-M** and **YOLOX-L** with more GPUs, and I will update the AP of YOLOX-M and YOLOX-L in the table in the future.
+- The reason for the low performance of my reproduced **YOLOX-L** has not been found out yet.
