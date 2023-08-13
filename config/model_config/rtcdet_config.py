@@ -15,7 +15,7 @@ rtcdet_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'csp_sppf',
+        'neck': 'sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -71,7 +71,7 @@ rtcdet_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'csp_sppf',
+        'neck': 'sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -80,7 +80,7 @@ rtcdet_cfg = {
         ## Neck: PaFPN
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
-        'fpn_downsample_layer': 'conv',
+        'fpn_downsample_layer': 'dsblock',
         'fpn_core_block': 'elan_block',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,

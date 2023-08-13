@@ -329,5 +329,7 @@ def build_downsample_layer(cfg, in_dim, out_dim):
     elif cfg['fpn_downsample_layer'] == 'maxpool':
         assert in_dim == out_dim
         layer = nn.MaxPool2d((2, 2), stride=2)
+    elif cfg['fpn_downsample_layer'] == 'dsblock':
+        layer = DSBlock(in_dim, out_dim, cfg['fpn_act'], cfg['fpn_norm'], cfg['fpn_depthwise'])
         
     return layer

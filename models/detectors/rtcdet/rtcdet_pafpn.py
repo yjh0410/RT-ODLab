@@ -17,29 +17,24 @@ class RTCDetPaFPN(nn.Module):
                 
         # --------------------------- Top-down FPN ---------------------------
         ## P5 -> P4
-        self.reduce_layer_1 = build_reduce_layer(cfg, in_dims[2], round(256*cfg['width']))
-        self.reduce_layer_2 = build_reduce_layer(cfg, in_dims[1], round(256*cfg['width']))
-        self.top_down_layer_1 = build_fpn_block(cfg, round(256*cfg['width']) + round(256*cfg['width']), round(256*cfg['width']))
+        self.reduce_layer_1 = build_reduce_layer(cfg, in_dims[2], round(512*cfg['width']))
+        self.reduce_layer_2 = build_reduce_layer(cfg, in_dims[1], round(512*cfg['width']))
+        self.top_down_layer_1 = build_fpn_block(cfg, round(512*cfg['width']) + round(512*cfg['width']), round(512*cfg['width']))
 
         ## P4 -> P3
-        self.reduce_layer_3 = build_reduce_layer(cfg, round(256*cfg['width']), round(128*cfg['width']))
-        self.reduce_layer_4 = build_reduce_layer(cfg, in_dims[0], round(128*cfg['width']))
-        self.top_down_layer_2 = build_fpn_block(cfg, round(128*cfg['width']) + round(128*cfg['width']), round(128*cfg['width']))
+        self.reduce_layer_3 = build_reduce_layer(cfg, round(512*cfg['width']), round(256*cfg['width']))
+        self.reduce_layer_4 = build_reduce_layer(cfg, in_dims[0], round(256*cfg['width']))
+        self.top_down_layer_2 = build_fpn_block(cfg, round(256*cfg['width']) + round(256*cfg['width']), round(256*cfg['width']))
 
         # --------------------------- Bottom-up FPN ---------------------------
         ## P3 -> P4
-        self.downsample_layer_1 = build_downsample_layer(cfg, round(128*cfg['width']), round(256*cfg['width']))
-        self.bottom_up_layer_1 = build_fpn_block(cfg, round(256*cfg['width']) + round(256*cfg['width']), round(256*cfg['width']))
+        self.downsample_layer_1 = build_downsample_layer(cfg, round(256*cfg['width']), round(256*cfg['width']))
+        self.bottom_up_layer_1 = build_fpn_block(cfg, round(256*cfg['width']) + round(256*cfg['width']), round(512*cfg['width']))
 
         ## P4 -> P5
-        self.downsample_layer_2 = build_downsample_layer(cfg, round(256*cfg['width']), round(512*cfg['width']))
-        self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*cfg['width']) + in_dims[2], round(512*cfg['width']))
-                
-        ## Head convs
-        self.head_conv_1 = Conv(round(128*cfg['width']), round(256*cfg['width']), k=3, s=1, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-        self.head_conv_2 = Conv(round(256*cfg['width']), round(512*cfg['width']), k=3, s=1, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-        self.head_conv_3 = Conv(round(512*cfg['width']), round(1024*cfg['width']), k=3, s=1, p=1, act_type=cfg['fpn_act'], norm_type=cfg['fpn_norm'])
-        
+        self.downsample_layer_2 = build_downsample_layer(cfg, round(512*cfg['width']), round(512*cfg['width']))
+        self.bottom_up_layer_2 = build_fpn_block(cfg, round(512*cfg['width']) + round(512*cfg['width']), round(1024*cfg['width']))
+                        
         # --------------------------- Output proj ---------------------------
         if out_dim is not None:
             self.out_layers = nn.ModuleList([
@@ -57,29 +52,26 @@ class RTCDetPaFPN(nn.Module):
         # Top down
         ## P5 -> P4
         c6 = self.reduce_layer_1(c5)
-        c7 = F.interpolate(c6, scale_factor=2.0)
-        c8 = torch.cat([c7, self.reduce_layer_2(c4)], dim=1)
+        c7 = self.reduce_layer_2(c4)
+        c8 = torch.cat([F.interpolate(c6, scale_factor=2.0), c7], dim=1)
         c9 = self.top_down_layer_1(c8)
         ## P4 -> P3
         c10 = self.reduce_layer_3(c9)
-        c11 = F.interpolate(c10, scale_factor=2.0)
-        c12 = torch.cat([c11, self.reduce_layer_4(c3)], dim=1)
+        c11 = self.reduce_layer_4(c3)
+        c12 = torch.cat([F.interpolate(c10, scale_factor=2.0), c11], dim=1)
         c13 = self.top_down_layer_2(c12)
 
         # Bottom up
-        ## p3 -> P4
+        # p3 -> P4
         c14 = self.downsample_layer_1(c13)
-        c15 = torch.cat([c14, c9], dim=1)
+        c15 = torch.cat([c14, c10], dim=1)
         c16 = self.bottom_up_layer_1(c15)
-        ## P4 -> P5
+        # P4 -> P5
         c17 = self.downsample_layer_2(c16)
-        c18 = torch.cat([c17, c5], dim=1)
+        c18 = torch.cat([c17, c6], dim=1)
         c19 = self.bottom_up_layer_2(c18)
 
-        c20 = self.head_conv_1(c13)
-        c21 = self.head_conv_2(c16)
-        c22 = self.head_conv_3(c19)
-        out_feats = [c20, c21, c22] # [P3, P4, P5]
+        out_feats = [c13, c16, c19] # [P3, P4, P5]
         
         # output proj layers
         if self.out_layers is not None:
