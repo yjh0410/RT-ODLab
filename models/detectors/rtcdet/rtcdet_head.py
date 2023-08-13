@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 try:
-    from .rtcdet_v2_basic import Conv
+    from .rtcdet_basic import Conv
 except:
-    from rtcdet_v2_basic import Conv
+    from rtcdet_basic import Conv
 
 
 # Single-level Head

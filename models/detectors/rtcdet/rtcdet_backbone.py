@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 try:
-    from .rtcdet_v2_basic import Conv, ELANBlock, DSBlock
+    from .rtcdet_basic import Conv, ELANBlock, DSBlock
 except:
-    from rtcdet_v2_basic import Conv, ELANBlock, DSBlock
+    from rtcdet_basic import Conv, ELANBlock, DSBlock
 
 
 model_urls = {
@@ -42,7 +42,7 @@ class ELANNetv2(nn.Module):
         )
         ## P2/4
         self.layer_2 = nn.Sequential(   
-            Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
+            DSBlock(self.feat_dims[0], self.feat_dims[1], act_type=self.act_type, norm_type=self.norm_type, depthwise=self.depthwise),
             ELANBlock(self.feat_dims[1], self.feat_dims[2], self.expand_ratio[0], self.branch_depths[0], True, self.act_type, self.norm_type, self.depthwise)
         )
         ## P3/8

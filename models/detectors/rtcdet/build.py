@@ -5,11 +5,11 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .rtcdet_v2 import RTCDet
+from .rtcdet import RTCDet
 
 
 # build object detector
-def build_rtcdet_v2(args, cfg, device, num_classes=80, trainable=False, deploy=False):
+def build_rtcdet(args, cfg, device, num_classes=80, trainable=False, deploy=False):
     print('==============================')
     print('Build {} ...'.format(args.model.upper()))
         

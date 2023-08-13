@@ -1,8 +1,8 @@
 # RTCDet-v2 Config
 
 
-rtcdet_v2_cfg = {
-    'rtcdet_v2_s':{
+rtcdet_cfg = {
+    'rtcdet_s':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet_v2',
@@ -15,7 +15,7 @@ rtcdet_v2_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'sppf',
+        'neck': 'csp_sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',
@@ -58,7 +58,7 @@ rtcdet_v2_cfg = {
         'trainer_type': 'rtmdet',
     },
 
-    'rtcdet_v2_l':{
+    'rtcdet_l':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet_v2',
@@ -71,7 +71,7 @@ rtcdet_v2_cfg = {
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
-        'neck': 'sppf',
+        'neck': 'csp_sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
         'neck_act': 'silu',

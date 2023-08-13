@@ -198,12 +198,12 @@ class ELANBlock(nn.Module):
         self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         ## branch-3
         self.cv3 = nn.Sequential(*[
-            Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            YoloBottleneck(self.inter_dim, self.inter_dim, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
             for _ in range(branch_depth)
         ])
         ## branch-4
         self.cv4 = nn.Sequential(*[
-            Conv(self.inter_dim, self.inter_dim, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            YoloBottleneck(self.inter_dim, self.inter_dim, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
             for _ in range(branch_depth)
         ])
         ## output proj
@@ -212,8 +212,8 @@ class ELANBlock(nn.Module):
     def forward(self, x):
         x1 = self.cv1(x)
         x2 = self.cv2(x)
-        x3 = self.cv3(x2) + x2 if self.shortcut else self.cv3(x2)
-        x4 = self.cv4(x3) + x3 if self.shortcut else self.cv4(x3)
+        x3 = self.cv3(x2)
+        x4 = self.cv4(x3)
 
         # [B, C, H, W] -> [B, 2C, H, W]
         out = self.out(torch.cat([x1, x2, x3, x4], dim=1))
@@ -238,24 +238,26 @@ class ELANBlockFPN(nn.Module):
         ## branch-2
         self.cv2 = Conv(in_dim, self.inter_dim1, k=1, act_type=act_type, norm_type=norm_type)
         ## branch-3
+        self.cv3 = []
         for i in range(branch_depth):
             if i == 0:
-                self.cv3 = nn.Sequential(Conv(self.inter_dim1, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
+                self.cv3.append(YoloBottleneck(self.inter_dim1, self.inter_dim2, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise))
             else:
-                self.cv3.append(Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise))
+                self.cv3.append(YoloBottleneck(self.inter_dim2, self.inter_dim2, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise))
+        self.cv3 = nn.Sequential(*self.cv3)
         ## branch-4
         self.cv4 = nn.Sequential(*[
-            Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            YoloBottleneck(self.inter_dim2, self.inter_dim2, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
             for _ in range(branch_depth)
         ])
         ## branch-5
         self.cv5 = nn.Sequential(*[
-            Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            YoloBottleneck(self.inter_dim2, self.inter_dim2, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
             for _ in range(branch_depth)
         ])
         ## branch-6
         self.cv6 = nn.Sequential(*[
-            Conv(self.inter_dim2, self.inter_dim2, k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            YoloBottleneck(self.inter_dim2, self.inter_dim2, [1, 3], 1.0, shortcut, act_type, norm_type, depthwise)
             for _ in range(branch_depth)
         ])
         ## output proj
