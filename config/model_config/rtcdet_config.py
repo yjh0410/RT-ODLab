@@ -40,7 +40,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.7, 1.25], # 448 -> 800
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -55,7 +55,7 @@ rtcdet_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
     'rtcdet_l':{
@@ -96,7 +96,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.7, 1.25], # 448 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -111,7 +111,7 @@ rtcdet_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtmdet',
+        'trainer_type': 'yolox',
     },
 
 }

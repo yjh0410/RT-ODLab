@@ -389,7 +389,7 @@ class YoloxTrainer(object):
 
         # ---------------------------- Hyperparameters refer to YOLOX ----------------------------
         self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.9, 'weight_decay': 5e-4, 'lr0': 0.01}
-        self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
+        self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
