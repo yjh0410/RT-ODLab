@@ -378,7 +378,6 @@ class YoloxTrainer(object):
         self.grad_accumulate = args.grad_accumulate
         self.no_aug_epoch = args.no_aug_epoch
         self.heavy_eval = False
-        self.second_stage = False
         # weak augmentatino stage
         self.second_stage = False
         self.third_stage = False
