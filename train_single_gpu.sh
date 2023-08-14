@@ -1,16 +1,16 @@
-# -------------------------- Train YOLOX series --------------------------
+# -------------------------- Train YOLOX & YOLOv7 & RTCDet series --------------------------
 python train.py \
         --cuda \
         -d coco \
         --root /data/datasets/ \
         -m yolov7_tiny \
-        -bs 16 \
+        -bs 8 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 15 \
-        --grad_accumulate 1 \
+        --grad_accumulate 8 \
         --ema \
         --fp16 \
         --multi_scale \
@@ -18,7 +18,7 @@ python train.py \
         # --resume weights/coco/yolox_m/yolox_m_best.pth \
         # --eval_first
 
-# -------------------------- Train YOLOv1~v5 & v7 series --------------------------
+# -------------------------- Train YOLOv1~v5 series --------------------------
 # python train.py \
 #         --cuda \
 #         -d coco \
@@ -35,24 +35,4 @@ python train.py \
 #         --multi_scale \
 #         # --load_cache \
 #         # --resume weights/coco/yolov5_l/yolov5_l_best.pth \
-#         # --eval_first
-
-# -------------------------- Train My RTCDet series --------------------------
-# python train.py \
-#         --cuda \
-#         -d coco \
-#         --root /mnt/share/ssd2/dataset/ \
-#         -m rtcdet_v1_l \
-#         -bs 16 \
-#         -size 640 \
-#         --wp_epoch 3 \
-#         --max_epoch 300 \
-#         --eval_epoch 10 \
-#         --no_aug_epoch 20 \
-#         --grad_accumulate 8 \
-#         --ema \
-#         --fp16 \
-#         --multi_scale \
-#         # --load_cache \
-#         # --resume weights/coco/rtcdet_v1_l/rtcdet_v1_l_best.pth \
 #         # --eval_first
