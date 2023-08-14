@@ -22,7 +22,7 @@ from utils.solver.lr_scheduler import build_lr_scheduler
 from dataset.build import build_dataset, build_transform
 
 
-# YOLOv8-style Trainer
+# YOLOv8 Trainer
 class Yolov8Trainer(object):
     def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
@@ -365,7 +365,7 @@ class Yolov8Trainer(object):
         return images, targets, new_img_size
 
 
-# YOLOX-syle Trainer
+# YOLOX Trainer
 class YoloxTrainer(object):
     def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
@@ -379,6 +379,11 @@ class YoloxTrainer(object):
         self.no_aug_epoch = args.no_aug_epoch
         self.heavy_eval = False
         self.second_stage = False
+        # weak augmentatino stage
+        self.second_stage = False
+        self.third_stage = False
+        self.second_stage_epoch = args.no_aug_epoch
+        self.third_stage_epoch = args.no_aug_epoch // 2
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -434,19 +439,32 @@ class YoloxTrainer(object):
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
             # check second stage
-            if epoch >= (self.args.max_epoch - self.no_aug_epoch - 1) and not self.second_stage:
+            if epoch >= (self.args.max_epoch - self.second_stage_epoch - 1) and not self.second_stage:
                 self.check_second_stage()
                 # save model of the last mosaic epoch
                 weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
                 checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                if not os.path.exists(checkpoint_path):
-                    print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
-                    torch.save({'model': model.state_dict(),
-                                'mAP': round(self.evaluator.map*100, 1),
-                                'optimizer': self.optimizer.state_dict(),
-                                'epoch': self.epoch,
-                                'args': self.args}, 
-                                checkpoint_path)                      
+                print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch + 1))
+                torch.save({'model': model.state_dict(),
+                            'mAP': round(self.evaluator.map*100, 1),
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)
+
+            # check third stage
+            if epoch >= (self.args.max_epoch - self.third_stage_epoch - 1) and not self.third_stage:
+                self.check_third_stage()
+                # save model of the last mosaic epoch
+                weight_name = '{}_last_weak_augment_epoch.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
+                print('Saving state of the last weak augment epoch-{}.'.format(self.epoch + 1))
+                torch.save({'model': model.state_dict(),
+                            'mAP': round(self.evaluator.map*100, 1),
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)
                 
             # train one epoch
             self.epoch = epoch
@@ -629,6 +647,18 @@ class YoloxTrainer(object):
             print(' - Close < perspective of rotation > ...')
             self.trans_cfg['perspective'] = 0.0
 
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
+
+    def check_third_stage(self):
+        # set third stage
+        print('============== Third stage of Training ==============')
+        self.third_stage = True
+
         # close random affine
         if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
             print(' - Close < translate of affine > ...')
@@ -699,8 +729,8 @@ class YoloxTrainer(object):
         return images, targets, new_img_size
 
 
-# RTMDet-syle Trainer
-class RTMTrainer(object):
+# RTCDet Trainer
+class RTCTrainer(object):
     def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
         self.args = args
@@ -716,7 +746,7 @@ class RTMTrainer(object):
         self.second_stage = False
         self.third_stage = False
         self.second_stage_epoch = args.no_aug_epoch
-        self.third_stage_epoch = args.no_aug_epoch // 3
+        self.third_stage_epoch = args.no_aug_epoch // 2
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -1407,8 +1437,8 @@ def build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion
         return Yolov8Trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     elif model_cfg['trainer_type'] == 'yolox':
         return YoloxTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
-    elif model_cfg['trainer_type'] == 'rtmdet':
-        return RTMTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
+    elif model_cfg['trainer_type'] == 'rtcdet':
+        return RTCTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     elif model_cfg['trainer_type'] == 'detr':
         return DetrTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     else:
