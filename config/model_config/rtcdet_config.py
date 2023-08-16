@@ -2,6 +2,62 @@
 
 
 rtcdet_cfg = {
+    'rtcdet_p':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'elannet_v2',
+        'pretrained': True,
+        'bk_act': 'relu',
+        'bk_norm': 'BN',
+        'bk_depthwise': True,
+        'width': 0.25,
+        'depth': 0.34,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## Neck: SPP
+        'neck': 'sppf',
+        'neck_expand_ratio': 0.5,
+        'pooling_size': 5,
+        'neck_act': 'relu',
+        'neck_norm': 'BN',
+        'neck_depthwise': True,
+        ## Neck: PaFPN
+        'fpn': 'rtcdet_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'elan_block',
+        'fpn_branch_depth': 3,
+        'fpn_expand_ratio': 0.5,
+        'fpn_act': 'relu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': True,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'relu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': True,
+        # ---------------- Train config ----------------
+        ## Input
+        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'trans_type': 'yolox_pico',
+        # ---------------- Assignment config ----------------
+        ## Matcher
+        'matcher': {'soft_center_radius': 3.0,
+                    'topk_candidate': 13,
+                    'iou_weight': 3.0
+                    },
+        # ---------------- Loss config ----------------
+        ## Loss weight
+        'ema_update': False,
+        'loss_box_aux': True,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 2.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'rtcdet',
+    },
+
     'rtcdet_s':{
         # ---------------- Model config ----------------
         ## Backbone
@@ -40,7 +96,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.7, 1.25], # 448 -> 800
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -55,7 +111,7 @@ rtcdet_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'rtcdet',
     },
 
     'rtcdet_l':{
@@ -96,7 +152,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.7, 1.25], # 448 -> 800
+        'multi_scale': [0.5, 1.5], # 320 -> 960
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -111,7 +167,7 @@ rtcdet_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolox',
+        'trainer_type': 'rtcdet',
     },
 
 }

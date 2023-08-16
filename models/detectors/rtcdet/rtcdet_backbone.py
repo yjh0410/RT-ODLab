@@ -7,9 +7,10 @@ except:
 
 
 model_urls = {
+    'elannet_v2_p': None,
     'elannet_v2_n': None,
     'elannet_v2_t': None,
-    'elannet_v2_s': None,
+    'elannet_v2_s': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_v2_small.pth",
     'elannet_v2_m': None,
     'elannet_v2_l': None,
     'elannet_v2_x': None,
@@ -78,9 +79,9 @@ class ELANNetv2(nn.Module):
 ## load pretrained weight
 def load_weight(model, model_name):
     # load weight
-    print('Loading pretrained weight ...')
     url = model_urls[model_name]
     if url is not None:
+        print('Loading pretrained weight for {} ...'.format(model_name))
         checkpoint = torch.hub.load_state_dict_from_url(
             url=url, map_location="cpu", check_hash=True)
         # checkpoint state dict
@@ -105,14 +106,16 @@ def load_weight(model, model_name):
     return model
 
 
-## build MCNet
+## build ELANNet-v2
 def build_backbone(cfg, pretrained=False):
     # model
     backbone = ELANNetv2(cfg['width'], cfg['depth'], cfg['bk_act'], cfg['bk_norm'], cfg['bk_depthwise'])
 
     # check whether to load imagenet pretrained weight
     if pretrained:
-        if cfg['width'] == 0.25 and cfg['depth'] == 0.34:
+        if cfg['width'] == 0.25 and cfg['depth'] == 0.34 and cfg['bk_depthwise']:
+            backbone = load_weight(backbone, model_name='elannet_v2_p')
+        elif cfg['width'] == 0.25 and cfg['depth'] == 0.34:
             backbone = load_weight(backbone, model_name='elannet_v2_n')
         elif cfg['width'] == 0.375 and cfg['depth'] == 0.34:
             backbone = load_weight(backbone, model_name='elannet_v2_t')
@@ -134,13 +137,13 @@ if __name__ == '__main__':
     from thop import profile
     cfg = {
         ## Backbone
-        'backbone': 'elannet',
+        'backbone': 'elannetv2',
         'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
-        'bk_depthwise': False,
-        'width': 1.0,
-        'depth': 1.0,
+        'bk_depthwise': True,
+        'width': 0.25,
+        'depth': 0.34,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
     }
