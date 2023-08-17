@@ -2,8 +2,8 @@
 
 |    Model    |   Backbone    | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |-------------|---------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv7-Tiny | ELANNet-Tiny  | 1xb16 |  640  |         38.0           |       56.8        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
-| YOLOv7      | ELANNet-Large | 1xb16 |  640  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
+| YOLOv7-Tiny | ELANNet-Tiny  | 8xb16 |  640  |         39.5           |       58.5        |   22.6            |   7.9              | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_tiny_coco.pth) |
+| YOLOv7      | ELANNet-Large | 8xb16 |  640  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
 | YOLOv7-X    | ELANNet-Huge  | 8xb8  |  640  |                        |                   |                   |                    |  |
 
 - For training, we train YOLOv7 and YOLOv7-Tiny with 300 epochs on COCO.
