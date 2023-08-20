@@ -6,9 +6,10 @@
 | YOLOv7      | ELANNet-Large | 1xb16 |  640  |         48.0           |       67.5        |   144.6           |   44.0             | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/yolov7_large_coco.pth) |
 | YOLOv7-X    | ELANNet-Huge  |       |  640  |                        |                   |                   |                    |  |
 
-- For training, we train YOLOv7 and YOLOv7-Tiny with 300 epochs on COCO.
-- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOv5](https://github.com/ultralytics/yolov5).
-- For optimizer, we use SGD with momentum 0.937, weight decay 0.0005 and base lr 0.01.
-- For learning rate scheduler, we use linear decay scheduler.
-- For YOLOv7's structure, we use decoupled head, following the setting of [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX).
-- While YOLOv7 incorporates several technical details, such as anchor box, SimOTA, AuxiliaryHead, and RepConv, I found it too challenging to fully reproduce. Instead, I created a simpler version of YOLOv7 using an anchor-free structure and SimOTA. As a result, my reproduction had poor performance due to the absence of the other technical details. However, since it was only intended as a tutorial, I am not too concerned about this gap.
+- For training, we train `YOLOv7` and `YOLOv7-Tiny` with 300 epochs on 8 GPUs.
+- For data augmentation, we use the [YOLOX-style](https://github.com/Megvii-BaseDetection/YOLOX) augmentation including the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation.
+- For optimizer, we use `AdamW` with weight decay 0.05 and per image learning rate 0.001 / 64.
+- For learning rate scheduler, we use Cosine decay scheduler.
+- For YOLOv7's structure, we replace the coupled head with the YOLOX-style decoupled head.
+- I think YOLOv7 uses too many training tricks, such as `anchor box`, `AuxiliaryHead`, `RepConv`, `Mosaic9x` and so on, making the picture of YOLO too complicated, which is against the development concept of the YOLO series. Otherwise, why don't we use the DETR series? It's nothing more than doing some acceleration optimization on DETR. Therefore, I was faithful to my own technical aesthetics and realized a cleaner and simpler YOLOv7, but without the blessing of so many tricks, I did not reproduce all the performance, which is a pity.
+- I have no more GPUs to train my `YOLOv7-X`.

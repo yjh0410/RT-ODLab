@@ -7,7 +7,7 @@ rtcdet_cfg = {
         ## Backbone
         'backbone': 'elannet_v2',
         'pretrained': True,
-        'bk_act': 'relu',
+        'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': True,
         'width': 0.25,
@@ -18,7 +18,7 @@ rtcdet_cfg = {
         'neck': 'sppf',
         'neck_expand_ratio': 0.5,
         'pooling_size': 5,
-        'neck_act': 'relu',
+        'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': True,
         ## Neck: PaFPN
@@ -28,12 +28,12 @@ rtcdet_cfg = {
         'fpn_core_block': 'elan_block',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
-        'fpn_act': 'relu',
+        'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': True,
         ## Head
         'head': 'decoupled_head',
-        'head_act': 'relu',
+        'head_act': 'silu',
         'head_norm': 'BN',
         'num_cls_head': 2,
         'num_reg_head': 2,
@@ -152,7 +152,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher

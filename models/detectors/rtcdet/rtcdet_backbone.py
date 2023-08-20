@@ -9,7 +9,7 @@ except:
 model_urls = {
     'elannet_v2_p': None,
     'elannet_v2_n': None,
-    'elannet_v2_t': None,
+    'elannet_v2_t': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_v2_tiny.pth",
     'elannet_v2_s': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_v2_small.pth",
     'elannet_v2_m': None,
     'elannet_v2_l': None,
