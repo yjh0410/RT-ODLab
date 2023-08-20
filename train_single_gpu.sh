@@ -3,7 +3,7 @@ python train.py \
         --cuda \
         -d coco \
         --root /data/datasets/ \
-        -m rtcdet_s \
+        -m rtcdet_l \
         -bs 8 \
         -size 640 \
         --wp_epoch 3 \
