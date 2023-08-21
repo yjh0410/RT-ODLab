@@ -141,9 +141,9 @@ if __name__ == '__main__':
         'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
-        'bk_depthwise': True,
-        'width': 0.25,
-        'depth': 0.34,
+        'bk_depthwise': False,
+        'width': 1.0,
+        'depth': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
     }

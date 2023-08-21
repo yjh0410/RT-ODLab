@@ -14,6 +14,7 @@ rtcdet_cfg = {
         'depth': 0.34,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
+        'reg_max': 16,
         ## Neck: SPP
         'neck': 'sppf',
         'neck_expand_ratio': 0.5,
@@ -44,16 +45,15 @@ rtcdet_cfg = {
         'trans_type': 'yolox_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'soft_center_radius': 3.0,
-                    'topk_candidate': 13,
-                    'iou_weight': 3.0
-                    },
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candidate': 10},
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -70,6 +70,7 @@ rtcdet_cfg = {
         'depth': 0.34,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
+        'reg_max': 16,
         ## Neck: SPP
         'neck': 'sppf',
         'neck_expand_ratio': 0.5,
@@ -100,16 +101,15 @@ rtcdet_cfg = {
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'soft_center_radius': 3.0,
-                    'topk_candidate': 13,
-                    'iou_weight': 3.0
-                    },
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candidate': 10},
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -126,6 +126,7 @@ rtcdet_cfg = {
         'depth': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
+        'reg_max': 16,
         ## Neck: SPP
         'neck': 'sppf',
         'neck_expand_ratio': 0.5,
@@ -156,16 +157,15 @@ rtcdet_cfg = {
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'soft_center_radius': 3.0,
-                    'topk_candidate': 13,
-                    'iou_weight': 3.0
-                    },
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candidate': 10},
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
+        'loss_box_weight': 5.0,
+        'loss_dfl_weight': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
