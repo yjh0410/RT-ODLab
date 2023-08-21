@@ -216,7 +216,7 @@ class Criterion(object):
             delta_preds_pos = delta_preds.view(-1, 4)[fg_masks]
             ## aux loss
             loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets, anchors_pos, strides_pos)
-            loss_box_aux = loss_box_aux.sum() / num_fgs
+            loss_box_aux = loss_box_aux.sum() / normalizer
 
             losses += loss_box_aux
             loss_dict['loss_box_aux'] = loss_box_aux
