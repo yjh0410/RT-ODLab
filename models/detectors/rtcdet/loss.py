@@ -224,6 +224,7 @@ class Criterion(object):
 
         return loss_dict
 
+
 def build_criterion(args, cfg, device, num_classes):
     criterion = Criterion(
         args=args,
