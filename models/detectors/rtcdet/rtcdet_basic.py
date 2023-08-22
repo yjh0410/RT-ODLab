@@ -169,9 +169,15 @@ class YoloBottleneck(nn.Module):
         self.out_dim = out_dim
         self.inter_dim = int(out_dim * expand_ratio)
         self.shortcut = shortcut and in_dim == out_dim
+        self.depthwise = []
+        for ksize in kernel_sizes:
+            if ksize > 1:
+                self.depthwise.append(depthwise)
+            else:
+                self.depthwise.append(False)
         # ------------------ Network parameters ------------------
-        self.cv1 = Conv(in_dim, self.inter_dim, k=kernel_sizes[0], p=kernel_sizes[0]//2, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
-        self.cv2 = Conv(self.inter_dim, out_dim, k=kernel_sizes[1], p=kernel_sizes[1]//2, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
+        self.cv1 = Conv(in_dim, self.inter_dim, k=kernel_sizes[0], p=kernel_sizes[0]//2, norm_type=norm_type, act_type=act_type, depthwise=self.depthwise[0])
+        self.cv2 = Conv(self.inter_dim, out_dim, k=kernel_sizes[1], p=kernel_sizes[1]//2, norm_type=norm_type, act_type=act_type, depthwise=self.depthwise[1])
 
     def forward(self, x):
         h = self.cv2(self.cv1(x))
