@@ -4,7 +4,7 @@
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
 | RTCDet-N |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDet-T |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDet-S |  640  | 8xb16 |                         |                    |          44.7          |       63.7        |       31.5        |       8.4          | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_s_coco.pth) |
+| RTCDet-S |  640  | 8xb16 |          45.2           |        64.0        |          44.7          |       63.7        |       31.5        |       8.4          | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_s_coco.pth) |
 | RTCDet-M |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDet-L |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDet-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
