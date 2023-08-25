@@ -1,4 +1,4 @@
-# RTCDet-v2: My Second Empirical Study of Real-Time Convolutional Object Detectors.
+# RTCDet: My Empirical Study of Real-Time Convolutional Object Detectors.
 
 |   Model  | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
