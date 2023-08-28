@@ -1,15 +1,15 @@
-# -------------------------- Train YOLOX & YOLOv7 & RTCDet series --------------------------
+# -------------------------- Train RTCDet series --------------------------
 python train.py \
         --cuda \
         -d coco \
         --root /data/datasets/ \
         -m rtcdet_s \
-        -bs 8 \
+        -bs 16 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
         --eval_epoch 10 \
-        --no_aug_epoch 15 \
+        --no_aug_epoch 20 \
         --grad_accumulate 8 \
         --ema \
         --fp16 \
@@ -18,12 +18,32 @@ python train.py \
         # --resume weights/coco/yolox_m/yolox_m_best.pth \
         # --eval_first
 
+# -------------------------- Train YOLOX & YOLOv7 series --------------------------
+# python train.py \
+#         --cuda \
+#         -d coco \
+#         --root /data/datasets/ \
+#         -m yolox_s \
+#         -bs 8 \
+#         -size 640 \
+#         --wp_epoch 3 \
+#         --max_epoch 300 \
+#         --eval_epoch 10 \
+#         --no_aug_epoch 15 \
+#         --grad_accumulate 8 \
+#         --ema \
+#         --fp16 \
+#         --multi_scale \
+#         # --load_cache \
+#         # --resume weights/coco/yolox_m/yolox_m_best.pth \
+#         # --eval_first
+
 # -------------------------- Train YOLOv1~v5 series --------------------------
 # python train.py \
 #         --cuda \
 #         -d coco \
 #         --root /mnt/share/ssd2/dataset/ \
-#         -m yolov5_l \
+#         -m yolov5_s \
 #         -bs 16 \
 #         -size 640 \
 #         --wp_epoch 3 \
