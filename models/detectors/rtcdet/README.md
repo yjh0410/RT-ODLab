@@ -9,12 +9,12 @@
 | RTCDet-L |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDet-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
 
-|   Model  | Scale | Batch | AP<sup>test<br>0.5:0.95 | AP<sup>test<br>0.5 | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDet-P |  320  | 8xb16 |                         |                    |                        |                   |       1.00        |        1.07        |  |
-| RTCDet-P |  416  | 8xb16 |                         |                    |                        |                   |       1.68        |        1.07        |  |
-| RTCDet-P |  512  | 8xb16 |                         |                    |                        |                   |       2.55        |        1.07        |  |
-| RTCDet-P |  640  | 8xb16 |                         |                    |                        |                   |       4.05        |        1.07        |  |
+|   Model  | Scale | Batch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| RTCDet-P |  320  | 8xb16 |          25.4          |       40.1        |       1.00        |        1.07        | - |
+| RTCDet-P |  416  | 8xb16 |          29.4          |       45.8        |       1.68        |        1.07        | - |
+| RTCDet-P |  512  | 8xb16 |          32.0          |       49.2        |       2.55        |        1.07        | - |
+| RTCDet-P |  640  | 8xb16 |          33.8          |       51.7        |       4.05        |        1.07        | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_p_coco.pth) |
 
 - For training, we train my RTCDet series series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOX](https://github.com/ultralytics/yolov5), but we remove the rotation transformation which is used in YOLOX's strong augmentation.
