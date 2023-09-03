@@ -5,9 +5,9 @@
 | RTCDet-N |  640  | 8xb16 |          36.8           |        54.9        |          36.6          |       54.6        |       8.2         |       2.1          | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_n_coco.pth) |
 | RTCDet-T |  640  | 8xb16 |          41.9           |        60.6        |          41.6          |       60.1        |       17.9        |       4.7          | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_t_coco.pth) |
 | RTCDet-S |  640  | 8xb16 |          45.2           |        64.0        |          44.7          |       63.7        |       31.5        |       8.4          | [ckpt](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/releases/download/yolo_tutorial_ckpt/rtcdet_s_coco.pth) |
-| RTCDet-M |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
+| RTCDet-M |  640  | 8xb16 |                         |                    |                        |                   |       81.3        |       21.9         |  |
 | RTCDet-L |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDet-X |  640  |       |                         |                    |                        |                   |                   |                    |  |
+| RTCDet-X |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 
 |   Model  | Scale | Batch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
