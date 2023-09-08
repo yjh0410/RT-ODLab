@@ -305,7 +305,7 @@ rtcdet_cfg = {
         ## Neck: PaFPN
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
-        'fpn_downsample_layer': 'dsblock',
+        'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elan_block',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
@@ -361,7 +361,7 @@ rtcdet_cfg = {
         ## Neck: PaFPN
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
-        'fpn_downsample_layer': 'dsblock',
+        'fpn_downsample_layer': 'conv',
         'fpn_core_block': 'elan_block',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
