@@ -316,7 +316,7 @@ if __name__ == "__main__":
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
-        'scale': [0.5, 2.0],
+        'scale': [0.1, 2.0],
         'shear': 0.0,
         'perspective': 0.0,
         'hsv_h': 0.015,
@@ -326,7 +326,7 @@ if __name__ == "__main__":
         'mosaic_prob': 1.0,
         'mixup_prob': 1.0,
         'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolov5_mixup',
+        'mixup_type': 'yolox_mixup',
         'mixup_scale': [0.5, 1.5]
     }
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
@@ -360,13 +360,14 @@ if __name__ == "__main__":
 
         for box, label in zip(boxes, labels):
             x1, y1, x2, y2 = box
-            cls_id = int(label)
-            color = class_colors[cls_id]
-            # class name
-            label = VOC_CLASSES[cls_id]
-            image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
-            # put the test on the bbox
-            cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
+            if x2 - x1 > 1 and y2 - y1 > 1:
+                cls_id = int(label)
+                color = class_colors[cls_id]
+                # class name
+                label = VOC_CLASSES[cls_id]
+                image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
+                # put the test on the bbox
+                cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
         cv2.imshow('gt', image)
         # cv2.imwrite(str(i)+'.jpg', img)
         cv2.waitKey(0)
