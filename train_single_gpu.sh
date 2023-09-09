@@ -3,14 +3,14 @@ python train.py \
         --cuda \
         -d coco \
         --root /data/datasets/ \
-        -m rtcdet_s \
+        -m rtcdet_m \
         -bs 16 \
         -size 640 \
         --wp_epoch 3 \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 20 \
-        --grad_accumulate 8 \
+        --grad_accumulate 1 \
         --ema \
         --fp16 \
         --multi_scale \
