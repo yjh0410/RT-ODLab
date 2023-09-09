@@ -4,7 +4,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     -dist \
                                                     -d coco \
                                                     --root /data/datasets/ \
-                                                    -m rtcdet_m \
+                                                    -m rtcdet_s \
                                                     -bs 128 \
                                                     -size 640 \
                                                     --wp_epoch 3 \
@@ -15,6 +15,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --fp16 \
                                                     --sybn \
                                                     --multi_scale \
+                                                    --save_folder weights/debug/ \
                                                     # --load_cache \
                                                     # --resume weights/coco/yolox_l/yolox_l_best.pth \
 
