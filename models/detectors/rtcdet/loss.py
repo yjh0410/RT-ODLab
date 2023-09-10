@@ -146,7 +146,7 @@ class Criterion(object):
                     )
                 # prepare cls targets
                 assigned_labels = F.one_hot(assigned_labels.long(), self.num_classes)
-                assigned_labels = torch.clamp(assigned_labels * assigned_ious.unsqueeze(-1), min=0., max=1.0)
+                assigned_labels = assigned_labels * assigned_ious.unsqueeze(-1)
                 cls_target = assigned_labels.new_zeros((num_anchors, self.num_classes))
                 cls_target[fg_mask] = assigned_labels
                 # prepare box targets
@@ -194,7 +194,7 @@ class Criterion(object):
         anchors_pos = anchors[fg_masks]
         strides_pos = strides[fg_masks]
         ## compute dfl
-        # loss_dfl = self.loss_dfl(reg_preds_pos, box_targets, anchors_pos, strides_pos)
+        loss_dfl = self.loss_dfl(reg_preds_pos, box_targets, anchors_pos, strides_pos)
         loss_dfl = torch.zeros_like(box_preds)
         loss_dfl = loss_dfl.sum() / normalizer
 
