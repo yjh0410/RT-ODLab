@@ -15,7 +15,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --fp16 \
                                                     --sybn \
                                                     --multi_scale \
-                                                    --weight weights/debug \
+                                                    --save_folder weights/debug \
                                                     # --load_cache \
                                                     # --resume weights/coco/yolox_l/yolox_l_best.pth \
 
