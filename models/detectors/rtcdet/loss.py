@@ -195,7 +195,6 @@ class Criterion(object):
         strides_pos = strides[fg_masks]
         ## compute dfl
         loss_dfl = self.loss_dfl(reg_preds_pos, box_targets, anchors_pos, strides_pos)
-        loss_dfl = torch.zeros_like(box_preds)
         loss_dfl = loss_dfl.sum() / normalizer
 
         # total loss
