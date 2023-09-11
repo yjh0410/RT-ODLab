@@ -739,7 +739,7 @@ class RTCTrainer(object):
         self.criterion = criterion
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
-        self.clip_grad = 35
+        self.clip_grad = 10
         self.heavy_eval = False
         # weak augmentatino stage
         self.second_stage = False
@@ -751,8 +751,10 @@ class RTCTrainer(object):
         os.makedirs(self.path_to_save, exist_ok=True)
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
-        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
-        self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
+        # self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 5e-2, 'lr0': 0.001}
+        # self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
+        self.optimizer_dict = {'optimizer': 'sgd', 'momentum': 0.9, 'weight_decay': 5e-4, 'lr0': 0.01}
+        self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
