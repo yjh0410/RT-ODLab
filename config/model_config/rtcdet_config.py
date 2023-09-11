@@ -275,9 +275,9 @@ rtcdet_cfg = {
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
