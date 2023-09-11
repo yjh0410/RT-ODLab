@@ -51,7 +51,7 @@ class AlignedSimOTA(object):
             cls_targets = cls_targets.unsqueeze(1).repeat(1, score_preds.size(1), 1)
             cls_targets *= pair_wise_ious.unsqueeze(-1)  # iou-aware
             # [N, Mp]
-            cls_cost = F.binary_cross_entropy(score_preds, cls_targets, reduction="none").sum(-1)
+            cls_cost = F.binary_cross_entropy_with_logits(cls_preds_expand, cls_targets, reduction="none").sum(-1)
         del score_preds, cls_preds_expand
 
         #----------------------- Dynamic K-Matching -----------------------
