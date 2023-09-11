@@ -43,14 +43,16 @@ class AlignedSimOTA(object):
         # ----------------------- Cls cost -----------------------
         with torch.cuda.amp.autocast(enabled=False):
             # [Mp, C] -> [N, Mp, C]
-            score_preds = cls_preds.sigmoid_().unsqueeze(0).repeat(num_gt, 1, 1)
+            cls_preds_expand = cls_preds.unsqueeze(0).repeat(num_gt, 1, 1)
+            cls_preds_expand = torch.ones_like(cls_preds_expand) * torch.tensor(float("nan")).to(cls_preds_expand.device)
+            score_preds = torch.sigmoid(cls_preds_expand)
             # prepare cls_target
             cls_targets = F.one_hot(tgt_labels.long(), self.num_classes).float()
             cls_targets = cls_targets.unsqueeze(1).repeat(1, score_preds.size(1), 1)
             cls_targets *= pair_wise_ious.unsqueeze(-1)  # iou-aware
             # [N, Mp]
             cls_cost = F.binary_cross_entropy(score_preds, cls_targets, reduction="none").sum(-1)
-        del score_preds
+        del score_preds, cls_preds_expand
 
         #----------------------- Dynamic K-Matching -----------------------
         cost_matrix = (

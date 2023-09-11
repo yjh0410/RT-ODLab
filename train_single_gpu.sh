@@ -1,9 +1,9 @@
 # -------------------------- Train RTCDet series --------------------------
 python train.py \
         --cuda \
-        -d coco \
-        --root /data/datasets/ \
-        -m rtcdet_m \
+        -d voc \
+        --root /mnt/share/ssd2/dataset/ \
+        -m rtcdet_n \
         -bs 16 \
         -size 640 \
         --wp_epoch 3 \
