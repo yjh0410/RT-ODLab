@@ -739,7 +739,7 @@ class RTCTrainer(object):
         self.criterion = criterion
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
-        self.clip_grad = 35
+        self.clip_grad = 10
         self.heavy_eval = False
         # weak augmentatino stage
         self.second_stage = False
