@@ -7,7 +7,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     -m rtcdet_m \
                                                     -bs 128 \
                                                     -size 640 \
-                                                    --wp_epoch 5 \
+                                                    --wp_epoch 3 \
                                                     --max_epoch 300 \
                                                     --eval_epoch 10 \
                                                     --no_aug_epoch 20 \
