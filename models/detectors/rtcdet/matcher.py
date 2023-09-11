@@ -44,7 +44,6 @@ class AlignedSimOTA(object):
         with torch.cuda.amp.autocast(enabled=False):
             # [Mp, C] -> [N, Mp, C]
             cls_preds_expand = cls_preds.unsqueeze(0).repeat(num_gt, 1, 1)
-            cls_preds_expand = torch.ones_like(cls_preds_expand) * torch.tensor(float("nan")).to(cls_preds_expand.device)
             score_preds = torch.sigmoid(cls_preds_expand)
             # prepare cls_target
             cls_targets = F.one_hot(tgt_labels.long(), self.num_classes).float()
