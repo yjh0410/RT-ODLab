@@ -50,7 +50,7 @@ class Criterion(object):
             loss_cls = bce_loss * focal_weight
         else:
             # compute bce loss
-            loss_cls = torch.zeros_like(pred_cls)# F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
+            loss_cls = pred_cls * 0.# F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
 
         return loss_cls
 
