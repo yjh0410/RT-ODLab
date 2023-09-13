@@ -52,8 +52,8 @@ rtcdet_cfg = {
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
         'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -164,8 +164,8 @@ rtcdet_cfg = {
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
         'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -220,8 +220,8 @@ rtcdet_cfg = {
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
         'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -265,7 +265,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 960
         'trans_type': 'yolox_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -276,8 +276,8 @@ rtcdet_cfg = {
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
         'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -332,8 +332,8 @@ rtcdet_cfg = {
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
         'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -388,8 +388,8 @@ rtcdet_cfg = {
         'ema_update': False,
         'loss_box_aux': True,
         'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
         'loss_dfl_weight': 1.0,
+        'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
