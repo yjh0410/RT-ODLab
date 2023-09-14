@@ -945,11 +945,12 @@ class RTCTrainer(object):
 
             # Optimize
             if ni % self.grad_accumulate == 0:
+                grad_norm = None
                 if self.clip_grad > 0:
                     # unscale gradients
                     self.scaler.unscale_(self.optimizer)
                     # clip gradients
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.clip_grad)
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.clip_grad)
                 # optimizer.step
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
@@ -972,9 +973,8 @@ class RTCTrainer(object):
                     if k == 'losses':
                         loss_val *= self.grad_accumulate
                     log += '[{}: {:.2f}]'.format(k, loss_val)
-
-
                 # other infor
+                log += '[grad_norm: {:.2f}]'.format(grad_norm)
                 log += '[time: {:.2f}]'.format(t1 - t0)
                 log += '[size: {}]'.format(img_size)
 
