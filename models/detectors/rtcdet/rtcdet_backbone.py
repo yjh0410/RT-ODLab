@@ -6,9 +6,8 @@ except:
     from rtcdet_basic import Conv, ELANBlock, DSBlock
 
 
-
 model_urls = {
-    'elannet_pico': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_pico.pth",
+    'elannet_pico': None,
     'elannet_nano': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_nano.pth",
     'elannet_tiny': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_tiny.pth",
     'elannet_small': "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elannet_small.pth",
@@ -23,36 +22,37 @@ model_urls = {
 class ELANNet(nn.Module):
     def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
         super(ELANNet, self).__init__()
-        self.feat_dims = [int(512 * width), int(1024 * width), int(1024 * width)]
+        # ------------------ Basic parameters ------------------
+        self.width = width
+        self.depth = depth
+        self.expand_ratios = [0.5, 0.5, 0.5, 0.25]
+        self.feat_dims = [round(64*width), round(128*width), round(256*width), round(512*width), round(1024*width), round(1024*width)]
         
-        # P1/2
+        # ------------------ Network parameters ------------------
+        ## P1/2
         self.layer_1 = nn.Sequential(
-            Conv(3, int(64*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Conv(int(64*width), int(64*width), k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            Conv(3, self.feat_dims[0], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
+            Conv(self.feat_dims[0], self.feat_dims[0], k=3, p=1, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
         )
-        # P2/4
+        ## P2/4
         self.layer_2 = nn.Sequential(   
-            Conv(int(64*width), int(128*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise),             
-            ELANBlock(in_dim=int(128*width), out_dim=int(256*width), expand_ratio=0.5, depth=depth,
-                      act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise),             
+            ELANBlock(self.feat_dims[1], self.feat_dims[2], self.expand_ratios[0], self.depth, act_type, norm_type, depthwise)
         )
-        # P3/8
+        ## P3/8
         self.layer_3 = nn.Sequential(
-            DSBlock(in_dim=int(256*width), out_dim=int(256*width), act_type=act_type, norm_type=norm_type),             
-            ELANBlock(in_dim=int(256*width), out_dim=int(512*width), expand_ratio=0.5, depth=depth,
-                      act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            DSBlock(self.feat_dims[2], self.feat_dims[2], act_type, norm_type, depthwise),             
+            ELANBlock(self.feat_dims[2], self.feat_dims[3], self.expand_ratios[1], self.depth, act_type, norm_type, depthwise)
         )
-        # P4/16
+        ## P4/16
         self.layer_4 = nn.Sequential(
-            DSBlock(in_dim=int(512*width), out_dim=int(512*width), act_type=act_type, norm_type=norm_type),             
-            ELANBlock(in_dim=int(512*width), out_dim=int(1024*width), expand_ratio=0.5, depth=depth,
-                      act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            DSBlock(self.feat_dims[3], self.feat_dims[3], act_type, norm_type, depthwise),             
+            ELANBlock(self.feat_dims[3], self.feat_dims[4], self.expand_ratios[2], self.depth, act_type, norm_type, depthwise)
         )
-        # P5/32
+        ## P5/32
         self.layer_5 = nn.Sequential(
-            DSBlock(in_dim=int(1024*width), out_dim=int(1024*width), act_type=act_type, norm_type=norm_type),             
-            ELANBlock(in_dim=int(1024*width), out_dim=int(1024*width), expand_ratio=0.25, depth=depth,
-                    act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+            DSBlock(self.feat_dims[4], self.feat_dims[4], act_type, norm_type, depthwise),             
+            ELANBlock(self.feat_dims[4], self.feat_dims[5], self.expand_ratios[3], self.depth, act_type, norm_type, depthwise)
         )
 
 
@@ -98,7 +98,6 @@ def load_weight(model, model_name):
 
     return model
 
-
 ## build ELAN-Net
 def build_backbone(cfg, pretrained=False): 
     # model
@@ -125,7 +124,7 @@ def build_backbone(cfg, pretrained=False):
             backbone = load_weight(backbone, model_name='elannet_large')
         elif cfg['width'] == 1.25 and cfg['depth'] == 1.34:
             backbone = load_weight(backbone, model_name='elannet_huge')
-    feat_dims = backbone.feat_dims
+    feat_dims = backbone.feat_dims[-3:]
 
     return backbone, feat_dims
 

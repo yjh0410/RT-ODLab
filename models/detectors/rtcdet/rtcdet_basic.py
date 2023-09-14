@@ -220,7 +220,6 @@ def build_fpn_block(cfg, in_dim, out_dim):
         
     return layer
         
-
 ## build fpn's reduce layer
 def build_reduce_layer(cfg, in_dim, out_dim):
     if cfg['fpn_reduce_layer'] == 'conv':
