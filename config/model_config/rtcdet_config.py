@@ -5,7 +5,7 @@ rtcdet_cfg = {
     'rtcdet_p':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -26,7 +26,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -61,7 +61,7 @@ rtcdet_cfg = {
     'rtcdet_n':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -82,7 +82,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -117,7 +117,7 @@ rtcdet_cfg = {
     'rtcdet_t':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -138,7 +138,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -173,7 +173,7 @@ rtcdet_cfg = {
     'rtcdet_s':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -194,7 +194,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -229,7 +229,7 @@ rtcdet_cfg = {
     'rtcdet_m':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -250,7 +250,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -285,7 +285,7 @@ rtcdet_cfg = {
     'rtcdet_l':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -306,7 +306,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
@@ -341,7 +341,7 @@ rtcdet_cfg = {
     'rtcdet_x':{
         # ---------------- Model config ----------------
         ## Backbone
-        'backbone': 'elannet_v2',
+        'backbone': 'elannet',
         'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
@@ -362,7 +362,7 @@ rtcdet_cfg = {
         'fpn': 'rtcdet_pafpn',
         'fpn_reduce_layer': 'conv',
         'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'elan_block',
+        'fpn_core_block': 'elanblock',
         'fpn_branch_depth': 3,
         'fpn_expand_ratio': 0.5,
         'fpn_act': 'silu',
