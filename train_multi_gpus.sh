@@ -5,7 +5,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     -d coco \
                                                     --root /data/datasets/ \
                                                     -m rtcdet_m \
-                                                    -bs 128 \
+                                                    -bs 64 \
                                                     -size 640 \
                                                     --wp_epoch 3 \
                                                     --max_epoch 300 \
