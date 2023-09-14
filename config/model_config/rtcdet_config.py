@@ -321,7 +321,7 @@ rtcdet_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.25], # 320 -> 800
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
