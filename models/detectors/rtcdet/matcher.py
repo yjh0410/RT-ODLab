@@ -47,7 +47,7 @@ class AlignedSimOTA(object):
             # prepare cls_target
             cls_targets = F.one_hot(tgt_labels.long(), self.num_classes).float()
             cls_targets = cls_targets.unsqueeze(1).repeat(1, cls_preds_expand.size(1), 1)
-            cls_targets *= pair_wise_ious.unsqueeze(-1)  # iou-aware
+            # cls_targets *= pair_wise_ious.unsqueeze(-1)  # iou-aware
             # [N, Mp]
             cls_cost = F.binary_cross_entropy_with_logits(cls_preds_expand, cls_targets, reduction="none").sum(-1)
         del cls_preds_expand
