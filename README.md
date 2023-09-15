@@ -1,22 +1,16 @@
-# PyTorch_YOLO_Tutorial
-YOLO Tutorial
+# Real-time General Object Detection
 
-English | [简体中文](https://github.com/yjh0410/PyTorch_YOLO_Tutorial/blob/main/README_CN.md)
-
-# Introduction
-Here is the source code for an introduction to YOLO. We adopted the core concepts of **YOLOv1~v4**, **YOLOX** and **YOLOv7** for this project and made the necessary adjustments. By learning how to construct the well-known YOLO detector, we hope that newcomers can enter the field of object detection without any difficulty.
-
-**Book**: The technical books that go along with this project's code is being reviewed, please be patient.
+English | [简体中文](https://github.com/yjh0410/RT-ODLab/blob/main/README_CN.md)
 
 ## Requirements
 - We recommend you to use Anaconda to create a conda environment:
 ```Shell
-conda create -n yolo python=3.6
+conda create -n rtcdet python=3.6
 ```
 
 - Then, activate the environment:
 ```Shell
-conda activate yolo
+conda activate rtcdet
 ```
 
 - Requirements:
@@ -34,7 +28,7 @@ At least, please make sure your torch is version 1.x.
 ### VOC
 - Download VOC.
 ```Shell
-cd <PyTorch_YOLO_Tutorial>
+cd <RT-ODLab>
 cd dataset/scripts/
 sh VOC2007.sh
 sh VOC2012.sh
@@ -42,7 +36,7 @@ sh VOC2012.sh
 
 - Check VOC
 ```Shell
-cd <PyTorch_YOLO_Tutorial>
+cd <RT-ODLab>
 python dataset/voc.py
 ```
 
@@ -69,14 +63,14 @@ python train.py --cuda -d voc --root path/to/VOCdevkit -m yolov1 -bs 16 --max_ep
 
 - Download COCO.
 ```Shell
-cd <PyTorch_YOLO_Tutorial>
+cd <RT-ODLab>
 cd dataset/scripts/
 sh COCO2017.sh
 ```
 
 - Check COCO
 ```Shell
-cd <PyTorch_YOLO_Tutorial>
+cd <RT-ODLab>
 python dataset/coco.py
 ```
 
