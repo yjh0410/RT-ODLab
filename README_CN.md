@@ -1,20 +1,14 @@
-# PyTorch_YOLO_Tutorial
-YOLO 教程
-
-# 简介
-这是一个讲解YOLO的入门教程的代码。在这个项目中，我们继承了YOLOv1~v4、YOLOX以及YOLOv7的中心思想，并在此基础上做了适当的修改来实现了结构较为简洁的YOLO检测器。我们希望通过初学者可以通过学习流行的YOLO检测器顺利入门目标检测领域。
-
-**书籍链接**：与本项目代码配套的技术书籍正在被校阅中，请耐心等待。
+# 实时通用目标检测
 
 ## 配置运行环境
 - 首先，我们建议使用Anaconda来创建一个conda的虚拟环境
 ```Shell
-conda create -n yolo python=3.6
+conda create -n rtcdet python=3.6
 ```
 
 - 然后, 请激活已创建的虚拟环境
 ```Shell
-conda activate yolo
+conda activate rtcdet
 ```
 
 - 接着，配置环境:
