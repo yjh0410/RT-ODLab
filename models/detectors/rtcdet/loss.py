@@ -304,7 +304,7 @@ class Criterion(object):
         box_targets_pos = box_targets[pos_inds]
         box_weight_pos = assign_metrics[pos_inds]
         loss_box = self.loss_bboxes(box_preds_pos, box_targets_pos)
-        loss_box *= box_weight_pos
+        # loss_box *= box_weight_pos
         loss_box = loss_box.sum() / normalizer
 
         # ------------------ Distribution focal loss  ------------------
@@ -320,7 +320,7 @@ class Criterion(object):
         strides_pos = strides[pos_inds]
         ## compute dfl
         loss_dfl = self.loss_dfl(reg_preds_pos, box_targets_pos, anchors_pos, strides_pos)
-        loss_dfl *= box_weight_pos
+        # loss_dfl *= box_weight_pos
         loss_dfl = loss_dfl.sum() / normalizer
 
         # total loss
