@@ -341,7 +341,7 @@ class Criterion(object):
             delta_preds = torch.cat(outputs['pred_delta'], dim=1)
             delta_preds_pos = delta_preds.view(-1, 4)[pos_inds]
             ## aux loss
-            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets, anchors_pos, strides_pos)
+            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets_pos, anchors_pos, strides_pos)
             loss_box_aux = loss_box_aux.sum() / normalizer
 
             losses += loss_box_aux
@@ -349,7 +349,6 @@ class Criterion(object):
 
         return loss_dict
 
-        return loss_dict
 
     def __call__(self, outputs, targets, epoch=0):
         if self.cfg['matcher'] == "simota":
