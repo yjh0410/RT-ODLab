@@ -45,15 +45,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -101,15 +110,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_dfl_weight': 1.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -157,15 +175,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -213,15 +240,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -269,15 +305,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "aligned_simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -325,15 +370,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -381,15 +435,24 @@ rtcdet_cfg = {
         'trans_type': 'yolox_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': {'center_sampling_radius': 2.5,
-                    'topk_candidate': 10},
+        'matcher': "simota",
+        'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
+                                   'topk_candidate': 10},
+                        "aligned_simota": {'soft_center_radius': 3.0,
+                                           'topk_candicate': 10,
+                                           'iou_weight': 3.0},
+                                           },
         # ---------------- Loss config ----------------
         ## Loss weight
         'ema_update': False,
         'loss_box_aux': True,
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
+        'loss_weights': {"simota": {'loss_cls_weight': 1.0,
+                                    'loss_dfl_weight': 1.0,
+                                    'loss_box_weight': 5.0},
+                         "aligned_simota": {'loss_cls_weight': 1.0,
+                                            'loss_dfl_weight': 1.0,
+                                            'loss_box_weight': 2.0}
+                                            },
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },

@@ -1,10 +1,11 @@
+from typing import Any
 import torch
 import torch.nn.functional as F
 
 from utils.box_ops import bbox2dist, get_ious
 from utils.distributed_utils import get_world_size, is_dist_avail_and_initialized
 
-from .matcher import AlignedSimOTA
+from .matcher import build_matcher
 
 
 class Criterion(object):
@@ -16,19 +17,15 @@ class Criterion(object):
         self.max_epoch = args.max_epoch
         self.no_aug_epoch = args.no_aug_epoch
         self.use_ema_update = cfg['ema_update']
-        # ---------------- Loss weight ----------------
-        self.loss_cls_weight = cfg['loss_cls_weight']
-        self.loss_box_weight = cfg['loss_box_weight']
-        self.loss_dfl_weight = cfg['loss_dfl_weight']
         self.loss_box_aux    = cfg['loss_box_aux']
+        # ---------------- Loss weight ----------------
+        loss_weights = cfg['loss_weights'][cfg['matcher']]
+        self.loss_cls_weight = loss_weights['loss_cls_weight']
+        self.loss_box_weight = loss_weights['loss_box_weight']
+        self.loss_dfl_weight = loss_weights['loss_dfl_weight']
         # ---------------- Matcher ----------------
-        matcher_config = cfg['matcher']
         ## Aligned SimOTA assigner
-        self.ota_matcher = AlignedSimOTA(
-            center_sampling_radius=matcher_config['center_sampling_radius'],
-            topk_candidate=matcher_config['topk_candidate'],
-            num_classes=num_classes
-        )
+        self.matcher = build_matcher(cfg, num_classes)
 
     def ema_update(self, name: str, value, initial_value, momentum=0.9):
         if hasattr(self, name):
@@ -40,27 +37,42 @@ class Criterion(object):
         return new
 
     # ----------------- Loss functions -----------------
-    def loss_classes(self, pred_cls, gt_score, gt_label=None, vfl=False):
-        if vfl:
-            assert gt_label is not None
-            # compute varifocal loss
-            alpha, gamma = 0.75, 2.0
-            focal_weight = alpha * pred_cls.sigmoid().pow(gamma) * (1 - gt_label) + gt_score * gt_label
-            bce_loss = F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
-            loss_cls = bce_loss * focal_weight
-        else:
-            # compute bce loss
-            loss_cls = F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
+    def loss_classes(self, pred_cls, gt_score):
+        # compute bce loss
+        loss_cls = F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
 
         return loss_cls
 
-    def loss_bboxes(self, pred_box, gt_box, bbox_weight=None):
+    def loss_classes_qfl(self, pred_cls, target, beta=2.0):
+        # Quality FocalLoss
+        """
+            pred_cls: (torch.Tensor): [N, C]。
+            target:   (tuple([torch.Tensor], [torch.Tensor])): label -> (N,), score -> (N,)
+        """
+        label, score = target
+        pred_sigmoid = pred_cls.sigmoid()
+        scale_factor = pred_sigmoid
+        zerolabel = scale_factor.new_zeros(pred_cls.shape)
+
+        ce_loss = F.binary_cross_entropy_with_logits(
+            pred_cls, zerolabel, reduction='none') * scale_factor.pow(beta)
+        
+        bg_class_ind = pred_cls.shape[-1]
+        pos = ((label >= 0) & (label < bg_class_ind)).nonzero().squeeze(1)
+        pos_label = label[pos].long()
+
+        scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
+
+        ce_loss[pos, pos_label] = F.binary_cross_entropy_with_logits(
+            pred_cls[pos, pos_label], score[pos],
+            reduction='none') * scale_factor.abs().pow(beta)
+
+        return ce_loss
+    
+    def loss_bboxes(self, pred_box, gt_box):
         # regression loss
         ious = get_ious(pred_box, gt_box, 'xyxy', 'giou')
         loss_box = 1.0 - ious
-
-        if bbox_weight is not None:
-            loss_box *= bbox_weight
 
         return loss_box
     
@@ -104,8 +116,9 @@ class Criterion(object):
 
         return loss_box_aux
     
+
     # ----------------- Main process -----------------
-    def __call__(self, outputs, targets, epoch=0):
+    def loss_simota(self, outputs, targets, epoch=0):
         bs = outputs['pred_cls'][0].shape[0]
         device = outputs['pred_cls'][0].device
         fpn_strides = outputs['strides']
@@ -136,7 +149,7 @@ class Criterion(object):
                     assigned_labels,
                     assigned_ious,
                     assigned_indexs
-                ) = self.ota_matcher(
+                ) = self.matcher(
                     fpn_strides = fpn_strides,
                     anchors = anchors,
                     pred_cls = cls_preds[batch_idx], 
@@ -224,6 +237,126 @@ class Criterion(object):
 
         return loss_dict
 
+    def loss_aligned_simota(self, outputs, targets, epoch=0):
+        """
+            outputs['pred_cls']: List(Tensor) [B, M, C]
+            outputs['pred_box']: List(Tensor) [B, M, 4]
+            outputs['strides']: List(Int) [8, 16, 32] output stride
+            targets: (List) [dict{'boxes': [...], 
+                                 'labels': [...], 
+                                 'orig_size': ...}, ...]
+        """
+        bs = outputs['pred_cls'][0].shape[0]
+        device = outputs['pred_cls'][0].device
+        fpn_strides = outputs['strides']
+        anchors = outputs['anchors']
+        # preds: [B, M, C]
+        cls_preds = torch.cat(outputs['pred_cls'], dim=1)
+        reg_preds = torch.cat(outputs['pred_reg'], dim=1)
+        box_preds = torch.cat(outputs['pred_box'], dim=1)
+
+        # --------------- label assignment ---------------
+        cls_targets = []
+        box_targets = []
+        assign_metrics = []
+        for batch_idx in range(bs):
+            tgt_labels = targets[batch_idx]["labels"].to(device)  # [N,]
+            tgt_bboxes = targets[batch_idx]["boxes"].to(device)   # [N, 4]
+            # label assignment
+            assigned_result = self.matcher(fpn_strides=fpn_strides,
+                                           anchors=anchors,
+                                           pred_cls=cls_preds[batch_idx].detach(),
+                                           pred_box=box_preds[batch_idx].detach(),
+                                           gt_labels=tgt_labels,
+                                           gt_bboxes=tgt_bboxes
+                                           )
+            cls_targets.append(assigned_result['assigned_labels'])
+            box_targets.append(assigned_result['assigned_bboxes'])
+            assign_metrics.append(assigned_result['assign_metrics'])
+
+        cls_targets = torch.cat(cls_targets, dim=0)
+        box_targets = torch.cat(box_targets, dim=0)
+        assign_metrics = torch.cat(assign_metrics, dim=0)
+
+        # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
+        bg_class_ind = self.num_classes
+        pos_inds = ((cls_targets >= 0)
+                    & (cls_targets < bg_class_ind)).nonzero().squeeze(1)
+        num_fgs = assign_metrics.sum()
+
+        if is_dist_avail_and_initialized():
+            torch.distributed.all_reduce(num_fgs)
+        num_fgs = (num_fgs / get_world_size()).clamp(1.0).item()
+        
+        # update loss normalizer with EMA
+        if self.use_ema_update:
+            normalizer = self.ema_update("loss_normalizer", max(num_fgs, 1), 100)
+        else:
+            normalizer = num_fgs
+
+        # ---------------------------- Classification loss ----------------------------
+        cls_preds = cls_preds.view(-1, self.num_classes)
+        loss_cls = self.loss_classes_qfl(cls_preds, (cls_targets, assign_metrics))
+        loss_cls = loss_cls.sum() / normalizer
+
+        # ---------------------------- Regression loss ----------------------------
+        box_preds_pos = box_preds.view(-1, 4)[pos_inds]
+        box_targets_pos = box_targets[pos_inds]
+        box_weight_pos = assign_metrics[pos_inds]
+        loss_box = self.loss_bboxes(box_preds_pos, box_targets_pos)
+        loss_box *= box_weight_pos
+        loss_box = loss_box.sum() / normalizer
+
+        # ------------------ Distribution focal loss  ------------------
+        ## process anchors
+        anchors = torch.cat(anchors, dim=0)
+        anchors = anchors[None].repeat(bs, 1, 1).view(-1, 2)
+        ## process stride tensors
+        strides = torch.cat(outputs['stride_tensor'], dim=0)
+        strides = strides.unsqueeze(0).repeat(bs, 1, 1).view(-1, 1)
+        ## fg preds
+        reg_preds_pos = reg_preds.view(-1, 4*self.cfg['reg_max'])[pos_inds]
+        anchors_pos = anchors[pos_inds]
+        strides_pos = strides[pos_inds]
+        ## compute dfl
+        loss_dfl = self.loss_dfl(reg_preds_pos, box_targets_pos, anchors_pos, strides_pos)
+        loss_dfl *= box_weight_pos
+        loss_dfl = loss_dfl.sum() / normalizer
+
+        # total loss
+        losses = self.loss_cls_weight * loss_cls + \
+                 self.loss_box_weight * loss_box + \
+                 self.loss_dfl_weight * loss_dfl
+
+        loss_dict = dict(
+                loss_cls = loss_cls,
+                loss_box = loss_box,
+                loss_dfl = loss_dfl,
+                losses = losses
+        )
+
+        # ------------------ Aux regression loss ------------------
+        if epoch >= (self.max_epoch - self.no_aug_epoch - 1) and self.loss_box_aux:
+            ## delta_preds
+            delta_preds = torch.cat(outputs['pred_delta'], dim=1)
+            delta_preds_pos = delta_preds.view(-1, 4)[pos_inds]
+            ## aux loss
+            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets, anchors_pos, strides_pos)
+            loss_box_aux = loss_box_aux.sum() / normalizer
+
+            losses += loss_box_aux
+            loss_dict['loss_box_aux'] = loss_box_aux
+
+        return loss_dict
+
+        return loss_dict
+
+    def __call__(self, outputs, targets, epoch=0):
+        if self.cfg['matcher'] == "simota":
+            return self.loss_simota(outputs, targets, epoch)
+        elif self.cfg['matcher'] == "aligned_simota":
+            return self.loss_aligned_simota(outputs, targets, epoch)
+        
 
 def build_criterion(args, cfg, device, num_classes):
     criterion = Criterion(
