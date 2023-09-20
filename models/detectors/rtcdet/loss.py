@@ -1,4 +1,3 @@
-from typing import Any
 import torch
 import torch.nn.functional as F
 
@@ -116,7 +115,6 @@ class Criterion(object):
 
         return loss_box_aux
     
-
     # ----------------- Main process -----------------
     def loss_simota(self, outputs, targets, epoch=0):
         bs = outputs['pred_cls'][0].shape[0]

@@ -45,7 +45,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
@@ -110,7 +110,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
@@ -175,7 +175,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
@@ -240,7 +240,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
@@ -305,7 +305,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
@@ -370,7 +370,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
@@ -435,7 +435,7 @@ rtcdet_cfg = {
         'trans_type': 'yolox_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
+        'matcher': "simota",
         'matcher_hpy': {"simota": {'center_sampling_radius': 2.5,
                                    'topk_candidate': 10},
                         "aligned_simota": {'soft_center_radius': 3.0,
