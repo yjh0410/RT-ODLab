@@ -7,6 +7,7 @@ from utils.distributed_utils import get_world_size, is_dist_avail_and_initialize
 from .matcher import build_matcher
 
 
+# ----------------------- Criterion for training -----------------------
 class Criterion(object):
     def __init__(self, args, cfg, device, num_classes=80):
         self.cfg = cfg
