@@ -66,6 +66,8 @@ def parse_args():
                         help='fuse RepConv')
     parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
                         help='fuse Conv & BN')
+    parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
+                        help='Perform NMS operations regardless of category.')
 
     return parser.parse_args()
                     

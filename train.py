@@ -71,6 +71,8 @@ def parse_args():
                         help='load pretrained weight')
     parser.add_argument('-r', '--resume', default=None, type=str,
                         help='keep training')
+    parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
+                        help='Perform NMS operations regardless of category.')
 
     # Dataset
     parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/',

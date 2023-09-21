@@ -42,6 +42,8 @@ def parse_args():
                         help="not decode in inference or yes")
     parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
                         help='fuse Conv & BN')
+    parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
+                        help='Perform NMS operations regardless of category.')
 
     # dataset
     parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
