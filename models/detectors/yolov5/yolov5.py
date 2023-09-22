@@ -17,7 +17,8 @@ class YOLOv5(nn.Module):
                  nms_thresh = 0.6,
                  trainable = False, 
                  topk = 1000,
-                 deploy = False):
+                 deploy = False,
+                 nms_class_agnostic = False):
         super(YOLOv5, self).__init__()
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
@@ -29,6 +30,7 @@ class YOLOv5(nn.Module):
         self.nms_thresh = nms_thresh
         self.topk = topk
         self.deploy = deploy
+        self.nms_class_agnostic = nms_class_agnostic
         
         # ------------------- Anchor box -------------------
         self.num_levels = 3
@@ -138,7 +140,7 @@ class YOLOv5(nn.Module):
 
         # nms
         scores, labels, bboxes = multiclass_nms(
-            scores, labels, bboxes, self.nms_thresh, self.num_classes, False)
+            scores, labels, bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
 
         return bboxes, scores, labels
 

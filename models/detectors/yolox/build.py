@@ -25,7 +25,8 @@ def build_yolox(args, cfg, device, num_classes=80, trainable=False, deploy=False
         nms_thresh=args.nms_thresh,
         topk=args.topk,
         trainable = trainable,
-        deploy = deploy
+        deploy = deploy,
+        nms_class_agnostic = args.nms_class_agnostic
         )
 
     # -------------- Initialize YOLO --------------

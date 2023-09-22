@@ -19,7 +19,8 @@ class YOLOv1(nn.Module):
                  conf_thresh=0.01,
                  nms_thresh=0.5,
                  trainable=False,
-                 deploy=False):
+                 deploy=False,
+                 nms_class_agnostic :bool = False):
         super(YOLOv1, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
@@ -31,6 +32,7 @@ class YOLOv1(nn.Module):
         self.nms_thresh = nms_thresh                   # NMS阈值
         self.stride = 32                               # 网络的最大步长
         self.deploy = deploy
+        self.nms_class_agnostic = nms_class_agnostic
         
         # ------------------- Network Structure -------------------
         ## 主干网络
@@ -110,7 +112,7 @@ class YOLOv1(nn.Module):
 
         # nms
         scores, labels, bboxes = multiclass_nms(
-            scores, labels, bboxes, self.nms_thresh, self.num_classes, False)
+            scores, labels, bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
 
         return bboxes, scores, labels
 

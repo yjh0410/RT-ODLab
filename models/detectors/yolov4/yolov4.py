@@ -19,7 +19,8 @@ class YOLOv4(nn.Module):
                  nms_thresh=0.5,
                  topk=100,
                  trainable=False,
-                 deploy=False):
+                 deploy=False,
+                 nms_class_agnostic=False):
         super(YOLOv4, self).__init__()
         # ------------------- Basic parameters -------------------
         self.cfg = cfg                                 # 模型配置文件
@@ -31,6 +32,7 @@ class YOLOv4(nn.Module):
         self.topk = topk                               # topk
         self.stride = [8, 16, 32]                      # 网络的输出步长
         self.deploy = deploy
+        self.nms_class_agnostic = nms_class_agnostic
         # ------------------- Anchor box -------------------
         self.num_levels = 3
         self.num_anchors = len(cfg['anchor_size']) // self.num_levels

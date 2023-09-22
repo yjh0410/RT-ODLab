@@ -25,7 +25,8 @@ def build_yolov1(args, cfg, device, num_classes=80, trainable=False, deploy=Fals
         conf_thresh = args.conf_thresh,
         nms_thresh = args.nms_thresh,
         trainable = trainable,
-        deploy = deploy
+        deploy = deploy,
+        nms_class_agnostic=args.nms_class_agnostic
         )
 
     # -------------- Initialize YOLO --------------
