@@ -4,7 +4,7 @@
 |----------|-------|-------|-------------------------|--------------------|------------------------|-------------------|-------------------|--------------------|--------|
 | RTCDet-N |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDet-T |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
-| RTCDet-S |  640  | 8xb16 |                         |                    |                        |                   |        30.9       |         8.5        |  |
+| RTCDet-S |  640  | 8xb16 |                         |                    |           44.5         |       63.5        |        30.9       |         8.5        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/rtcdet_s_coco.pth) |
 | RTCDet-M |  640  | 8xb16 |                         |                    |           48.7         |       67.6        |        80.3       |         22.6       | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/rtcdet_m_coco.pth) |
 | RTCDet-L |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
 | RTCDet-X |  640  | 8xb16 |                         |                    |                        |                   |                   |                    |  |
