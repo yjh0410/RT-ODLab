@@ -155,7 +155,7 @@ class RTRDetTransformer(nn.Module):
         output_classes = []
         output_coords = []
         for layer_id, decoder_layer in enumerate(self.decoder_layers):
-            # query embed
+            ## query embed
             query_pos = self.adapt_pos2d(self.pos2posemb2d(reference_points))
             tgt = decoder_layer(tgt, query_pos, src1, pos2d_embed_1)
             reference = self.inverse_sigmoid(reference_points)
