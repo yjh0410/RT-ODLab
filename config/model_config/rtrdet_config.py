@@ -15,6 +15,7 @@ rtrdet_cfg = {
         'max_stride': 16,
         'd_model': 512,
         ## Transformer Encoder
+        'transformer': 'RTRDetTransformer',
         'num_encoder': 1,
         'encoder_num_head': 8,
         'encoder_mlp_ratio': 4.0,

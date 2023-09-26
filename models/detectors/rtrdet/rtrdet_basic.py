@@ -313,10 +313,8 @@ class TREncoderLayer(nn.Module):
         # Feedforwaed Network
         self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
 
-
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
         return tensor if pos is None else tensor + pos
-
 
     def forward(self, src, pos):
         """
@@ -348,7 +346,6 @@ class TRDecoderLayer(nn.Module):
                  dropout=0.1,
                  act_type="relu"):
         super().__init__()
-        self.scale = 2 * 3.141592653589793
         self.d_model = d_model
         # self attention
         self.self_attn = MultiHeadAttention(d_model, num_heads, dropout)
@@ -364,20 +361,7 @@ class TRDecoderLayer(nn.Module):
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
         return tensor if pos is None else tensor + pos
 
-    def pos2posemb2d(self, pos, temperature=10000):
-        pos = pos * self.scale
-        num_pos_feats = self.d_model // 2
-        dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=pos.device)
-        dim_t = temperature ** (2 * (dim_t // 2) / num_pos_feats)
-        pos_x = pos[..., 0, None] / dim_t
-        pos_y = pos[..., 1, None] / dim_t
-        pos_x = torch.stack((pos_x[..., 0::2].sin(), pos_x[..., 1::2].cos()), dim=-1).flatten(-2)
-        pos_y = torch.stack((pos_y[..., 0::2].sin(), pos_y[..., 1::2].cos()), dim=-1).flatten(-2)
-        posemb = torch.cat((pos_y, pos_x), dim=-1)
-        
-        return posemb
-    
-    def forward(self, tgt, memory, query_pos, memory_pos):
+    def forward(self, tgt, query_pos, memory, memory_pos):
         # self attention
         q1 = k1 = self.with_pos_embed(tgt, query_pos)
         v1 = tgt
@@ -397,3 +381,4 @@ class TRDecoderLayer(nn.Module):
         tgt = self.ffn(tgt)
 
         return tgt
+    
