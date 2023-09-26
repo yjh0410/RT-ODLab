@@ -30,6 +30,8 @@ from .data_config.transform_config import (
     yolox_medium_trans_config,
     yolox_large_trans_config,
     yolox_huge_trans_config,
+    # RTRDet-Style
+    rtrdet_large_trans_config,
     # SSD-Style
     ssd_trans_config,
 )
@@ -70,6 +72,10 @@ def build_trans_config(trans_config='ssd'):
     elif trans_config == 'yolox_huge':
         cfg = yolox_huge_trans_config
 
+    # RTRDet-style transform
+    elif trans_config == 'rtrdet_large':
+        cfg = rtrdet_large_trans_config
+        
     print('Transform Config: {} \n'.format(cfg))
 
     return cfg
@@ -84,9 +90,10 @@ from .model_config.yolov4_config import yolov4_cfg
 from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolox_config import yolox_cfg
-## My RTMDet series
+## My RTCDet series
 from .model_config.rtcdet_config import rtcdet_cfg
-
+## My RTRDet series
+from .model_config.rtrdet_config import rtrdet_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -115,6 +122,9 @@ def build_model_config(args):
     # RTCDet
     elif args.model in ['rtcdet_p', 'rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         cfg = rtcdet_cfg[args.model]
+    # RTRDet
+    elif args.model in ['rtrdet_p', 'rtrdet_n', 'rtrdet_t', 'rtrdet_s', 'rtrdet_m', 'rtrdet_l', 'rtrdet_x']:
+        cfg = rtrdet_cfg[args.model]
 
     return cfg
 

@@ -233,6 +233,27 @@ yolox_pico_trans_config = {
 }
 
 
+# ----------------------- RTRDet-Style Transform -----------------------
+rtrdet_large_trans_config = {
+    'aug_type': 'yolov5',
+    # Basic Augment
+    'degrees': 0.0,
+    'translate': 0.2,
+    'scale': [0.1, 2.0],
+    'shear': 0.0,
+    'perspective': 0.0,
+    'hsv_h': 0.015,
+    'hsv_s': 0.7,
+    'hsv_v': 0.4,
+    # Mosaic & Mixup
+    'mosaic_prob': 0.0,
+    'mixup_prob': 0.0,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolox_mixup',
+    'mixup_scale': [0.5, 1.5]
+}
+
+
 # ----------------------- SSD-Style Transform -----------------------
 ssd_trans_config = {
     'aug_type': 'ssd',
