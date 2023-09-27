@@ -1119,7 +1119,7 @@ class RTRTrainer(object):
         # path to save model
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
-        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.001, 'backbone_lr_ratio': 0.1}
+        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
         self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
@@ -1146,7 +1146,7 @@ class RTRTrainer(object):
         self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.optimizer_dict['lr0'] *= self.args.batch_size / 64.
+        self.optimizer_dict['lr0'] *= self.args.batch_size / 16.
         self.optimizer, self.start_epoch = build_detr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------

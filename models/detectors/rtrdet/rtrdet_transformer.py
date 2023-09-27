@@ -63,7 +63,7 @@ class RTRDetTransformer(nn.Module):
         self.bbox_embed = nn.ModuleList([self.bbox_embed for _ in range(self.num_deocder)])
 
     def generate_posembed(self, x, temperature=10000):
-        hs, ws, num_pos_feats = x.shape[2], x.shape[3], x.shape[1]//2
+        num_pos_feats, hs, ws = x.shape[1]//2, x.shape[2], x.shape[3]
         # generate xy coord mat
         y_embed, x_embed = torch.meshgrid(
             [torch.arange(1, hs+1, dtype=torch.float32),
@@ -101,6 +101,7 @@ class RTRDetTransformer(nn.Module):
         pos_x = torch.stack((pos_x[..., 0::2].sin(), pos_x[..., 1::2].cos()), dim=-1).flatten(-2)
         pos_y = torch.stack((pos_y[..., 0::2].sin(), pos_y[..., 1::2].cos()), dim=-1).flatten(-2)
         posemb = torch.cat((pos_y, pos_x), dim=-1)
+        
         return posemb
 
     def inverse_sigmoid(self, x):

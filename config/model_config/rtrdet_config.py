@@ -35,7 +35,7 @@ rtrdet_cfg = {
         'num_topk': 100,
         # ---------------- Train config ----------------
         ## Input
-        'multi_scale': [0.5, 1.5], # 320 -> 960
+        'multi_scale': [0.5, 1.0], # 320 -> 640
         'trans_type': 'rtrdet_large',
         # ---------------- Assignment config ----------------
         ## Matcher
