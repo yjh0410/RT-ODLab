@@ -1287,7 +1287,7 @@ class RTRTrainer(object):
             # Multi scale
             if self.args.multi_scale:
                 images, targets, img_size = self.rescale_image_targets(
-                    images, targets, self.model_cfg['max_stride'], self.args.min_box_size, self.model_cfg['multi_scale'])
+                    images, targets, 32, self.args.min_box_size, self.model_cfg['multi_scale'])
             else:
                 targets = self.refine_targets(targets, self.args.min_box_size)
 
