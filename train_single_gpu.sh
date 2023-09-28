@@ -1,7 +1,7 @@
 # -------------------------- Train RTCDet series --------------------------
 python train.py \
         --cuda \
-        -d voc \
+        -d coco \
         --root /data/datasets/ \
         -m rtrdet_l \
         -bs 16 \
