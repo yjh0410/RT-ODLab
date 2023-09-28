@@ -2,11 +2,11 @@
 python train.py \
         --cuda \
         -d voc \
-        --root /mnt/share/ssd2/dataset/ \
-        -m rtcdet_n \
+        --root /data/datasets/ \
+        -m rtrdet_l \
         -bs 16 \
         -size 640 \
-        --wp_epoch 3 \
+        --wp_epoch 1 \
         --max_epoch 300 \
         --eval_epoch 10 \
         --no_aug_epoch 20 \
