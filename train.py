@@ -23,7 +23,7 @@ from engine import build_trainer
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='YOLO-Tutorial')
+    parser = argparse.ArgumentParser(description='Real-time Object Detection LAB')
     # Basic
     parser.add_argument('--cuda', action='store_true', default=False,
                         help='use cuda.')
