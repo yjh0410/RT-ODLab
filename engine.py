@@ -1117,6 +1117,8 @@ class RTRTrainer(object):
         self.second_stage_epoch = args.no_aug_epoch
         self.third_stage_epoch = args.no_aug_epoch // 2
         # path to save model
+        self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
+        os.makedirs(self.path_to_save, exist_ok=True)
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
