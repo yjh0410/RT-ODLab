@@ -14,7 +14,6 @@ python train.py \
         --ema \
         --fp16 \
         --multi_scale \
-        --eval_first \
         # --load_cache \
         # --resume weights/coco/yolox_m/yolox_m_best.pth \
         # --eval_first
