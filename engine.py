@@ -1298,6 +1298,7 @@ class RTRTrainer(object):
                 
             # Visualize train targets
             if self.args.vis_tgt:
+                targets = self.denormalize_bbox(targets, img_size)
                 vis_data(images*255, targets)
 
             # Inference
@@ -1380,6 +1381,14 @@ class RTRTrainer(object):
         # normalize targets
         for tgt in targets:
             tgt["boxes"] /= img_size
+        
+        return targets
+
+
+    def denormalize_bbox(self, targets, img_size):
+        # normalize targets
+        for tgt in targets:
+            tgt["boxes"] *= img_size
         
         return targets
 
