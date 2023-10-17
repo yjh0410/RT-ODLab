@@ -3,9 +3,9 @@
 
 ### Convert Your Model to ONNX
 
-First, you should move to <FreeYOLO_HOME> by:
+First, you should move to <RT-ODLab> by:
 ```shell
-cd <FreeYOLO_HOME>
+cd <RT-ODLab>
 cd tools/
 ```
 Then, you can:
