@@ -9,6 +9,7 @@ from .yolov3.build import build_yolov3
 from .yolov4.build import build_yolov4
 from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
+from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
 # My RTCDet
 from .rtcdet.build import build_rtcdet
@@ -46,6 +47,10 @@ def build_model(args,
     # YOLOv7
     elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         model, criterion = build_yolov7(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # YOLOv8
+    elif args.model in ['yolov8_n', 'yolov8_s', 'yolov8_m', 'yolov8_l', 'yolov8_x']:
+        model, criterion = build_yolov8(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX   
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
