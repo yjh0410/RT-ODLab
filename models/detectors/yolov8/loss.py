@@ -17,14 +17,10 @@ class Criterion(object):
         self.reg_max = cfg['reg_max']
         self.use_dfl = cfg['reg_max'] > 1
         # --------------- Loss config ---------------
-        ## loss func
-        self.cls_lossf = ClassificationLoss(cfg, reduction='none')
-        self.reg_lossf = RegressionLoss(num_classes, cfg['reg_max'] - 1, self.use_dfl)
-        ## loss weight
         self.loss_cls_weight = cfg['loss_cls_weight']
         self.loss_box_weight = cfg['loss_box_weight']
         self.loss_dfl_weight = cfg['loss_dfl_weight']
-        # matcher
+        # --------------- Matcher config ---------------
         self.matcher_hpy = cfg['matcher_hpy']
         self.matcher = TaskAlignedAssigner(num_classes     = num_classes,
                                            topk_candidates = self.matcher_hpy['topk_candidates'],
@@ -139,10 +135,9 @@ class Criterion(object):
         fg_masks = torch.cat(fg_masks, 0).view(-1)                                    # [BM,]
         gt_score_targets = torch.cat(gt_score_targets, 0).view(-1, self.num_classes)  # [BM, C]
         gt_bbox_targets = torch.cat(gt_bbox_targets, 0).view(-1, 4)                   # [BM, 4]
-        bbox_weight = gt_score_targets[fg_masks].sum(-1)                              # [BM,]
-        num_fgs = max(gt_score_targets.sum(), 1)
+        num_fgs = gt_score_targets.sum()
         
-        # average loss normalizer across all the GPUs
+        # Average loss normalizer across all the GPUs
         if is_dist_avail_and_initialized():
             torch.distributed.all_reduce(num_fgs)
         num_fgs = (num_fgs / get_world_size()).clamp(1.0)
@@ -155,6 +150,7 @@ class Criterion(object):
         # ------------------ Regression loss ------------------
         box_preds_pos = box_preds.view(-1, 4)[fg_masks]
         box_targets_pos = gt_bbox_targets.view(-1, 4)[fg_masks]
+        bbox_weight = gt_score_targets[fg_masks].sum(-1)
         loss_box = self.loss_bboxes(box_preds_pos, box_targets_pos, bbox_weight)
         loss_box = loss_box.sum() / num_fgs
 

@@ -13,11 +13,9 @@ class Yolov8Backbone(nn.Module):
     def __init__(self, width=1.0, depth=1.0, ratio=1.0, act_type='silu', norm_type='BN', depthwise=False):
         super(Yolov8Backbone, self).__init__()
         self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(512 * width * ratio)]
-        
-        # stride = 2
+        # P1/2
         self.layer_1 = Conv(3, self.feat_dims[0], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type)
-        
-        # stride = 4
+        # P2/4
         self.layer_2 = nn.Sequential(
             Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
             Yolov8StageBlock(in_dim     = self.feat_dims[1],
@@ -28,7 +26,7 @@ class Yolov8Backbone(nn.Module):
                              norm_type  = norm_type,
                              depthwise  = depthwise)
         )
-        # stride = 8
+        # P3/8
         self.layer_3 = nn.Sequential(
             Conv(self.feat_dims[1], self.feat_dims[2], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
             Yolov8StageBlock(in_dim     = self.feat_dims[2],
@@ -39,7 +37,7 @@ class Yolov8Backbone(nn.Module):
                              norm_type  = norm_type,
                              depthwise  = depthwise)
         )
-        # stride = 16
+        # P4/16
         self.layer_4 = nn.Sequential(
             Conv(self.feat_dims[2], self.feat_dims[3], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
             Yolov8StageBlock(in_dim     = self.feat_dims[3],
@@ -50,7 +48,7 @@ class Yolov8Backbone(nn.Module):
                              norm_type  = norm_type,
                              depthwise  = depthwise)
         )
-        # stride = 32
+        # P5/32
         self.layer_5 = nn.Sequential(
             Conv(self.feat_dims[3], self.feat_dims[4], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
             Yolov8StageBlock(in_dim     = self.feat_dims[4],

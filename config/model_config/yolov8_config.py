@@ -6,7 +6,6 @@ yolov8_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'yolov8',
-        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -58,7 +57,6 @@ yolov8_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'yolov8',
-        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
