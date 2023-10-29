@@ -35,32 +35,6 @@ class Criterion(object):
 
         return loss_cls
 
-    def loss_classes_qfl(self, pred_cls, target, beta=2.0):
-        # Quality FocalLoss
-        """
-            pred_cls: (torch.Tensor): [N, C]。
-            target:   (tuple([torch.Tensor], [torch.Tensor])): label -> (N,), score -> (N,)
-        """
-        label, score = target
-        pred_sigmoid = pred_cls.sigmoid()
-        scale_factor = pred_sigmoid
-        zerolabel = scale_factor.new_zeros(pred_cls.shape)
-
-        ce_loss = F.binary_cross_entropy_with_logits(
-            pred_cls, zerolabel, reduction='none') * scale_factor.pow(beta)
-        
-        bg_class_ind = pred_cls.shape[-1]
-        pos = ((label >= 0) & (label < bg_class_ind)).nonzero().squeeze(1)
-        pos_label = label[pos].long()
-
-        scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
-
-        ce_loss[pos, pos_label] = F.binary_cross_entropy_with_logits(
-            pred_cls[pos, pos_label], score[pos],
-            reduction='none') * scale_factor.abs().pow(beta)
-
-        return ce_loss
-    
     def loss_bboxes(self, pred_box, gt_box):
         # regression loss
         ious = get_ious(pred_box, gt_box, 'xyxy', 'giou')
@@ -109,7 +83,7 @@ class Criterion(object):
         return loss_box_aux
     
     # ----------------- Main process -----------------
-    def compute_loss1(self, outputs, targets, epoch=0):
+    def __call__(self, outputs, targets, epoch=0):
         bs = outputs['pred_cls'][0].shape[0]
         device = outputs['pred_cls'][0].device
         fpn_strides = outputs['strides']
@@ -221,132 +195,6 @@ class Criterion(object):
 
 
         return loss_dict
-
-    def compute_loss2(self, outputs, targets, epoch=0):
-        bs = outputs['pred_cls'][0].shape[0]
-        device = outputs['pred_cls'][0].device
-        fpn_strides = outputs['strides']
-        anchors = outputs['anchors']
-        num_anchors = sum([ab.shape[0] for ab in anchors])
-        # preds: [B, M, C]
-        cls_preds = torch.cat(outputs['pred_cls'], dim=1)
-        reg_preds = torch.cat(outputs['pred_reg'], dim=1)
-        box_preds = torch.cat(outputs['pred_box'], dim=1)
-
-        # --------------- label assignment ---------------
-        cls_targets = []
-        box_targets = []
-        iou_targets = []
-        fg_masks = []
-        for batch_idx in range(bs):
-            tgt_labels = targets[batch_idx]["labels"].to(device)
-            tgt_bboxes = targets[batch_idx]["boxes"].to(device)
-
-            # check target
-            if len(tgt_labels) == 0 or tgt_bboxes.max().item() == 0.:
-                # There is no valid gt
-                cls_target = cls_preds.new_full([num_anchors], self.num_classes, dtype=torch.long)
-                iou_target = cls_preds.new_zeros([num_anchors])
-                box_target = cls_preds.new_zeros((0, 4))
-                fg_mask = cls_preds.new_zeros(num_anchors).bool()
-            else:
-                (
-                    fg_mask,
-                    assigned_labels,
-                    assigned_ious,
-                    assigned_indexs
-                ) = self.matcher(
-                    fpn_strides = fpn_strides,
-                    anchors = anchors,
-                    pred_cls = cls_preds[batch_idx], 
-                    pred_box = box_preds[batch_idx],
-                    tgt_labels = tgt_labels,
-                    tgt_bboxes = tgt_bboxes
-                    )
-                # prepare cls targets
-                cls_target = assigned_labels.new_full([num_anchors], self.num_classes, dtype=torch.long)
-                cls_target[fg_mask] = assigned_labels
-                iou_target = assigned_ious.new_zeros([num_anchors])
-                iou_target[fg_mask] = assigned_ious
-                # prepare box targets
-                box_target = tgt_bboxes[assigned_indexs]
-
-            cls_targets.append(cls_target)
-            box_targets.append(box_target)
-            iou_targets.append(iou_target)
-            fg_masks.append(fg_mask)
-
-        cls_targets = torch.cat(cls_targets, 0)   # [M,]
-        box_targets = torch.cat(box_targets, 0)   # [M, 4]
-        iou_targets = torch.cat(iou_targets, 0)   # [M,]
-        fg_masks = torch.cat(fg_masks, 0)
-        num_fgs = fg_masks.sum()
-
-        # average loss normalizer across all the GPUs
-        if is_dist_avail_and_initialized():
-            torch.distributed.all_reduce(num_fgs)
-        num_fgs = (num_fgs / get_world_size()).clamp(1.0)
-        
-        # ------------------ Classification loss ------------------
-        cls_preds = cls_preds.view(-1, self.num_classes)
-        loss_cls = self.loss_classes_qfl(cls_preds, (cls_targets, iou_targets))
-        loss_cls = loss_cls.sum() / num_fgs
-
-        # ------------------ Regression loss ------------------
-        loss_box = self.loss_bboxes(box_preds.view(-1, 4)[fg_masks], box_targets)
-        loss_box = loss_box.sum() / num_fgs
-
-        # ------------------ Distribution focal loss  ------------------
-        ## process anchors
-        anchors = torch.cat(anchors, dim=0)
-        anchors = anchors[None].repeat(bs, 1, 1).view(-1, 2)
-        ## process stride tensors
-        strides = torch.cat(outputs['stride_tensor'], dim=0)
-        strides = strides.unsqueeze(0).repeat(bs, 1, 1).view(-1, 1)
-        ## fg preds
-        reg_preds_pos = reg_preds.view(-1, 4*self.cfg['reg_max'])[fg_masks]
-        anchors_pos = anchors[fg_masks]
-        strides_pos = strides[fg_masks]
-        ## compute dfl
-        loss_dfl = self.loss_dfl(reg_preds_pos, box_targets, anchors_pos, strides_pos)
-        loss_dfl = loss_dfl.sum() / num_fgs
-
-        # total loss
-        losses = self.loss_cls_weight * loss_cls + \
-                 self.loss_box_weight * loss_box + \
-                 self.loss_dfl_weight * loss_dfl
-
-        loss_dict = dict(
-                loss_cls = loss_cls,
-                loss_box = loss_box,
-                loss_dfl = loss_dfl,
-                losses = losses
-        )
-
-        # ------------------ Aux regression loss ------------------
-        if epoch >= (self.max_epoch - self.no_aug_epoch - 1) and self.loss_box_aux:
-            ## delta_preds
-            delta_preds = torch.cat(outputs['pred_delta'], dim=1)
-            delta_preds_pos = delta_preds.view(-1, 4)[fg_masks]
-            ## aux loss
-            loss_box_aux = self.loss_bboxes_aux(delta_preds_pos, box_targets, anchors_pos, strides_pos)
-            loss_box_aux = loss_box_aux.sum() / num_fgs
-
-            losses += loss_box_aux
-            loss_dict['loss_box_aux'] = loss_box_aux
-
-
-        return loss_dict
-
-
-    def __call__(self, outputs, targets, epoch=0):
-        if self.cfg['cls_loss'] == "bce":
-            return self.compute_loss1(outputs, targets, epoch)
-        elif self.cfg['cls_loss'] == "qfl":
-            self.loss_box_weight = 2.0
-            return self.compute_loss2(outputs, targets, epoch)
-        else:
-            raise NotImplementedError
         
 
 def build_criterion(args, cfg, device, num_classes):
