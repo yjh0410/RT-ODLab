@@ -43,7 +43,7 @@
 python train.py \
         --cuda \
         -d coco \
-        --root /mnt/share/ssd2/dataset/ \
+        --root /data/datasets/ \
         -m yolov8_n \
         -bs 16 \
         -size 640 \
