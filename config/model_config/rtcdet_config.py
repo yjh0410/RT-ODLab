@@ -217,7 +217,7 @@ rtcdet_cfg = {
         'matcher_hpy': {'center_sampling_radius': 2.5,
                         'topk_candidate': 10},
         # ---------------- Loss config ----------------
-        'cls_loss': 'qfl',
+        'cls_loss': 'bce',
         'loss_cls_weight': 1.0,
         'loss_dfl_weight': 1.0,
         'loss_box_weight': 5.0,
