@@ -62,7 +62,7 @@ rtcdet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
