@@ -1,18 +1,18 @@
+# ----------------------------------------------------------------------------------------------------------------------
+    # This code referenced to https://github.com/open-mmlab/mmyolo/models/task_modules/assigners/batch_dsl_assigner.py
+# ----------------------------------------------------------------------------------------------------------------------
 import torch
 import torch.nn.functional as F
 from utils.box_ops import *
 
 
-# -------------------------- YOLOX's SimOTA Assigner --------------------------
-## Simple OTA
-class SimOTA(object):
-    """
-        This code referenced to https://github.com/Megvii-BaseDetection/YOLOX/blob/main/yolox/models/yolo_head.py
-    """
-    def __init__(self, num_classes, center_sampling_radius, topk_candidate ):
+# -------------------------- RTMDet's Aligned SimOTA Assigner --------------------------
+## Aligned SimOTA
+class AlignedSimOTA(object):
+    def __init__(self, num_classes, center_sampling_radius=2.5, topk_candidates=10):
         self.num_classes = num_classes
         self.center_sampling_radius = center_sampling_radius
-        self.topk_candidate = topk_candidate
+        self.topk_candidates = topk_candidates
 
 
     @torch.no_grad()
@@ -150,7 +150,7 @@ class SimOTA(object):
         matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)
 
         ious_in_boxes_matrix = pair_wise_ious
-        n_candidate_k = min(self.topk_candidate, ious_in_boxes_matrix.size(1))
+        n_candidate_k = min(self.topk_candidates, ious_in_boxes_matrix.size(1))
         topk_ious, _ = torch.topk(ious_in_boxes_matrix, n_candidate_k, dim=1)
         dynamic_ks = torch.clamp(topk_ious.sum(1).int(), min=1)
         dynamic_ks = dynamic_ks.tolist()
@@ -178,3 +178,4 @@ class SimOTA(object):
             fg_mask_inboxes
         ]
         return assigned_labels, assigned_ious, assigned_indexs
+    
