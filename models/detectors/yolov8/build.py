@@ -40,4 +40,5 @@ def build_yolov8(args, cfg, device, num_classes=80, trainable=False, deploy=Fals
     if trainable:
         # build criterion for training
         criterion = build_criterion(cfg, device, num_classes)
+        
     return model, criterion

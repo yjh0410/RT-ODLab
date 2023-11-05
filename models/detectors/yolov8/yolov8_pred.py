@@ -19,7 +19,6 @@ class SingleLevelPredLayer(nn.Module):
 
         self.init_bias()
         
-
     def init_bias(self):
         # Init bias
         init_prob = 0.01
@@ -35,7 +34,6 @@ class SingleLevelPredLayer(nn.Module):
         w = self.reg_pred.weight
         w.data.fill_(0.)
         self.reg_pred.weight = torch.nn.Parameter(w, requires_grad=True)
-
 
     def forward(self, cls_feat, reg_feat):
         """

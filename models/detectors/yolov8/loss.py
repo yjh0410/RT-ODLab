@@ -76,8 +76,8 @@ class Criterion(object):
     def __call__(self, outputs, targets, epoch=0):        
         """
             outputs['pred_cls']: List(Tensor) [B, M, C]
-            outputs['pred_regs']: List(Tensor) [B, M, 4*(reg_max+1)]
-            outputs['pred_boxs']: List(Tensor) [B, M, 4]
+            outputs['pred_reg']: List(Tensor) [B, M, 4*(reg_max+1)]
+            outputs['pred_box']: List(Tensor) [B, M, 4]
             outputs['anchors']: List(Tensor) [M, 2]
             outputs['strides']: List(Int) [8, 16, 32] output stride
             outputs['stride_tensor']: List(Tensor) [M, 1]

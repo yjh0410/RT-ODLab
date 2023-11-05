@@ -62,8 +62,8 @@ class Yolov8PaFPN(nn.Module):
                                                   )
         ## P4 -> P5
         self.dowmsample_layer_2 = Conv(round(512*width), round(512*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.bottom_up_layer_2 = Yolov8StageBlock(in_dim = round(512 * width) + c5,
-                                                  out_dim=round(512 * width * ratio),
+        self.bottom_up_layer_2 = Yolov8StageBlock(in_dim       = round(512 * width) + c5,
+                                                  out_dim      = round(512 * width * ratio),
                                                   expand_ratio = 0.5,
                                                   num_blocks   = round(3*depth),
                                                   shortcut     = False,

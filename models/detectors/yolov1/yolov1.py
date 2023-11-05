@@ -22,7 +22,7 @@ class YOLOv1(nn.Module):
                  deploy=False,
                  nms_class_agnostic :bool = False):
         super(YOLOv1, self).__init__()
-        # ------------------- Basic parameters -------------------
+        # ------------------------- 基础参数 ---------------------------
         self.cfg = cfg                                 # 模型配置文件
         self.img_size = img_size                       # 输入图像大小
         self.device = device                           # cuda或者是cpu
@@ -34,7 +34,7 @@ class YOLOv1(nn.Module):
         self.deploy = deploy
         self.nms_class_agnostic = nms_class_agnostic
         
-        # ------------------- Network Structure -------------------
+        # ----------------------- 模型网络结构 -------------------------
         ## 主干网络
         self.backbone, feat_dim = build_backbone(
             cfg['backbone'], trainable&cfg['pretrained'])
