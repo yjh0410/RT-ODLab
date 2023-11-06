@@ -46,7 +46,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     -d coco \
                                                     --root /data/datasets/ \
                                                     -m yolov8_n\
-                                                    -bs 256 \
+                                                    -bs 128 \
                                                     -size 640 \
                                                     --wp_epoch 3 \
                                                     --max_epoch 500 \
