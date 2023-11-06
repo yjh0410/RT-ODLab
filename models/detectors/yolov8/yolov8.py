@@ -29,16 +29,17 @@ class YOLOv8(nn.Module):
         # ---------------------- Basic Parameters ----------------------
         self.cfg = cfg
         self.device = device
-        self.stride = cfg['stride']
+        self.strides = cfg['stride']
         self.reg_max = cfg['reg_max']
         self.num_classes = num_classes
         self.trainable = trainable
         self.conf_thresh = conf_thresh
         self.nms_thresh = nms_thresh
+        self.num_levels = len(self.strides)
+        self.num_classes = num_classes
         self.topk = topk
         self.deploy = deploy
         self.nms_class_agnostic = nms_class_agnostic
-        self.head_dim = round(256*cfg['width'])
         
         # ---------------------- Network Parameters ----------------------
         ## ----------- Backbone -----------
@@ -53,13 +54,16 @@ class YOLOv8(nn.Module):
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Heads -----------
-        self.det_heads = build_det_head(
-            cfg, self.fpn_dims, self.head_dim, 4 * self.reg_max, num_levels=len(self.stride))
+        self.det_heads = build_det_head(cfg, self.fpn_dims, self.num_levels, num_classes, self.reg_max)
 
         ## ----------- Preds -----------
-        self.pred_layers = build_pred_layer(
-            self.det_heads.cls_head_dim, self.det_heads.reg_head_dim, self.stride,
-            num_classes=num_classes, num_coords=4, num_levels=len(self.stride), reg_max=self.reg_max)
+        self.pred_layers = build_pred_layer(cls_dim     = self.det_heads.cls_head_dim,
+                                            reg_dim     = self.det_heads.reg_head_dim,
+                                            strides     = self.strides,
+                                            num_classes = num_classes,
+                                            num_coords  = 4,
+                                            num_levels  = self.num_levels,
+                                            reg_max     = self.reg_max)
 
     ## post-process
     def post_process(self, cls_preds, box_preds):

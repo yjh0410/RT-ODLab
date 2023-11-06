@@ -109,29 +109,29 @@ class Yolov8StageBlock(nn.Module):
     def __init__(self,
                  in_dim,
                  out_dim,
-                 expand_ratio = 0.5,
-                 num_blocks   = 1,
-                 shortcut     = False,
-                 act_type     = 'silu',
-                 norm_type    = 'BN',
-                 depthwise    = False,):
+                 num_blocks = 1,
+                 shortcut   = False,
+                 act_type   = 'silu',
+                 norm_type  = 'BN',
+                 depthwise  = False,):
         super(Yolov8StageBlock, self).__init__()
-        inter_dim = int(out_dim * expand_ratio)
-        self.cv1 = Conv(in_dim, inter_dim, k=1, norm_type=norm_type, act_type=act_type)
-        self.cv2 = Conv(in_dim, inter_dim, k=1, norm_type=norm_type, act_type=act_type)
+        self.inter_dim = out_dim // 2
+        self.input_proj = Conv(in_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.m = nn.Sequential(*(
-            Yolov8Bottleneck(inter_dim, inter_dim, 1.0, [3, 3], shortcut, act_type, norm_type, depthwise)
+            Yolov8Bottleneck(self.inter_dim, self.inter_dim, 1.0, [3, 3], shortcut, act_type, norm_type, depthwise)
             for _ in range(num_blocks)))
-        self.cv3 = Conv((2 + num_blocks) * inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.output_proj = Conv((2 + num_blocks) * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
-        x1 = self.cv1(x)
-        x2 = self.cv2(x)
+        # Input proj
+        x1, x2 = torch.split(self.input_proj(x), self.inter_dim, dim=1)
         out = list([x1, x2])
 
+        # Bottlenecl
         out.extend(m(out[-1]) for m in self.m)
 
-        out = self.cv3(torch.cat(out, dim=1))
+        # Output proj
+        out = self.output_proj(torch.cat(out, dim=1))
 
         return out
     
