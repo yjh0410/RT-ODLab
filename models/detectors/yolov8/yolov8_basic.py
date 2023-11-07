@@ -124,7 +124,7 @@ class Yolov8StageBlock(nn.Module):
 
     def forward(self, x):
         # Input proj
-        x1, x2 = torch.split(self.input_proj(x), self.inter_dim, dim=1)
+        x1, x2 = torch.chunk(self.input_proj(x), 2, dim=1)
         out = list([x1, x2])
 
         # Bottlenecl
