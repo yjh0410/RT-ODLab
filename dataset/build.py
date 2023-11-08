@@ -91,7 +91,8 @@ def build_transform(args, trans_config, max_stride=32, is_train=False):
         if is_train:
             transform = YOLOv5Augmentation(
                 img_size=args.img_size,
-                trans_config=trans_config
+                trans_config=trans_config,
+                use_ablu=trans_config['use_ablu']
                 )
         else:
             transform = YOLOv5BaseTransform(

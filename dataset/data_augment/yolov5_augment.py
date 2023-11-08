@@ -3,6 +3,7 @@ import cv2
 import math
 import numpy as np
 import torch
+import albumentations as albu
 
 
 # ------------------------- Basic augmentations -------------------------
@@ -93,6 +94,31 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
 
     img_hsv = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val))).astype(dtype)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
+
+## Ablu transform
+class Albumentations(object):
+    def __init__(self, img_size=640):
+        self.img_size = img_size
+        self.transform = albu.Compose(
+            [albu.Blur(p=0.01),
+             albu.MedianBlur(p=0.01),
+             albu.ToGray(p=0.01),
+             albu.CLAHE(p=0.01),
+             ],
+             bbox_params=albu.BboxParams(format='pascal_voc', label_fields=['labels'])
+        )
+
+    def __call__(self, image, target=None):
+        labels = target['labels']
+        bboxes = target['boxes']
+        if len(labels) > 0:
+            new = self.transform(image=image, bboxes=bboxes, labels=labels)
+            if len(new["labels"]) > 0:
+                image = new['image']
+                target['labels'] = np.array(new["labels"], dtype=labels.dtype)
+                target['boxes'] = np.array(new["bboxes"], dtype=bboxes.dtype)
+
+        return image, target
 
 
 # ------------------------- Strong augmentations -------------------------
@@ -303,17 +329,16 @@ def yolox_mixup_augment(origin_img, origin_target, new_img, new_target, img_size
 # ------------------------- Preprocessers -------------------------
 ## YOLOv5-style Transform for Train
 class YOLOv5Augmentation(object):
-    def __init__(self, 
-                 img_size=640,
-                 trans_config=None):
-        self.trans_config = trans_config
+    def __init__(self, img_size=640, trans_config=None, use_ablu=False):
+        # Basic parameters
         self.img_size = img_size
-
+        self.trans_config = trans_config
+        # Albumentations
+        self.ablu_trans = Albumentations(img_size) if use_ablu else None
 
     def __call__(self, image, target, mosaic=False):
-        # resize
+        # --------------- Keep ratio Resize ---------------
         img_h0, img_w0 = image.shape[:2]
-
         r = self.img_size / max(img_h0, img_w0)
         if r != 1: 
             interp = cv2.INTER_LINEAR
@@ -321,21 +346,32 @@ class YOLOv5Augmentation(object):
             img = cv2.resize(image, new_shape, interpolation=interp)
         else:
             img = image
-
         img_h, img_w = img.shape[:2]
 
-        # hsv augment
+        # --------------- Filter bad targets ---------------
+        tgt_boxes_wh = target["boxes"][..., 2:] - target["boxes"][..., :2]
+        min_tgt_size = np.min(tgt_boxes_wh, axis=-1)
+        keep = (min_tgt_size > 1)
+        target["boxes"]  = target["boxes"][keep]
+        target["labels"] = target["labels"][keep]
+
+        # --------------- Albumentations ---------------
+        if self.ablu_trans is not None:
+            img, target = self.ablu_trans(img, target)
+
+        # --------------- HSV augmentations ---------------
         augment_hsv(img, hgain=self.trans_config['hsv_h'], 
                     sgain=self.trans_config['hsv_s'], 
                     vgain=self.trans_config['hsv_v'])
         
+        # --------------- Spatial augmentations ---------------
+        ## Random perspective
         if not mosaic:
             # rescale bbox
             boxes_ = target["boxes"].copy()
             boxes_[:, [0, 2]] = boxes_[:, [0, 2]] / img_w0 * img_w
             boxes_[:, [1, 3]] = boxes_[:, [1, 3]] / img_h0 * img_h
             target["boxes"] = boxes_
-
             # spatial augment
             target_ = np.concatenate(
                 (target['labels'][..., None], target['boxes']), axis=-1)
@@ -349,8 +385,7 @@ class YOLOv5Augmentation(object):
                 )
             target['boxes'] = target_[..., 1:]
             target['labels'] = target_[..., 0]
-        
-        # random flip
+        ## Random flip
         if random.random() < 0.5:
             w = img.shape[1]
             img = np.fliplr(img).copy()
@@ -358,17 +393,14 @@ class YOLOv5Augmentation(object):
             boxes[..., [0, 2]] = w - boxes[..., [2, 0]]
             target["boxes"] = boxes
 
-        # to tensor
+        # --------------- To torch.Tensor ---------------
         img_tensor = torch.from_numpy(img).permute(2, 0, 1).contiguous().float()
-
         if target is not None:
             target["boxes"] = torch.as_tensor(target["boxes"]).float()
             target["labels"] = torch.as_tensor(target["labels"]).long()
 
-        # pad img
+        # --------------- Pad image ---------------
         img_h0, img_w0 = img_tensor.shape[1:]
-        assert max(img_h0, img_w0) <= self.img_size
-
         pad_image = torch.ones([img_tensor.size(0), self.img_size, self.img_size]).float() * 114.
         pad_image[:, :img_h0, :img_w0] = img_tensor
         dh = self.img_size - img_h0
@@ -384,23 +416,17 @@ class YOLOv5BaseTransform(object):
 
 
     def __call__(self, image, target=None, mosaic=False):
-        # resize
+        # --------------- Keep ratio Resize ---------------
+        ## Resize image
         img_h0, img_w0 = image.shape[:2]
-
         r = self.img_size / max(img_h0, img_w0)
-        # r = min(r, 1.0) # only scale down, do not scale up (for better val mAP)
         if r != 1: 
             new_shape = (int(round(img_w0 * r)), int(round(img_h0 * r)))
             img = cv2.resize(image, new_shape, interpolation=cv2.INTER_LINEAR)
         else:
             img = image
-
         img_h, img_w = img.shape[:2]
-
-        # to tensor
-        img_tensor = torch.from_numpy(img).permute(2, 0, 1).contiguous().float()
-
-        # rescale bboxes
+        ## Rescale bboxes
         if target is not None:
             # rescale bbox
             boxes_ = target["boxes"].copy()
@@ -408,11 +434,13 @@ class YOLOv5BaseTransform(object):
             boxes_[:, [1, 3]] = boxes_[:, [1, 3]] / img_h0 * img_h
             target["boxes"] = boxes_
 
-            # to tensor
+        # --------------- To torch.Tensor ---------------
+        img_tensor = torch.from_numpy(img).permute(2, 0, 1).contiguous().float()
+        if target is not None:
             target["boxes"] = torch.as_tensor(target["boxes"]).float()
             target["labels"] = torch.as_tensor(target["labels"]).long()
 
-        # pad img
+        # --------------- Pad image ---------------
         img_h0, img_w0 = img_tensor.shape[1:]
         dh = img_h0 % self.max_stride
         dw = img_w0 % self.max_stride

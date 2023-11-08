@@ -13,6 +13,7 @@ yolov5_huge_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 0.2,
@@ -32,6 +33,7 @@ yolov5_large_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 0.15,
@@ -51,6 +53,7 @@ yolov5_medium_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 0.10,
@@ -70,6 +73,7 @@ yolov5_small_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 0.0,
@@ -89,6 +93,7 @@ yolov5_nano_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 0.0,
@@ -108,6 +113,7 @@ yolov5_pico_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 0.5,
     'mixup_prob': 0.0,
@@ -129,6 +135,7 @@ yolox_huge_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': False,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 1.0,
@@ -148,6 +155,7 @@ yolox_large_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': False,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 1.0,
@@ -167,6 +175,7 @@ yolox_medium_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': False,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 1.0,
@@ -186,6 +195,7 @@ yolox_small_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': False,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 1.0,
@@ -205,6 +215,7 @@ yolox_nano_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': False,
     # Mosaic & Mixup
     'mosaic_prob': 1.0,
     'mixup_prob': 0.5,
@@ -224,6 +235,7 @@ yolox_pico_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': False,
     # Mosaic & Mixup
     'mosaic_prob': 0.5,
     'mixup_prob': 0.0,
@@ -245,6 +257,7 @@ rtrdet_large_trans_config = {
     'hsv_h': 0.015,
     'hsv_s': 0.7,
     'hsv_v': 0.4,
+    'use_ablu': True,
     # Mosaic & Mixup
     'mosaic_prob': 0.0,
     'mixup_prob': 0.0,
@@ -257,6 +270,7 @@ rtrdet_large_trans_config = {
 # ----------------------- SSD-Style Transform -----------------------
 ssd_trans_config = {
     'aug_type': 'ssd',
+    'use_ablu': False,
     # Mosaic & Mixup are not used for SSD-style augmentation
     'mosaic_prob': 0.,
     'mixup_prob': 0.,

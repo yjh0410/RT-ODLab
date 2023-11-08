@@ -322,11 +322,12 @@ if __name__ == "__main__":
         'hsv_h': 0.015,
         'hsv_s': 0.7,
         'hsv_v': 0.4,
+        'use_ablu': True,
         # Mosaic & Mixup
         'mosaic_prob': 1.0,
         'mixup_prob': 1.0,
         'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolox_mixup',
+        'mixup_type': 'yolov5_mixup',
         'mixup_scale': [0.5, 1.5]
     }
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
