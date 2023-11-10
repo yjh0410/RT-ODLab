@@ -47,8 +47,10 @@ def parse_args():
                         help='confidence threshold')
     parser.add_argument('-nt', '--nms_thresh', default=0.5, type=float,
                         help='NMS threshold')
-    parser.add_argument('--topk', default=100, type=int,
-                        help='topk candidates for testing')
+    parser.add_argument('--topk', default=1000, type=int,
+                        help='topk candidates dets of each level before NMS')
+    parser.add_argument('--max_dets', default=300, type=int,
+                        help='max number of dets after NMS')
     parser.add_argument("--no_decode", action="store_true", default=False,
                         help="not decode in inference or yes")
     parser.add_argument('--fuse_conv_bn', action='store_true', default=False,

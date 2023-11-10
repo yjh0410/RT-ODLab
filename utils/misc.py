@@ -290,18 +290,22 @@ def nms(bboxes, scores, nms_thresh):
     return keep
 
 ## class-agnostic NMS 
-def multiclass_nms_class_agnostic(scores, labels, bboxes, nms_thresh):
+def multiclass_nms_class_agnostic(scores, labels, bboxes, nms_thresh, max_dets=300):
     # nms
     keep = nms(bboxes, scores, nms_thresh)
-
     scores = scores[keep]
     labels = labels[keep]
     bboxes = bboxes[keep]
 
+    # max dets
+    scores = scores[:max_dets]
+    labels = labels[:max_dets]
+    bboxes = bboxes[:max_dets]
+
     return scores, labels, bboxes
 
 ## class-aware NMS 
-def multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes):
+def multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes, max_dets=300):
     # nms
     keep = np.zeros(len(bboxes), dtype=np.int32)
     for i in range(num_classes):
@@ -312,20 +316,24 @@ def multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes):
         c_scores = scores[inds]
         c_keep = nms(c_bboxes, c_scores, nms_thresh)
         keep[inds[c_keep]] = 1
-
     keep = np.where(keep > 0)
     scores = scores[keep]
     labels = labels[keep]
     bboxes = bboxes[keep]
 
+    # max dets
+    scores = scores[:max_dets]
+    labels = labels[:max_dets]
+    bboxes = bboxes[:max_dets]
+
     return scores, labels, bboxes
 
 ## multi-class NMS 
-def multiclass_nms(scores, labels, bboxes, nms_thresh, num_classes, class_agnostic=False):
+def multiclass_nms(scores, labels, bboxes, nms_thresh, num_classes, class_agnostic=False, max_dets=300):
     if class_agnostic:
-        return multiclass_nms_class_agnostic(scores, labels, bboxes, nms_thresh)
+        return multiclass_nms_class_agnostic(scores, labels, bboxes, nms_thresh, max_dets)
     else:
-        return multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes)
+        return multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes, max_dets)
 
 
 # ---------------------------- Processor for Deployment ----------------------------
