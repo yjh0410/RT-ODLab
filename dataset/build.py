@@ -8,7 +8,6 @@ try:
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
 except:
-    print(999)
     from voc import VOCDetection
     from coco import COCODataset
     from ourdataset import OurDataset
