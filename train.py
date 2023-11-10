@@ -67,8 +67,6 @@ def parse_args():
                         help='NMS threshold')
     parser.add_argument('--topk', default=1000, type=int,
                         help='topk candidates dets of each level before NMS')
-    parser.add_argument('--max_dets', default=300, type=int,
-                        help='max number of dets after NMS')
     parser.add_argument('-p', '--pretrained', default=None, type=str,
                         help='load pretrained weight')
     parser.add_argument('-r', '--resume', default=None, type=str,

@@ -22,7 +22,6 @@ class YOLOv8(nn.Module):
                  conf_thresh = 0.01,
                  nms_thresh  = 0.5,
                  topk        = 1000,
-                 max_dets    = 300,
                  trainable   = False,
                  deploy      = False,
                  nms_class_agnostic = False):
@@ -39,7 +38,6 @@ class YOLOv8(nn.Module):
         self.num_levels = len(self.strides)
         self.num_classes = num_classes
         self.topk = topk
-        self.max_dets = max_dets
         self.deploy = deploy
         self.nms_class_agnostic = nms_class_agnostic
         
@@ -118,7 +116,7 @@ class YOLOv8(nn.Module):
 
         # nms
         scores, labels, bboxes = multiclass_nms(
-            scores, labels, bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic, self.max_dets)
+            scores, labels, bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
         
         return bboxes, scores, labels
 

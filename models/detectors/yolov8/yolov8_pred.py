@@ -31,9 +31,6 @@ class SingleLevelPredLayer(nn.Module):
         b = self.reg_pred.bias.view(-1, )
         b.data.fill_(1.0)
         self.reg_pred.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
-        w = self.reg_pred.weight
-        w.data.fill_(0.)
-        self.reg_pred.weight = torch.nn.Parameter(w, requires_grad=True)
 
     def forward(self, cls_feat, reg_feat):
         """

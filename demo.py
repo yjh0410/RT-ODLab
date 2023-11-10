@@ -60,8 +60,6 @@ def parse_args():
                         help='NMS threshold')
     parser.add_argument('--topk', default=1000, type=int,
                         help='topk candidates dets of each level before NMS')
-    parser.add_argument('--max_dets', default=300, type=int,
-                        help='max number of dets after NMS')
     parser.add_argument("--deploy", action="store_true", default=False,
                         help="deploy mode or not")
     parser.add_argument('--fuse_repconv', action='store_true', default=False,
