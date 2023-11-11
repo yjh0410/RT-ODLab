@@ -59,6 +59,15 @@ class SingleLevelHead(nn.Module):
         self.cls_feats = nn.Sequential(*cls_feats)
         self.reg_feats = nn.Sequential(*reg_feats)
 
+        self.init_weights()
+        
+    def init_weights(self):
+        """Initialize the parameters."""
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d):
+                # In order to be consistent with the source code,
+                # reset the Conv2d initialization parameters
+                m.reset_parameters()
 
     def forward(self, x):
         """
@@ -72,14 +81,14 @@ class SingleLevelHead(nn.Module):
 
 # Multi-level Head
 class MultiLevelHead(nn.Module):
-    def __init__(self, cfg, in_dims, out_dim, num_classes=80, num_levels=3):
+    def __init__(self, cfg, in_dims, num_levels=3, num_classes=80, reg_max=16):
         super().__init__()
         ## ----------- Network Parameters -----------
         self.multi_level_heads = nn.ModuleList(
             [SingleLevelHead(
                 in_dims[level],
-                out_dim,            # cls head dim
-                out_dim,            # reg head dim
+                max(in_dims[0], min(num_classes, 100)), # cls head out_dim
+                max(in_dims[0]//4, 16, 4*reg_max),      # reg head out_dim
                 cfg['num_cls_head'],
                 cfg['num_reg_head'],
                 cfg['head_act'],
@@ -89,7 +98,6 @@ class MultiLevelHead(nn.Module):
             ])
         # --------- Basic Parameters ----------
         self.in_dims = in_dims
-        self.num_classes = num_classes
 
         self.cls_head_dim = self.multi_level_heads[0].cls_head_dim
         self.reg_head_dim = self.multi_level_heads[0].reg_head_dim
@@ -112,9 +120,9 @@ class MultiLevelHead(nn.Module):
     
 
 # build detection head
-def build_det_head(cfg, in_dim, out_dim, num_classes=80, num_levels=3):
+def build_det_head(cfg, in_dims, num_levels=3, num_classes=80, reg_max=16):
     if cfg['head'] == 'decoupled_head':
-        head = MultiLevelHead(cfg, in_dim, out_dim, num_classes, num_levels) 
+        head = MultiLevelHead(cfg, in_dims, num_levels, num_classes, reg_max)
 
     return head
 
@@ -131,10 +139,12 @@ if __name__ == '__main__':
         'head_depthwise': False,
         'reg_max': 16,
     }
-    fpn_dims = [256, 256, 256]
-    out_dim = 256
+    fpn_dims = [256, 512, 512]
+    cls_out_dim = 256
+    reg_out_dim = 64
     # Head-1
-    model = build_det_head(cfg, fpn_dims, out_dim, num_classes=80, reg_max=16, num_levels=3)
+    model = build_det_head(cfg, fpn_dims, num_levels=3, num_classes=80, reg_max=16)
+    print(model)
     fpn_feats = [torch.randn(1, fpn_dims[0], 80, 80), torch.randn(1, fpn_dims[1], 40, 40), torch.randn(1, fpn_dims[2], 20, 20)]
     t0 = time.time()
     outputs = model(fpn_feats)

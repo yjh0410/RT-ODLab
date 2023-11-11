@@ -42,20 +42,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.4, 1.0], # 256 -> 640
-        'trans_type': 'yolox_pico',
+        'trans_type': 'yolov5_pico',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'cls_loss': 'bce',
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_n':{
@@ -98,20 +97,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolox_nano',
+        'trans_type': 'yolov5_nano',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'cls_loss': 'qfl',
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_t':{
@@ -154,20 +152,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolox_small',
+        'trans_type': 'yolov5_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'cls_loss': 'bce',
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_s':{
@@ -210,19 +207,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolox_small',
+        'trans_type': 'yolov5_small',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_m':{
@@ -265,20 +262,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolox_medium',
+        'trans_type': 'yolov5_medium',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'cls_loss': 'bce',
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_l':{
@@ -321,20 +317,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolox_large',
+        'trans_type': 'yolov5_large',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'cls_loss': 'bce',
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
     'rtcdet_x':{
@@ -377,20 +372,19 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolox_huge',
+        'trans_type': 'yolov5_huge',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "simota",
-        'matcher_hpy': {'center_sampling_radius': 2.5,
-                        'topk_candidate': 10},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        'cls_loss': 'bce',
-        'loss_cls_weight': 1.0,
-        'loss_dfl_weight': 1.0,
-        'loss_box_weight': 5.0,
-        'loss_box_aux': True,
+        'loss_cls_weight': 0.5,
+        'loss_dfl_weight': 1.5,
+        'loss_box_weight': 7.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolov8',
     },
 
 }

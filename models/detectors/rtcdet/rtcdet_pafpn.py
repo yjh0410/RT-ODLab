@@ -45,6 +45,16 @@ class RTCDetPaFPN(nn.Module):
             self.out_layers = None
             self.out_dim = [round(256*cfg['width']), round(512*cfg['width']), round(1024*cfg['width'])]
 
+        self.init_weights()
+        
+    def init_weights(self):
+        """Initialize the parameters."""
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d):
+                # In order to be consistent with the source code,
+                # reset the Conv2d initialization parameters
+                m.reset_parameters()
+
 
     def forward(self, fpn_feats):
         c3, c4, c5 = fpn_feats
