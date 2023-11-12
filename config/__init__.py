@@ -30,8 +30,6 @@ from .data_config.transform_config import (
     yolox_medium_trans_config,
     yolox_large_trans_config,
     yolox_huge_trans_config,
-    # RTRDet-Style
-    rtrdet_large_trans_config,
     # SSD-Style
     ssd_trans_config,
 )
@@ -72,10 +70,6 @@ def build_trans_config(trans_config='ssd'):
     elif trans_config == 'yolox_huge':
         cfg = yolox_huge_trans_config
 
-    # RTRDet-style transform
-    elif trans_config == 'rtrdet_large':
-        cfg = rtrdet_large_trans_config
-        
     print('Transform Config: {} \n'.format(cfg))
 
     return cfg
