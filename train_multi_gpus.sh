@@ -30,7 +30,7 @@ python -m torch.distributed.run --nproc_per_node=8 train.py \
                                                     --wp_epoch 3 \
                                                     --max_epoch 500 \
                                                     --eval_epoch 10 \
-                                                    --no_aug_epoch 10 \
+                                                    --no_aug_epoch 20 \
                                                     --ema \
                                                     --fp16 \
                                                     --sybn \
