@@ -49,7 +49,7 @@ yolov8_cfg = {
         'loss_box_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtcdet',
     },
 
     'yolov8_l':{
