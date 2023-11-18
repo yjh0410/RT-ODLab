@@ -1,5 +1,6 @@
 from __future__ import division
 
+import os
 import argparse
 from copy import deepcopy
 
@@ -115,16 +116,25 @@ def train():
     print("----------------------------------------------------------")
 
     # Build DDP
+    local_rank = local_process_rank = -1
     if args.distributed:
         distributed_utils.init_distributed_mode(args)
         print("git:\n  {}\n".format(distributed_utils.get_sha()))
+        try:
+            # Multiple Mechine & Multiple GPUs (world size > 8)
+            local_rank = torch.distributed.get_rank()
+            local_process_rank = int(os.getenv('LOCAL_PROCESS_RANK', '0'))
+        except:
+            # Single Mechine & Multiple GPUs (world size <= 8)
+            local_rank = local_process_rank = torch.distributed.get_rank()
     world_size = distributed_utils.get_world_size()
-    print('World size: {}'.format(world_size))
+    print("LOCAL RANK: ", local_rank)
+    print("LOCAL_PROCESS_RANL: ", local_process_rank)
+    print('WORLD SIZE: {}'.format(world_size))
 
     # Build CUDA
-    if args.cuda:
+    if args.cuda and torch.cuda.is_available():
         print('use cuda')
-        # cudnn.benchmark = True
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
@@ -136,15 +146,6 @@ def train():
 
     # Build Model
     model, criterion = build_model(args, model_cfg, device, data_cfg['num_classes'], True)
-
-    # Keep training
-    if distributed_utils.is_main_process and args.resume is not None:
-        print('keep training: ', args.resume)
-        checkpoint = torch.load(args.resume, map_location='cpu')
-        # checkpoint state dict
-        checkpoint_state_dict = checkpoint.pop("model")
-        model.load_state_dict(checkpoint_state_dict)
-
     model = model.to(device).train()
     model_without_ddp = model
     if args.sybn and args.distributed:

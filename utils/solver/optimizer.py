@@ -32,7 +32,7 @@ def build_yolo_optimizer(cfg, model, resume=None):
     optimizer.add_param_group({'params': g[1], 'weight_decay': 0.0})                  # add g1 (BatchNorm2d weights)
 
     start_epoch = 0
-    if resume is not None:
+    if resume and resume != "None":
         print('keep training: ', resume)
         checkpoint = torch.load(resume)
         # checkpoint state dict
@@ -66,7 +66,7 @@ def build_detr_optimizer(cfg, model, resume=None):
         raise NotImplementedError('Optimizer {} not implemented.'.format(cfg['optimizer']))
 
     start_epoch = 0
-    if resume is not None:
+    if resume and resume != 'None':
         print('keep training: ', resume)
         checkpoint = torch.load(resume)
         # checkpoint state dict
