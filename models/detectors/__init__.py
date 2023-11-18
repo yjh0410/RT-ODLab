@@ -11,6 +11,7 @@ from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
+from .yolox2.build import build_yolox2
 
 
 # build object detector
@@ -48,9 +49,13 @@ def build_model(args,
     elif args.model in ['yolov8_n', 'yolov8_s', 'yolov8_m', 'yolov8_l', 'yolov8_x']:
         model, criterion = build_yolov8(
             args, model_cfg, device, num_classes, trainable, deploy)
-    # YOLOX   
+    # YOLOX
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # YOLOX2
+    elif args.model in ['yolox2_n', 'yolox2_s', 'yolox2_m', 'yolox2_l', 'yolox2_x']:
+        model, criterion = build_yolox2(
             args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:

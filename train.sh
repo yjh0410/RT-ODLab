@@ -14,6 +14,13 @@ if [[ $MODEL == *"yolov8"* ]]; then
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
+elif [[ $MODEL == *"yolox2"* ]]; then
+    # Epoch setting
+    BATCH_SIZE=128
+    MAX_EPOCH=300
+    WP_EPOCH=3
+    EVAL_EPOCH=10
+    NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolox"* ]]; then
     # Epoch setting
     BATCH_SIZE=64
