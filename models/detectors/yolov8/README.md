@@ -9,7 +9,7 @@
 
 - For training, we train YOLOv8 series with 500 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOv8](https://github.com/ultralytics/yolov8).
-- For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64, which is different from the official YOLOv8.
+- For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64, which is different from the official YOLOv8. We have tried SGD, but it has weakened performance. For example, when using SGD, YOLOv8-N's AP was only 35.8%, lower than the current result (36.8 %), perhaps because some hyperparameters were not set properly.
 - For learning rate scheduler, we use linear decay scheduler.
 
 
