@@ -127,7 +127,7 @@ def test(args,
     save_path = os.path.join('det_results/', args.dataset, args.model)
     os.makedirs(save_path, exist_ok=True)
 
-    for index in range(2000,num_images):
+    for index in range(num_images):
         print('Testing image {:d}/{:d}....'.format(index+1, num_images))
         image, _ = dataset.pull_image(index)
 
