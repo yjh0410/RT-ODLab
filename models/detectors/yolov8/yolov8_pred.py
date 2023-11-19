@@ -141,6 +141,7 @@ class MultiLevelPredLayer(nn.Module):
             x2y2_pred = outputs["anchors"][None] + delta_pred[..., 2:] * self.strides[level]
             box_pred = torch.cat([x1y1_pred, x2y2_pred], dim=-1)
 
+            # collect results
             all_cls_preds.append(outputs["pred_cls"])
             all_reg_preds.append(outputs["pred_reg"])
             all_box_preds.append(box_pred)
