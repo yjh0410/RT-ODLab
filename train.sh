@@ -4,7 +4,7 @@ DATA_ROOT="/data/datasets/"
 # DATA_ROOT="/Users/liuhaoran/Desktop/python_work/object-detection/dataset/"
 
 # MODEL setting
-MODEL="yolov8_n"
+MODEL="yolov8_l"
 IMAGE_SIZE=640
 RESUME="None"
 if [[ $MODEL == *"yolov8"* ]]; then
