@@ -6,7 +6,12 @@ import torch.nn.functional as F
 
 # Single-level pred layer
 class SingleLevelPredLayer(nn.Module):
-    def __init__(self, cls_dim, reg_dim, stride, num_classes, num_coords=4):
+    def __init__(self,
+                 cls_dim      :int = 256,
+                 reg_dim      :int = 256,
+                 stride       :int = 32,
+                 num_classes  :int = 80,
+                 num_coords   :int = 4):
         super().__init__()
         # --------- Basic Parameters ----------
         self.stride = stride
@@ -57,14 +62,13 @@ class MultiLevelPredLayer(nn.Module):
         # ----------- Network Parameters -----------
         ## pred layers
         self.multi_level_preds = nn.ModuleList(
-            [SingleLevelPredLayer(
-                cls_dim,
-                reg_dim,
-                strides[l],
-                num_classes,
-                num_coords * self.reg_max)
-                for l in range(num_levels)
-            ])
+            [SingleLevelPredLayer(cls_dim     = cls_dim,
+                                  reg_dim     = reg_dim,
+                                  stride      = strides[level],
+                                  num_classes = num_classes,
+                                  num_coords  = num_coords * reg_max)
+                                  for level in range(num_levels)
+                                  ])
         ## proj conv
         proj_init = torch.arange(reg_max, dtype=torch.float)
         self.proj_conv = nn.Conv2d(self.reg_max, 1, kernel_size=1, bias=False).requires_grad_(False)

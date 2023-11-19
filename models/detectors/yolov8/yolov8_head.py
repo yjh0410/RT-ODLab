@@ -9,7 +9,15 @@ except:
 
 # Single-level Head
 class SingleLevelHead(nn.Module):
-    def __init__(self, in_dim, cls_head_dim, reg_head_dim, num_cls_head, num_reg_head, act_type, norm_type, depthwise):
+    def __init__(self,
+                 in_dim       :int  = 256,
+                 cls_head_dim :int  = 256,
+                 reg_head_dim :int  = 256,
+                 num_cls_head :int  = 2,
+                 num_reg_head :int  = 2,
+                 act_type     :str  = "silu",
+                 norm_type    :str  = "BN",
+                 depthwise    :bool = False):
         super().__init__()
         # --------- Basic Parameters ----------
         self.in_dim = in_dim
@@ -78,27 +86,24 @@ class SingleLevelHead(nn.Module):
 
         return cls_feats, reg_feats
     
-
 # Multi-level Head
 class MultiLevelHead(nn.Module):
     def __init__(self, cfg, in_dims, num_levels=3, num_classes=80, reg_max=16):
         super().__init__()
         ## ----------- Network Parameters -----------
         self.multi_level_heads = nn.ModuleList(
-            [SingleLevelHead(
-                in_dims[level],
-                max(in_dims[0], min(num_classes, 100)), # cls head out_dim
-                max(in_dims[0]//4, 16, 4*reg_max),      # reg head out_dim
-                cfg['num_cls_head'],
-                cfg['num_reg_head'],
-                cfg['head_act'],
-                cfg['head_norm'],
-                cfg['head_depthwise'])
-                for level in range(num_levels)
-            ])
+            [SingleLevelHead(in_dim       = in_dims[level],
+                             cls_head_dim = max(in_dims[0], min(num_classes, 100)),
+                             reg_head_dim = max(in_dims[0]//4, 16, 4*reg_max),
+                             num_cls_head = cfg['num_cls_head'],
+                             num_reg_head = cfg['num_reg_head'],
+                             act_type     = cfg['head_act'],
+                             norm_type    = cfg['head_norm'],
+                             depthwise    = cfg['head_depthwise'])
+                             for level in range(num_levels)
+                             ])
         # --------- Basic Parameters ----------
         self.in_dims = in_dims
-
         self.cls_head_dim = self.multi_level_heads[0].cls_head_dim
         self.reg_head_dim = self.multi_level_heads[0].reg_head_dim
 

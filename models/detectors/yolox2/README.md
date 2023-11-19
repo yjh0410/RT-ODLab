@@ -9,7 +9,7 @@
 | YOLOX2-X | 8xb16 |  640  |                        |                   |                   |                    |  |
 
 - For training, we train YOLOX2 series with 300 epochs on COCO.
-- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation.
+- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the YOLOX.
 - For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64,.
 - For learning rate scheduler, we use Linear decay scheduler.
 
