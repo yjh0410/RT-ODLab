@@ -2,7 +2,7 @@
 
 |   Model   |  Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |-----------|--------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv8-N  | 8xb16  |  640  |                        |                   |                   |                    |  |
+| YOLOv8-N  | 8xb16  |  640  |          36.8          |        52.9       |        8.8        |         3.2        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov8_n_coco.pth) |
 | YOLOv8-S  | 8xb16  |  640  |                        |                   |                   |                    |  |
 | YOLOv8-M  | 8xb16  |  640  |                        |                   |                   |                    |  |
 | YOLOv8-L  | 8xb16  |  640  |                        |                   |                   |                    |  |
