@@ -106,6 +106,10 @@ def parse_args():
                         help='number of distributed processes')
     parser.add_argument('--sybn', action='store_true', default=False, 
                         help='use sybn.')
+    
+    # Debug mode
+    parser.add_argument('--debug', action='store_true', default=False, 
+                        help='debug mode.')
 
     return parser.parse_args()
 
