@@ -44,6 +44,8 @@ class COCODataset(Dataset):
             self.json_file='instances_val2017.json'
         elif image_set == 'test2017':
             self.json_file='image_info_test-dev2017.json'
+        else:
+            raise NotImplementedError("Unknown json image set {}.".format(image_set))
         # ----------- Data parameters -----------
         self.coco = COCO(os.path.join(self.data_dir, 'annotations', self.json_file))
         self.ids = self.coco.getImgIds()
