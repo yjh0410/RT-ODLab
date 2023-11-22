@@ -2,6 +2,7 @@
 DATASET="coco"
 DATA_ROOT="/data/datasets/"
 # DATA_ROOT="/Users/liuhaoran/Desktop/python_work/object-detection/dataset/"
+CACHED_DATA="${DATA_ROOT}/coco_train.pth"
 
 # MODEL setting
 MODEL="yolov8_l"
@@ -58,6 +59,7 @@ if [ $WORLD_SIZE == 1 ]; then
             --cuda \
             --dataset ${DATASET} \
             --root ${DATA_ROOT} \
+            --load_cache ${CACHED_DATA} \
             --model ${MODEL} \
             --batch_size ${BATCH_SIZE} \
             --img_size ${IMAGE_SIZE} \
@@ -75,6 +77,7 @@ elif [[ $WORLD_SIZE -gt 1 && $WORLD_SIZE -le 8 ]]; then
             -dist \
             --dataset ${DATASET} \
             --root ${DATA_ROOT} \
+            --load_cache ${CACHED_DATA} \
             --model ${MODEL} \
             --batch_size ${BATCH_SIZE} \
             --img_size ${IMAGE_SIZE} \

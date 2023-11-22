@@ -89,10 +89,11 @@ def parse_args():
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc, widerface, crowdhuman')
-    parser.add_argument('--load_cache', action='store_true', default=False,
-                        help='load data into memory.')
+    parser.add_argument('--load_cache', type=str, default=None,
+                        help='Path to the cached data.')
     parser.add_argument('--num_workers', default=4, type=int, 
                         help='Number of workers used in dataloading')
+    
     # Train trick
     parser.add_argument('-ms', '--multi_scale', action='store_true', default=False,
                         help='Multi scale')

@@ -37,7 +37,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
             image_sets=[('2007', 'trainval'), ('2012', 'trainval')] if is_train else [('2007', 'test')],
             transform=transform,
             trans_config=trans_config,
-            load_cache=args.load_cache
+            load_cache=args.load_cache if is_train else None
             )
     ## COCO dataset
     elif args.dataset == 'coco':
@@ -47,7 +47,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
             image_set='train2017' if is_train else 'val2017',
             transform=transform,
             trans_config=trans_config,
-            load_cache=args.load_cache
+            load_cache=args.load_cache if is_train else None
             )
     ## Custom dataset
     elif args.dataset == 'ourdataset':
@@ -57,7 +57,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
             image_set='train' if is_train else 'val',
             transform=transform,
             trans_config=trans_config,
-            load_cache=args.load_cache
+            load_cache=args.load_cache if is_train else None
             )
 
     return dataset, dataset_info

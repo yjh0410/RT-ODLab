@@ -12,3 +12,5 @@ deployment/OpenVINO/cpp/build
 cluster.json
 train_nebula.py
 train_nebula.sh
+make_data_nebula.sh
+dataset/make_dataset_nebula.py

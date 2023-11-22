@@ -122,6 +122,7 @@ class VOCDataset(data.Dataset):
             self.dataset_size = len(self.cached_datas)
             print("Loading done !")
         except:
+            self.cached_datas = None
             self.load_cache = None
             print("{} does not exits.".format(self.load_cache))
 
@@ -167,7 +168,7 @@ class VOCDataset(data.Dataset):
     # ------------ Load data function ------------
     def load_image_target(self, index):
         # == Load a data from the cached data ==
-        if self.load_cache and self.is_train:
+        if self.load_cache is not None and self.is_train:
             # load a data
             data_item = self.cached_datas[index]
             image = data_item["image"]

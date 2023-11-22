@@ -4,7 +4,7 @@
     Licensed under The MIT License [see LICENSE for details]
 """
 
-from dataset.voc import VOCDetection, VOC_CLASSES
+from dataset.voc import VOCDataset, VOC_CLASSES
 import os
 import time
 import numpy as np
@@ -43,7 +43,7 @@ class VOCAPIEvaluator():
         self.output_dir = self.get_output_dir('det_results/eval/voc_eval/', self.set_type)
 
         # dataset
-        self.dataset = VOCDetection(
+        self.dataset = VOCDataset(
             data_dir=data_dir, 
             image_sets=[('2007', set_type)],
             is_train=False)
@@ -131,7 +131,7 @@ class VOCAPIEvaluator():
         """
         filedir = os.path.join(name, phase)
         if not os.path.exists(filedir):
-            os.makedirs(filedir)
+            os.makedirs(filedir, exist_ok=True)
         return filedir
 
 
