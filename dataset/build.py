@@ -31,34 +31,37 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
     # ------------------------- Build dataset -------------------------
     ## VOC dataset
     if args.dataset == 'voc':
-        dataset = VOCDataset(
-            img_size=args.img_size,
-            data_dir=data_dir,
-            image_sets=[('2007', 'trainval'), ('2012', 'trainval')] if is_train else [('2007', 'test')],
-            transform=transform,
-            trans_config=trans_config,
-            load_cache=args.load_cache if is_train else None
-            )
+        image_sets = [('2007', 'trainval'), ('2012', 'trainval')] if is_train else [('2007', 'test')]
+        dataset = VOCDataset(img_size     = args.img_size,
+                             data_dir     = data_dir,
+                             image_sets   = image_sets,
+                             transform    = transform,
+                             trans_config = trans_config,
+                             is_train     = is_train,
+                             load_cache   = args.load_cache
+                             )
     ## COCO dataset
     elif args.dataset == 'coco':
-        dataset = COCODataset(
-            img_size=args.img_size,
-            data_dir=data_dir,
-            image_set='train2017' if is_train else 'val2017',
-            transform=transform,
-            trans_config=trans_config,
-            load_cache=args.load_cache if is_train else None
-            )
+        image_set='train2017' if is_train else 'val2017',
+        dataset = COCODataset(img_size     = args.img_size,
+                              data_dir     = data_dir,
+                              image_set    = image_set,
+                              transform    = transform,
+                              trans_config = trans_config,
+                              is_train     = is_train,
+                              load_cache   = args.load_cache
+                              )
     ## Custom dataset
     elif args.dataset == 'ourdataset':
-        dataset = OurDataset(
-            data_dir=data_dir,
-            img_size=args.img_size,
-            image_set='train' if is_train else 'val',
-            transform=transform,
-            trans_config=trans_config,
-            load_cache=args.load_cache if is_train else None
-            )
+        image_set='train' if is_train else 'val',
+        dataset = OurDataset(data_dir     = data_dir,
+                             img_size     = args.img_size,
+                             image_set    = image_set,
+                             transform    = transform,
+                             trans_config = trans_config,
+                             s_train      = is_train,
+                             oad_cache    = args.load_cache
+                             )
 
     return dataset, dataset_info
 
