@@ -73,13 +73,12 @@ class VOCDataset(data.Dataset):
                  trans_config = None,
                  transform    = None,
                  is_train     :bool = False,
-                 load_cache   :str  = None,
+                 load_cache   :bool = False,
                  ):
         # ----------- Basic parameters -----------
         self.img_size = img_size
         self.image_set = image_sets
         self.is_train = is_train
-        self.load_cache = load_cache
         self.target_transform = VOCAnnotationTransform()
         # ----------- Path parameters -----------
         self.root = data_dir
@@ -101,10 +100,12 @@ class VOCDataset(data.Dataset):
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
         print('==============================')
+        # ----------- Cached data -----------
+        self.load_cache = load_cache
+        self.cached_datas = None
+        if self.load_cache:
+            self.cached_datas = self._load_cache()
 
-        # load cache data
-        if load_cache is not None:
-            self._load_cache()
 
     # ------------ Basic dataset function ------------
     def __getitem__(self, index):
@@ -115,16 +116,36 @@ class VOCDataset(data.Dataset):
         return self.dataset_size
 
     def _load_cache(self):
-        # load image cache
-        try:
-            print("Loading cached data ...")
-            self.cached_datas = torch.load(self.load_cache)
-            self.dataset_size = len(self.cached_datas)
-            print("Loading done !")
-        except:
-            self.cached_datas = None
-            self.load_cache = None
-            print("{} does not exits.".format(self.load_cache))
+        data_items = []
+        for idx in range(self.dataset_size):
+            if idx % 2000 == 0:
+                print("Caching images and targets : {} / {} ...".format(idx, self.dataset_size))
+
+            # load a data
+            image, target = self.load_image_target(idx)
+            orig_h, orig_w, _ = image.shape
+
+            # resize image
+            r = self.img_size / max(orig_h, orig_w)
+            if r != 1: 
+                interp = cv2.INTER_LINEAR
+                new_size = (int(orig_w * r), int(orig_h * r))
+                image = cv2.resize(image, new_size, interpolation=interp)
+            img_h, img_w = image.shape[:2]
+
+            # rescale bbox
+            boxes = target["boxes"].copy()
+            boxes[:, [0, 2]] = boxes[:, [0, 2]] / orig_w * img_w
+            boxes[:, [1, 3]] = boxes[:, [1, 3]] / orig_h * img_h
+            target["boxes"] = boxes
+
+            dict_item = {}
+            dict_item["image"] = image
+            dict_item["target"] = target
+
+            data_items.append(dict_item)
+        
+        return data_items
 
     # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
@@ -168,7 +189,7 @@ class VOCDataset(data.Dataset):
     # ------------ Load data function ------------
     def load_image_target(self, index):
         # == Load a data from the cached data ==
-        if self.load_cache is not None and self.is_train:
+        if self.cached_datas is not None:
             # load a data
             data_item = self.cached_datas[index]
             image = data_item["image"]
@@ -226,6 +247,7 @@ class VOCDataset(data.Dataset):
 
 
 if __name__ == "__main__":
+    import time
     import argparse
     from build import build_transform
     
@@ -236,13 +258,13 @@ if __name__ == "__main__":
                         help='data root')
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='input image size.')
-    parser.add_argument('--mosaic', default=None, type=float,
+    parser.add_argument('--mosaic', default=0., type=float,
                         help='mosaic augmentation.')
-    parser.add_argument('--mixup', default=None, type=float,
+    parser.add_argument('--mixup', default=0., type=float,
                         help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
-    parser.add_argument('--load_cache', type=str, default=None,
+    parser.add_argument('--load_cache', action="store_true", default=False,
                         help='Path to the cached data.')
     
     args = parser.parse_args()
@@ -285,7 +307,10 @@ if __name__ == "__main__":
     print('Data length: ', len(dataset))
 
     for i in range(1000):
+        t0 = time.time()
         image, target, deltas = dataset.pull_item(i)
+        print("Load data: {} s".format(time.time() - t0))
+
         # to numpy
         image = image.permute(1, 2, 0).numpy()
         # to uint8

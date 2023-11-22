@@ -40,9 +40,6 @@ coco_class_index = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 1
 
 
 class COCODataset(Dataset):
-    """
-    COCO dataset class.
-    """
     def __init__(self, 
                  img_size     :int = 640,
                  data_dir     :str = None, 
@@ -50,20 +47,12 @@ class COCODataset(Dataset):
                  trans_config = None,
                  transform    = None,
                  is_train     :bool =False,
-                 load_cache   :str  = None):
-        """
-        COCO dataset initialization. Annotation data are read into memory by COCO API.
-        Args:
-            data_dir (str): dataset root directory
-            json_file (str): COCO json file name
-            name (str): COCO data name (e.g. 'train2017' or 'val2017')
-            debug (bool): if True, only one data id is selected from the dataset
-        """
+                 load_cache   :bool = False,
+                 ):
         # ----------- Basic parameters -----------
         self.img_size = img_size
         self.image_set = image_set
         self.is_train = is_train
-        self.load_cache = load_cache
         # ----------- Path parameters -----------
         self.data_dir = data_dir
         if image_set == 'train2017':
@@ -86,10 +75,12 @@ class COCODataset(Dataset):
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
         print('==============================')
-        
-        # load cache data
-        if load_cache is not None:
-            self._load_cache()
+        # ----------- Cached data -----------
+        self.load_cache = load_cache
+        self.cached_datas = None
+        if self.load_cache:
+            self.cached_datas = self._load_cache()
+
 
     # ------------ Basic dataset function ------------
     def __len__(self):
@@ -99,16 +90,36 @@ class COCODataset(Dataset):
         return self.pull_item(index)
 
     def _load_cache(self):
-        # load image cache
-        try:
-            print("Loading cached data ...")
-            self.cached_datas = torch.load(self.load_cache)
-            self.dataset_size = len(self.cached_datas)
-            print("Loading done !")
-        except:
-            self.cached_datas = None
-            self.load_cache = None
-            print("{} does not exits.".format(self.load_cache))
+        data_items = []
+        for idx in range(self.dataset_size):
+            if idx % 2000 == 0:
+                print("Caching images and targets : {} / {} ...".format(idx, self.dataset_size))
+
+            # load a data
+            image, target = self.load_image_target(idx)
+            orig_h, orig_w, _ = image.shape
+
+            # resize image
+            r = self.img_size / max(orig_h, orig_w)
+            if r != 1: 
+                interp = cv2.INTER_LINEAR
+                new_size = (int(orig_w * r), int(orig_h * r))
+                image = cv2.resize(image, new_size, interpolation=interp)
+            img_h, img_w = image.shape[:2]
+
+            # rescale bbox
+            boxes = target["boxes"].copy()
+            boxes[:, [0, 2]] = boxes[:, [0, 2]] / orig_w * img_w
+            boxes[:, [1, 3]] = boxes[:, [1, 3]] / orig_h * img_h
+            target["boxes"] = boxes
+
+            dict_item = {}
+            dict_item["image"] = image
+            dict_item["target"] = target
+
+            data_items.append(dict_item)
+        
+        return data_items
 
     # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
@@ -152,7 +163,7 @@ class COCODataset(Dataset):
     # ------------ Load data function ------------
     def load_image_target(self, index):
         # == Load a data from the cached data ==
-        if self.load_cache is not None and self.is_train:
+        if self.cached_datas is not None:
             # load a data
             data_item = self.cached_datas[index]
             image = data_item["image"]
@@ -243,6 +254,7 @@ class COCODataset(Dataset):
 
 
 if __name__ == "__main__":
+    import time
     import argparse
     from build import build_transform
     
@@ -302,7 +314,10 @@ if __name__ == "__main__":
     print('Data length: ', len(dataset))
 
     for i in range(1000):
+        t0 = time.time()
         image, target, deltas = dataset.pull_item(i)
+        print("Load data: {} s".format(time.time() - t0))
+
         # to numpy
         image = image.permute(1, 2, 0).numpy()
         # to uint8
