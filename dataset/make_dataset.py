@@ -106,7 +106,7 @@ if __name__ == "__main__":
     # Seed
     parser.add_argument('--seed', default=42, type=int)
     # Dataset
-    parser.add_argument('--root', default='/Users/yjh0410/Desktop/python_work/dataset/',
+    parser.add_argument('--root', default='data/datasets/',
                         help='data root')
     parser.add_argument('--dataset', type=str, default="voc",
                         help='augmentation type.')
