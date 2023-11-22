@@ -42,7 +42,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                              )
     ## COCO dataset
     elif args.dataset == 'coco':
-        image_set = 'train2017' if is_train else 'val2017',
+        image_set = 'train2017' if is_train else 'val2017'
         dataset = COCODataset(img_size     = args.img_size,
                               data_dir     = data_dir,
                               image_set    = image_set,
@@ -53,7 +53,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                               )
     ## Custom dataset
     elif args.dataset == 'ourdataset':
-        image_set = 'train' if is_train else 'val',
+        image_set = 'train' if is_train else 'val'
         dataset = OurDataset(data_dir     = data_dir,
                              img_size     = args.img_size,
                              image_set    = image_set,
