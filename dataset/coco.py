@@ -1,11 +1,11 @@
 import os
+import cv2
+import time
 import random
 import numpy as np
-import time
 
 import torch
 from torch.utils.data import Dataset
-import cv2
 
 try:
     from pycocotools.coco import COCO
@@ -44,13 +44,13 @@ class COCODataset(Dataset):
     COCO dataset class.
     """
     def __init__(self, 
-                 img_size=640,
-                 data_dir=None, 
-                 image_set='train2017',
-                 trans_config=None,
-                 transform=None,
-                 is_train=False,
-                 load_cache=False):
+                 img_size     :int = 640,
+                 data_dir     :str = None, 
+                 image_set    :str = 'train2017',
+                 trans_config = None,
+                 transform    = None,
+                 is_train     :bool =False,
+                 load_cache   :str  = None):
         """
         COCO dataset initialization. Annotation data are read into memory by COCO API.
         Args:
@@ -59,22 +59,25 @@ class COCODataset(Dataset):
             name (str): COCO data name (e.g. 'train2017' or 'val2017')
             debug (bool): if True, only one data id is selected from the dataset
         """
+        # ----------- Basic parameters -----------
+        self.img_size = img_size
+        self.image_set = image_set
+        self.is_train = is_train
+        self.load_cache = load_cache
+        # ----------- Path parameters -----------
+        self.data_dir = data_dir
         if image_set == 'train2017':
             self.json_file='instances_train2017.json'
         elif image_set == 'val2017':
             self.json_file='instances_val2017.json'
         elif image_set == 'test2017':
             self.json_file='image_info_test-dev2017.json'
-        self.img_size = img_size
-        self.image_set = image_set
-        self.data_dir = data_dir
+        # ----------- Data parameters -----------
         self.coco = COCO(os.path.join(self.data_dir, 'annotations', self.json_file))
         self.ids = self.coco.getImgIds()
         self.class_ids = sorted(self.coco.getCatIds())
-        self.is_train = is_train
-        self.load_cache = load_cache
-
-        # augmentation
+        self.dataset_size = len(self.ids)
+        # ----------- Transform parameters -----------
         self.transform = transform
         self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
         self.mixup_prob = trans_config['mixup_prob'] if trans_config else 0.0
@@ -85,72 +88,28 @@ class COCODataset(Dataset):
         print('==============================')
         
         # load cache data
-        if load_cache:
+        if load_cache is not None:
             self._load_cache()
 
-
+    # ------------ Basic dataset function ------------
     def __len__(self):
         return len(self.ids)
-
 
     def __getitem__(self, index):
         return self.pull_item(index)
 
-
     def _load_cache(self):
         # load image cache
-        self.cached_images = []
-        self.cached_targets = []
-        dataset_size = len(self.ids)
+        try:
+            print("Loading cached data ...")
+            self.cached_datas = torch.load(self.load_cache)
+            self.dataset_size = len(self.cached_datas)
+            print("Loading done !")
+        except:
+            self.load_cache = None
+            print("{} does not exits.".format(self.load_cache))
 
-        print('loading data into memory ...')
-        for i in range(dataset_size):
-            if i % 5000 == 0:
-                print("[{} / {}]".format(i, dataset_size))
-            # load an image
-            image, image_id = self.pull_image(i)
-            orig_h, orig_w, _ = image.shape
-
-            # resize image
-            r = self.img_size / max(orig_h, orig_w)
-            if r != 1: 
-                interp = cv2.INTER_LINEAR
-                new_size = (int(orig_w * r), int(orig_h * r))
-                image = cv2.resize(image, new_size, interpolation=interp)
-            img_h, img_w = image.shape[:2]
-            self.cached_images.append(image)
-
-            # load target cache
-            bboxes, labels = self.pull_anno(i)
-            bboxes[:, [0, 2]] = bboxes[:, [0, 2]] / orig_w * img_w
-            bboxes[:, [1, 3]] = bboxes[:, [1, 3]] / orig_h * img_h
-            self.cached_targets.append({"boxes": bboxes, "labels": labels})
-        
-
-    def load_image_target(self, index):
-        if self.load_cache:
-            # load data from cache
-            image = self.cached_images[index]
-            target = self.cached_targets[index]
-            height, width, channels = image.shape
-            target["orig_size"] = [height, width]
-        else:
-            # load an image
-            image, _ = self.pull_image(index)
-            height, width, channels = image.shape
-
-            # load a target
-            bboxes, labels = self.pull_anno(index)
-
-            target = {
-                "boxes": bboxes,
-                "labels": labels,
-                "orig_size": [height, width]
-            }
-
-        return image, target
-
-
+    # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
         # load 4x mosaic image
         index_list = np.arange(index).tolist() + np.arange(index+1, len(self.ids)).tolist()
@@ -173,7 +132,6 @@ class COCODataset(Dataset):
 
         return image, target
 
-
     def load_mixup(self, origin_image, origin_target):
         # YOLOv5 type Mixup
         if self.trans_config['mixup_type'] == 'yolov5_mixup':
@@ -190,6 +148,29 @@ class COCODataset(Dataset):
 
         return image, target
     
+    # ------------ Load data function ------------
+    def load_image_target(self, index):
+        # == Load a data from the cached data ==
+        if self.load_cache and self.is_train:
+            # load a data
+            data_item = self.cached_datas[index]
+            image = data_item["image"]
+            target = data_item["target"]
+        # == Load a data from the local disk ==
+        else:        
+            # load an image
+            image, _ = self.pull_image(index)
+            height, width, channels = image.shape
+
+            # load a target
+            bboxes, labels = self.pull_anno(index)
+            target = {
+                "boxes": bboxes,
+                "labels": labels,
+                "orig_size": [height, width]
+            }
+
+        return image, target
 
     def pull_item(self, index):
         if random.random() < self.mosaic_prob:
@@ -210,7 +191,6 @@ class COCODataset(Dataset):
 
         return image, target, deltas
 
-
     def pull_image(self, index):
         img_id = self.ids[index]
         img_file = os.path.join(self.data_dir, self.image_set,
@@ -225,7 +205,6 @@ class COCODataset(Dataset):
         assert image is not None
 
         return image, img_id
-
 
     def pull_anno(self, index):
         img_id = self.ids[index]

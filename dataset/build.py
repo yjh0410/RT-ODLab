@@ -1,14 +1,14 @@
 import os
 
 try:
-    from .voc import VOCDetection
+    from .voc import VOCDataset
     from .coco import COCODataset
     from .ourdataset import OurDataset
     from .data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
 except:
-    from voc import VOCDetection
+    from voc import VOCDataset
     from coco import COCODataset
     from ourdataset import OurDataset
     from data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
@@ -31,7 +31,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
     # ------------------------- Build dataset -------------------------
     ## VOC dataset
     if args.dataset == 'voc':
-        dataset = VOCDetection(
+        dataset = VOCDataset(
             img_size=args.img_size,
             data_dir=data_dir,
             image_sets=[('2007', 'trainval'), ('2012', 'trainval')] if is_train else [('2007', 'test')],

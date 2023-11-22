@@ -1,30 +1,21 @@
-"""VOC Dataset Classes
-
-Original author: Francisco Massa
-https://github.com/fmassa/vision/blob/voc_dataset/torchvision/datasets/voc.py
-
-Updated by: Ellis Brown, Max deGroot
-"""
-import os.path as osp
-import random
-import torch.utils.data as data
+import os
 import cv2
+import torch
+import random
 import numpy as np
+import os.path as osp
 import xml.etree.ElementTree as ET
 
+import torch
+import torch.utils.data as data
 try:
     from .data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 except:
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
 
-
-VOC_CLASSES = (  # always index 0
-    'aeroplane', 'bicycle', 'bird', 'boat',
-    'bottle', 'bus', 'car', 'cat', 'chair',
-    'cow', 'diningtable', 'dog', 'horse',
-    'motorbike', 'person', 'pottedplant',
-    'sheep', 'sofa', 'train', 'tvmonitor')
+# VOC class names
+VOC_CLASSES = ('aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor')
 
 
 class VOCAnnotationTransform(object):
@@ -74,47 +65,34 @@ class VOCAnnotationTransform(object):
         return res  # [[x1, y1, x2, y2, label_ind], ... ]
 
 
-class VOCDetection(data.Dataset):
-    """VOC Detection Dataset Object
-
-    input is image, target is annotation
-
-    Arguments:
-        root (string): filepath to VOCdevkit folder.
-        image_set (string): imageset to use (eg. 'train', 'val', 'test')
-        transform (callable, optional): transformation to perform on the
-            input image
-        target_transform (callable, optional): transformation to perform on the
-            target `annotation`
-            (eg: take in caption string, return tensor of word indices)
-        dataset_name (string, optional): which dataset to load
-            (default: 'VOC2007')
-    """
-
+class VOCDataset(data.Dataset):
     def __init__(self, 
-                 img_size=640,
-                 data_dir=None,
-                 image_sets=[('2007', 'trainval'), ('2012', 'trainval')],
-                 trans_config=None,
-                 transform=None,
-                 is_train=False,
-                 load_cache=False
+                 img_size     :int = 640,
+                 data_dir     :str = None,
+                 image_sets   = [('2007', 'trainval'), ('2012', 'trainval')],
+                 trans_config = None,
+                 transform    = None,
+                 is_train     :bool = False,
+                 load_cache   :str  = None,
                  ):
-        self.root = data_dir
+        # ----------- Basic parameters -----------
         self.img_size = img_size
         self.image_set = image_sets
-        self.target_transform = VOCAnnotationTransform()
-        self._annopath = osp.join('%s', 'Annotations', '%s.xml')
-        self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
-        self.ids = list()
         self.is_train = is_train
         self.load_cache = load_cache
+        self.target_transform = VOCAnnotationTransform()
+        # ----------- Path parameters -----------
+        self.root = data_dir
+        self._annopath = osp.join('%s', 'Annotations', '%s.xml')
+        self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
+        # ----------- Data parameters -----------
+        self.ids = list()
         for (year, name) in image_sets:
             rootpath = osp.join(self.root, 'VOC' + year)
             for line in open(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt')):
                 self.ids.append((rootpath, line.strip()))
-
-        # augmentation
+        self.dataset_size = len(self.ids)
+        # ----------- Transform parameters -----------
         self.transform = transform
         self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
         self.mixup_prob = trans_config['mixup_prob'] if trans_config else 0.0
@@ -125,81 +103,29 @@ class VOCDetection(data.Dataset):
         print('==============================')
 
         # load cache data
-        if load_cache:
+        if load_cache is not None:
             self._load_cache()
 
-
+    # ------------ Basic dataset function ------------
     def __getitem__(self, index):
         image, target, deltas = self.pull_item(index)
         return image, target, deltas
 
-
     def __len__(self):
-        return len(self.ids)
-
+        return self.dataset_size
 
     def _load_cache(self):
         # load image cache
-        self.cached_images = []
-        self.cached_targets = []
-        dataset_size = len(self.ids)
+        try:
+            print("Loading cached data ...")
+            self.cached_datas = torch.load(self.load_cache)
+            self.dataset_size = len(self.cached_datas)
+            print("Loading done !")
+        except:
+            self.load_cache = None
+            print("{} does not exits.".format(self.load_cache))
 
-        print('loading data into memory ...')
-        for i in range(dataset_size):
-            if i % 5000 == 0:
-                print("[{} / {}]".format(i, dataset_size))
-            # load an image
-            image, image_id = self.pull_image(i)
-            orig_h, orig_w, _ = image.shape
-
-            # resize image
-            r = self.img_size / max(orig_h, orig_w)
-            if r != 1: 
-                interp = cv2.INTER_LINEAR
-                new_size = (int(orig_w * r), int(orig_h * r))
-                image = cv2.resize(image, new_size, interpolation=interp)
-            img_h, img_w = image.shape[:2]
-            self.cached_images.append(image)
-
-            # load target cache
-            anno = ET.parse(self._annopath % image_id).getroot()
-            anno = self.target_transform(anno)
-            anno = np.array(anno).reshape(-1, 5)
-            boxes = anno[:, :4]
-            labels = anno[:, 4]
-            boxes[:, [0, 2]] = boxes[:, [0, 2]] / orig_w * img_w
-            boxes[:, [1, 3]] = boxes[:, [1, 3]] / orig_h * img_h
-            self.cached_targets.append({"boxes": boxes, "labels": labels})
-        
-
-    def load_image_target(self, index):
-        if self.load_cache:
-            image = self.cached_images[index]
-            target = self.cached_targets[index]
-            height, width, channels = image.shape
-            target["orig_size"] = [height, width]
-        else:
-            # load an image
-            img_id = self.ids[index]
-            image = cv2.imread(self._imgpath % img_id)
-            height, width, channels = image.shape
-
-            # laod an annotation
-            anno = ET.parse(self._annopath % img_id).getroot()
-            if self.target_transform is not None:
-                anno = self.target_transform(anno)
-
-            # guard against no boxes via resizing
-            anno = np.array(anno).reshape(-1, 5)
-            target = {
-                "boxes": anno[:, :4],
-                "labels": anno[:, 4],
-                "orig_size": [height, width]
-            }
-        
-        return image, target
-
-
+    # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
         # load 4x mosaic image
         index_list = np.arange(index).tolist() + np.arange(index+1, len(self.ids)).tolist()
@@ -222,7 +148,6 @@ class VOCDetection(data.Dataset):
 
         return image, target
 
-
     def load_mixup(self, origin_image, origin_target):
         # YOLOv5 type Mixup
         if self.trans_config['mixup_type'] == 'yolov5_mixup':
@@ -239,6 +164,32 @@ class VOCDetection(data.Dataset):
 
         return image, target
     
+    # ------------ Load data function ------------
+    def load_image_target(self, index):
+        # == Load a data from the cached data ==
+        if self.load_cache and self.is_train:
+            # load a data
+            data_item = self.cached_datas[index]
+            image = data_item["image"]
+            target = data_item["target"]
+        # == Load a data from the local disk ==
+        else:        
+            # load an image
+            image, _ = self.pull_image(index)
+            height, width, channels = image.shape
+
+            # laod an annotation
+            anno, _ = self.pull_anno(index)
+
+            # guard against no boxes via resizing
+            anno = np.array(anno).reshape(-1, 5)
+            target = {
+                "boxes": anno[:, :4],
+                "labels": anno[:, 4],
+                "orig_size": [height, width]
+            }
+        
+        return image, target
 
     def pull_item(self, index):
         if random.random() < self.mosaic_prob:
@@ -259,34 +210,18 @@ class VOCDetection(data.Dataset):
 
         return image, target, deltas
 
-
     def pull_image(self, index):
-        '''Returns the original image object at index in PIL form
-        Note: not using self.__getitem__(), as any transformations passed in
-        could mess up this functionality.
-        Argument:
-            index (int): index of img to show
-        Return:
-            PIL img
-        '''
         img_id = self.ids[index]
-        return cv2.imread(self._imgpath % img_id, cv2.IMREAD_COLOR), img_id
+        image = cv2.imread(self._imgpath % img_id, cv2.IMREAD_COLOR)
 
+        return image, img_id
 
     def pull_anno(self, index):
-        '''Returns the original annotation of image at index
-        Note: not using self.__getitem__(), as any transformations passed in
-        could mess up this functionality.
-        Argument:
-            index (int): index of img to get annotation of
-        Return:
-            list:  [img_id, [(label, bbox coords),...]]
-                eg: ('001718', [('dog', (96, 13, 438, 332))])
-        '''
         img_id = self.ids[index]
         anno = ET.parse(self._annopath % img_id).getroot()
-        gt = self.target_transform(anno, 1, 1)
-        return img_id[1], gt
+        anno = self.target_transform(anno)
+
+        return anno, img_id
 
 
 if __name__ == "__main__":
@@ -306,8 +241,8 @@ if __name__ == "__main__":
                         help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
-    parser.add_argument('--load_cache', action="store_true", default=False,
-                        help='load cached data.')
+    parser.add_argument('--load_cache', type=str, default=None,
+                        help='Path to the cached data.')
     
     args = parser.parse_args()
 
@@ -324,17 +259,18 @@ if __name__ == "__main__":
         'hsv_v': 0.4,
         'use_ablu': True,
         # Mosaic & Mixup
-        'mosaic_prob': 1.0,
-        'mixup_prob': 1.0,
+        'mosaic_prob': args.mosaic,
+        'mixup_prob': args.mixup,
         'mosaic_type': 'yolov5_mosaic',
         'mixup_type': 'yolov5_mixup',
         'mixup_scale': [0.5, 1.5]
     }
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
 
-    dataset = VOCDetection(
+    dataset = VOCDataset(
         img_size=args.img_size,
         data_dir=args.root,
+        image_sets=[('2007', 'trainval'), ('2012', 'trainval')] if args.is_train else [('2007', 'test')],
         trans_config=trans_config,
         transform=transform,
         is_train=args.is_train,
