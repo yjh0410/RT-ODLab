@@ -1,3 +1,6 @@
+# ------------------------------------------------------------------------------------------
+# This code referenced to https://github.com/open-mmlab/mmyolo/models/task_modules/assigners/batch_dsl_assigner.py
+# ------------------------------------------------------------------------------------------
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,9 +9,6 @@ from utils.box_ops import box_iou
 
 # -------------------------- Aligned SimOTA assigner --------------------------
 class AlignedSimOTA(object):
-    """
-        This code referenced to https://github.com/open-mmlab/mmyolo/models/task_modules/assigners/batch_dsl_assigner.py
-    """
     def __init__(self, num_classes, soft_center_radius=3.0, topk_candidates=13):
         self.num_classes = num_classes
         self.soft_center_radius = soft_center_radius
@@ -74,15 +74,8 @@ class AlignedSimOTA(object):
                                   cost_matrix, max_pad_value)
 
         # ----------------------------------- dynamic label assignment -----------------------------------
-        (
-            matched_pred_ious,
-            matched_gt_inds,
-            fg_mask_inboxes
-        ) = self.dynamic_k_matching(
-            cost_matrix,
-            pair_wise_ious,
-            num_gt
-            )
+        matched_pred_ious, matched_gt_inds, fg_mask_inboxes = self.dynamic_k_matching(
+            cost_matrix, pair_wise_ious, num_gt)
         del pair_wise_cls_loss, cost_matrix, pair_wise_ious, pair_wise_ious_loss
 
         # -----------------------------------process assigned labels -----------------------------------
