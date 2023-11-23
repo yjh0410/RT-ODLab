@@ -13,24 +13,22 @@ def build_evluator(args, data_cfg, transform, device):
     # Evaluator
     ## VOC Evaluator
     if args.dataset == 'voc':
-        evaluator = VOCAPIEvaluator(
-            data_dir=data_dir,
-            device=device,
-            transform=transform)
+        evaluator = VOCAPIEvaluator(data_dir  = data_dir,
+                                    device    = device,
+                                    transform = transform
+                                    )
     ## COCO Evaluator
     elif args.dataset == 'coco':
-        evaluator = COCOAPIEvaluator(
-            data_dir=data_dir,
-            device=device,
-            transform=transform
-            )
+        evaluator = COCOAPIEvaluator(data_dir  = data_dir,
+                                     device    = device,
+                                     transform = transform
+                                     )
     ## Custom dataset Evaluator
     elif args.dataset == 'ourdataset':
-        evaluator = OurDatasetEvaluator(
-            data_dir=data_dir,
-            device=device,
-            image_set='val',
-            transform=transform
-        )
+        evaluator = OurDatasetEvaluator(data_dir  = data_dir,
+                                        device    = device,
+                                        image_set = 'val',
+                                        transform = transform
+                                        )
 
     return evaluator

@@ -11,23 +11,7 @@ except:
 
 
 class OurDatasetEvaluator():
-    """
-    COCO AP Evaluation class.
-    All the data in the val2017 dataset are processed \
-    and evaluated by COCO API.
-    """
     def __init__(self, data_dir, device, image_set='val', transform=None):
-        """
-        Args:
-            data_dir (str): dataset root directory
-            img_size (int): image size after preprocess. images are resized \
-                to squares whose shape is (img_size, img_size).
-            confthre (float):
-                confidence threshold ranging from 0 to 1, \
-                which is defined in the config file.
-            nmsthre (float):
-                IoU threshold of non-max supression ranging from 0 to 1.
-        """
         # ----------------- Basic parameters -----------------
         self.image_set = image_set
         self.transform = transform

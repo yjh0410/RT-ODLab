@@ -17,17 +17,16 @@ def build_yolov7(args, cfg, device, num_classes=80, trainable=False, deploy=Fals
     print('Model Configuration: \n', cfg)
     
     # -------------- Build YOLO --------------
-    model = YOLOv7(
-        cfg = cfg,
-        device = device,
-        num_classes = num_classes,
-        conf_thresh = args.conf_thresh,
-        nms_thresh = args.nms_thresh,
-        topk = args.topk,
-        trainable = trainable,
-        deploy = deploy,
-        nms_class_agnostic = args.nms_class_agnostic
-        )
+    model = YOLOv7(cfg                = cfg,
+                   device             = device, 
+                   num_classes        = num_classes,
+                   trainable          = trainable,
+                   conf_thresh        = args.conf_thresh,
+                   nms_thresh         = args.nms_thresh,
+                   topk               = args.topk,
+                   deploy             = deploy,
+                   nms_class_agnostic = args.nms_class_agnostic
+                   )
 
     # -------------- Initialize YOLO --------------
     for m in model.modules():
