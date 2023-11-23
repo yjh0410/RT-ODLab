@@ -258,6 +258,8 @@ if __name__ == "__main__":
                         help='data root')
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='input image size.')
+    parser.add_argument('--aug_type', type=str, default='ssd',
+                        help='augmentation type')
     parser.add_argument('--mosaic', default=0., type=float,
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=0., type=float,
@@ -270,7 +272,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     trans_config = {
-        'aug_type': 'yolov5',  # optional: ssd, yolov5
+        'aug_type': args.aug_type,  # optional: ssd, yolov5
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
