@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 try:
-    from .yolox2_basic import Conv, YoloStageBlock
+    from .yolox2_basic import Conv, Yolox2StageBlock
 except:
-    from yolox2_basic import Conv, YoloStageBlock
+    from yolox2_basic import Conv, Yolox2StageBlock
 
 
 # ---------------------------- Backbone ----------------------------
@@ -17,46 +17,46 @@ class Yolox2Backbone(nn.Module):
         # P2/4
         self.layer_2 = nn.Sequential(
             Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            YoloStageBlock(in_dim     = self.feat_dims[1],
-                           out_dim    = self.feat_dims[1],
-                           num_blocks = round(3*depth),
-                           shortcut   = True,
-                           act_type   = act_type,
-                           norm_type  = norm_type,
-                           depthwise  = depthwise)
+            Yolox2StageBlock(in_dim     = self.feat_dims[1],
+                             out_dim    = self.feat_dims[1],
+                             num_blocks = round(3*depth),
+                             shortcut   = True,
+                             act_type   = act_type,
+                             norm_type  = norm_type,
+                             depthwise  = depthwise)
         )
         # P3/8
         self.layer_3 = nn.Sequential(
             Conv(self.feat_dims[1], self.feat_dims[2], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            YoloStageBlock(in_dim     = self.feat_dims[2],
-                           out_dim    = self.feat_dims[2],
-                           num_blocks = round(9*depth),
-                           shortcut   = True,
-                           act_type   = act_type,
-                           norm_type  = norm_type,
-                           depthwise  = depthwise)
+            Yolox2StageBlock(in_dim     = self.feat_dims[2],
+                             out_dim    = self.feat_dims[2],
+                             num_blocks = round(9*depth),
+                             shortcut   = True,
+                             act_type   = act_type,
+                             norm_type  = norm_type,
+                             depthwise  = depthwise)
         )
         # P4/16
         self.layer_4 = nn.Sequential(
             Conv(self.feat_dims[2], self.feat_dims[3], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            YoloStageBlock(in_dim     = self.feat_dims[3],
-                           out_dim    = self.feat_dims[3],
-                           num_blocks = round(9*depth),
-                           shortcut   = True,
-                           act_type   = act_type,
-                           norm_type  = norm_type,
-                           depthwise  = depthwise)
+            Yolox2StageBlock(in_dim     = self.feat_dims[3],
+                             out_dim    = self.feat_dims[3],
+                             num_blocks = round(9*depth),
+                             shortcut   = True,
+                             act_type   = act_type,
+                             norm_type  = norm_type,
+                             depthwise  = depthwise)
         )
         # P5/32
         self.layer_5 = nn.Sequential(
             Conv(self.feat_dims[3], self.feat_dims[4], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            YoloStageBlock(in_dim     = self.feat_dims[4],
-                           out_dim    = self.feat_dims[4],
-                           num_blocks = round(3*depth),
-                           shortcut   = True,
-                           act_type   = act_type,
-                           norm_type  = norm_type,
-                           depthwise  = depthwise)
+            Yolox2StageBlock(in_dim     = self.feat_dims[4],
+                             out_dim    = self.feat_dims[4],
+                             num_blocks = round(3*depth),
+                             shortcut   = True,
+                             act_type   = act_type,
+                             norm_type  = norm_type,
+                             depthwise  = depthwise)
         )
 
     def forward(self, x):

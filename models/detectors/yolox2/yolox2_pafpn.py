@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 try:
-    from .yolox2_basic import Conv, YoloStageBlock
+    from .yolox2_basic import Conv, Yolox2StageBlock
 except:
-    from yolox2_basic import Conv, YoloStageBlock
+    from yolox2_basic import Conv, Yolox2StageBlock
 
 
 # PaFPN-ELAN
@@ -29,45 +29,45 @@ class Yolox2PaFPN(nn.Module):
         # ---------------- Top dwon ----------------
         ## P5 -> P4
         self.reduce_layer_1 = Conv(c5, round(512*width), k=1, act_type=act_type, norm_type=norm_type)
-        self.top_down_layer_1 = YoloStageBlock(in_dim       = round(512*width) + c4,
-                                               out_dim      = round(512*width),
-                                               num_blocks   = round(3*depth),
-                                               shortcut     = False,
-                                               act_type     = act_type,
-                                               norm_type    = norm_type,
-                                               depthwise    = depthwise,
-                                               )
+        self.top_down_layer_1 = Yolox2StageBlock(in_dim       = round(512*width) + c4,
+                                                 out_dim      = round(512*width),
+                                                 num_blocks   = round(3*depth),
+                                                 shortcut     = False,
+                                                 act_type     = act_type,
+                                                 norm_type    = norm_type,
+                                                 depthwise    = depthwise,
+                                                 )
         ## P4 -> P3
         self.reduce_layer_2 = Conv(round(512*width), round(256*width), k=1, act_type=act_type, norm_type=norm_type)
-        self.top_down_layer_2 = YoloStageBlock(in_dim       = round(256*width) + c3,
-                                               out_dim      = round(256*width),
-                                               num_blocks   = round(3*depth),
-                                               shortcut     = False,
-                                               act_type     = act_type,
-                                               norm_type    = norm_type,
-                                               depthwise    = depthwise,
-                                               )
+        self.top_down_layer_2 = Yolox2StageBlock(in_dim       = round(256*width) + c3,
+                                                 out_dim      = round(256*width),
+                                                 num_blocks   = round(3*depth),
+                                                 shortcut     = False,
+                                                 act_type     = act_type,
+                                                 norm_type    = norm_type,
+                                                 depthwise    = depthwise,
+                                                 )
         # ---------------- Bottom up ----------------
         ## P3 -> P4
         self.downsample_layer_1 = Conv(round(256*width), round(256*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.bottom_up_layer_1 = YoloStageBlock(in_dim       = round(256*width) + round(256*width),
-                                                out_dim      = round(512*width),
-                                                num_blocks   = round(3*depth),
-                                                shortcut     = False,
-                                                act_type     = act_type,
-                                                norm_type    = norm_type,
-                                                depthwise    = depthwise,
-                                                )
+        self.bottom_up_layer_1 = Yolox2StageBlock(in_dim       = round(256*width) + round(256*width),
+                                                  out_dim      = round(512*width),
+                                                  num_blocks   = round(3*depth),
+                                                  shortcut     = False,
+                                                  act_type     = act_type,
+                                                  norm_type    = norm_type,
+                                                  depthwise    = depthwise,
+                                                  )
         ## P4 -> P5
         self.downsample_layer_2 = Conv(round(512*width), round(512*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.bottom_up_layer_2 = YoloStageBlock(in_dim       = round(512 * width) + round(512 * width),
-                                                out_dim      = round(1024 * width),
-                                                num_blocks   = round(3*depth),
-                                                shortcut     = False,
-                                                act_type     = act_type,
-                                                norm_type    = norm_type,
-                                                depthwise    = depthwise,
-                                                )
+        self.bottom_up_layer_2 = Yolox2StageBlock(in_dim       = round(512 * width) + round(512 * width),
+                                                  out_dim      = round(1024 * width),
+                                                  num_blocks   = round(3*depth),
+                                                  shortcut     = False,
+                                                  act_type     = act_type,
+                                                  norm_type    = norm_type,
+                                                  depthwise    = depthwise,
+                                                  )
         ## output proj layers
         if out_dim is not None:
             self.out_layers = nn.ModuleList([

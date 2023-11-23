@@ -105,35 +105,39 @@ class YoloBottleneck(nn.Module):
         return x + h if self.shortcut else h
 
 ## Yolo StageBlock
-class YoloStageBlock(nn.Module):
+class Yolox2StageBlock(nn.Module):
     def __init__(self,
-                 in_dim,
-                 out_dim,
-                 num_blocks = 1,
-                 shortcut   = False,
-                 act_type   = 'silu',
-                 norm_type  = 'BN',
-                 depthwise  = False,):
-        super(YoloStageBlock, self).__init__()
+                 in_dim     :int,
+                 out_dim    :int,
+                 num_blocks :int  = 1,
+                 shortcut   :bool = False,
+                 act_type   :str  = 'silu',
+                 norm_type  :str  = 'BN',
+                 depthwise  :bool = False,):
+        super(Yolox2StageBlock, self).__init__()
         self.inter_dim = out_dim // 2
         self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
         self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.m = nn.Sequential(*(
+        self.blocks = nn.Sequential(*(
             YoloBottleneck(self.inter_dim, self.inter_dim, 1.0, [1, 3], shortcut, act_type, norm_type, depthwise)
             for _ in range(num_blocks)))
-        self.output_proj = Conv((2 + num_blocks) * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.cv3 = Conv(self.inter_dim * num_blocks, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.output_proj = Conv(2 * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
         # Input proj
         x1 = self.cv1(x)
         x2 = self.cv2(x)
-        out = list([x1, x2])
 
         # Bottleneck
-        out.extend(m(out[-1]) for m in self.m)
+        out = []
+        for m in self.blocks:
+            x2 = m(x2)
+            out.append(x2)
+        x2 = self.cv3(torch.cat(out, dim=1))
 
         # Output proj
-        out = self.output_proj(torch.cat(out, dim=1))
+        out = self.output_proj(torch.cat([x1, x2], dim=1))
 
         return out
     
