@@ -264,6 +264,8 @@ if __name__ == "__main__":
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=0., type=float,
                         help='mixup augmentation.')
+    parser.add_argument('--mixup_type', type=str, default='yolov5_mixup',
+                        help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
     parser.add_argument('--load_cache', action="store_true", default=False,
@@ -272,7 +274,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     trans_config = {
-        'aug_type': args.aug_type,  # optional: ssd, yolov5
+        'aug_type': args.aug_type,    # optional: ssd, yolov5
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
@@ -287,7 +289,7 @@ if __name__ == "__main__":
         'mosaic_prob': args.mosaic,
         'mixup_prob': args.mixup,
         'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolov5_mixup',
+        'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
         'mixup_scale': [0.5, 1.5]
     }
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
