@@ -34,7 +34,7 @@ def build_yolo_optimizer(cfg, model, resume=None):
     start_epoch = 0
     if resume and resume != "None":
         print('keep training: ', resume)
-        checkpoint = torch.load(resume)
+        checkpoint = torch.load(resume, map_location='cpu')
         # checkpoint state dict
         checkpoint_state_dict = checkpoint.pop("optimizer")
         optimizer.load_state_dict(checkpoint_state_dict)
