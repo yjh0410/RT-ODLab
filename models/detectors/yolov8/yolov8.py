@@ -10,7 +10,7 @@ from .yolov8_head import build_det_head
 from .yolov8_pred import build_pred_layer
 
 # --------------- External components ---------------
-from utils.misc import multiclass_nms, non_max_suppression
+from utils.misc import multiclass_nms
 
 
 # YOLOv8
@@ -151,22 +151,8 @@ class YOLOv8(nn.Module):
 
             return outputs
         else:
-            cls_preds = torch.sigmoid(torch.cat(all_cls_preds, dim=1))[0]
-            box_preds = torch.cat(all_box_preds, dim=1)[0]
-            predictions = torch.cat([box_preds, cls_preds], dim=-1)
-            outputs = non_max_suppression(predictions,
-                                          self.conf_thresh,
-                                          self.nms_thresh,
-                                          agnostic=self.nms_class_agnostic,
-                                          max_det=300,
-                                          classes=None)
-            bboxes, scores, labels = outputs[:, :4], outputs[:, 4], outputs[:, 5]
-            bboxes = bboxes.cpu().numpy()
-            scores = scores.cpu().numpy()
-            labels = labels.cpu().numpy()
-            
             # post process
-            # bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
+            bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
         
             return bboxes, scores, labels
 

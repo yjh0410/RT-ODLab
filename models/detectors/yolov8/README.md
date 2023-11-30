@@ -5,7 +5,7 @@
 | YOLOv8-N  | 8xb16  |  640  |          36.8          |        52.9       |        8.8        |         3.2        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov8_n_coco.pth) |
 | YOLOv8-S  | 8xb16  |  640  |                        |                   |                   |                    |  |
 | YOLOv8-M  | 8xb16  |  640  |                        |                   |                   |                    |  |
-| YOLOv8-L  | 8xb16  |  640  |                        |                   |                   |                    |  |
+| YOLOv8-L  | 8xb16  |  640  |          50.2          |        68.0       |       165.7       |         43.7       | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov8_l_coco.pth) |
 
 - For training, we train YOLOv8 series with 500 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOv8](https://github.com/ultralytics/yolov8).

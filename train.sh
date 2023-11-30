@@ -4,10 +4,9 @@ DATA_ROOT="/data/datasets/"
 # DATA_ROOT="/Users/liuhaoran/Desktop/python_work/object-detection/dataset/"
 
 # MODEL setting
-MODEL="yolov8_l"
+MODEL="yolox2_s"
 IMAGE_SIZE=640
 RESUME="None"
-RESUME="weights/coco/yolov8_l/yolov8_l_best.pth"
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
