@@ -66,9 +66,17 @@ class SingleLevelPredLayer(nn.Module):
         cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
         reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
 
+        # ---------------- Decode bbox ----------------
+        ctr_pred = reg_pred[..., :2] * self.stride + anchors[..., :2]
+        wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride
+        pred_x1y1 = ctr_pred - wh_pred * 0.5
+        pred_x2y2 = ctr_pred + wh_pred * 0.5
+        box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
+
         # output dict
         outputs = {"pred_cls": cls_pred,             # (Tensor) [B, M, C]
                    "pred_reg": reg_pred,             # (Tensor) [B, M, 4]
+                   "pred_box": box_pred,             # (Tensor) [B, M, 4] 
                    "anchors": anchors,               # (Tensor) [M, 2]
                    "stride": self.stride,            # (Int)
                    "stride_tensors": stride_tensor   # List(Tensor) [M, 1]
@@ -115,16 +123,9 @@ class MultiLevelPredLayer(nn.Module):
             # ---------------- Single level prediction ----------------
             outputs = self.multi_level_preds[level](cls_feats[level], reg_feats[level])
 
-            # ---------------- Decode bbox ----------------
-            ctr_pred = outputs["pred_reg"][..., :2] * self.strides[level] + outputs["anchors"][..., :2]
-            wh_pred = torch.exp(outputs["pred_reg"][..., 2:]) * self.strides[level]
-            pred_x1y1 = ctr_pred - wh_pred * 0.5
-            pred_x2y2 = ctr_pred + wh_pred * 0.5
-            box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
             # collect results
             all_cls_preds.append(outputs["pred_cls"])
-            all_box_preds.append(box_pred)
+            all_box_preds.append(outputs["pred_box"])
             all_reg_preds.append(outputs["pred_reg"])
             all_anchors.append(outputs["anchors"])
             all_strides.append(outputs["stride_tensors"])
