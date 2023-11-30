@@ -43,7 +43,7 @@ def parse_args():
                         help='build yolo')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
-    parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,
+    parser.add_argument('-ct', '--conf_thresh', default=0.25, type=float,
                         help='confidence threshold')
     parser.add_argument('-nt', '--nms_thresh', default=0.5, type=float,
                         help='NMS threshold')
