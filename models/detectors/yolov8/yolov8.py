@@ -161,6 +161,9 @@ class YOLOv8(nn.Module):
                                           max_det=300,
                                           classes=None)
             bboxes, scores, labels = outputs[:, :4], outputs[:, 4], outputs[:, 5]
+            bboxes = bboxes.cpu().numpy()
+            scores = scores.cpu().numpy()
+            labels = labels.cpu().numpy()
             
             # post process
             # bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
