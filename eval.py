@@ -149,7 +149,7 @@ if __name__ == '__main__':
     with torch.no_grad():
         if args.dataset == 'voc':
             voc_test(model, data_dir, device, val_transform)
-        elif args.dataset == 'coco-val':
+        elif args.dataset == 'coco-val' or args.dataset == 'coco':
             coco_test(model, data_dir, device, val_transform, test=False)
         elif args.dataset == 'coco-test':
             coco_test(model, data_dir, device, val_transform, test=True)
