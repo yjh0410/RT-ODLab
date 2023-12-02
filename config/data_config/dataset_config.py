@@ -36,6 +36,13 @@ dataset_cfg = {
                         'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'),
     },
 
+    'crowdhuman':{
+        'data_name': 'CrowdHuman',
+        'num_classes': 1,
+        'class_indexs': None,
+        'class_names': ('person',),
+    },
+
     'ourdataset':{
         'data_name': 'AnimalDataset',
         'num_classes': 9,

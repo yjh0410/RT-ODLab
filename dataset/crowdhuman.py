@@ -1,10 +1,8 @@
 import os
 import cv2
-import time
 import random
 import numpy as np
 
-import torch
 from torch.utils.data import Dataset
 
 try:
@@ -18,19 +16,18 @@ except:
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
 
-coco_class_index = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 67, 70, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90]
-coco_class_labels = ('background', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'street sign', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'hat', 'backpack', 'umbrella', 'shoe', 'eye glasses', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'plate', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'mirror', 'dining table', 'window', 'desk', 'toilet', 'door', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'blender', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush')
+crowd_class_labels = ('person',)
 
 
-class COCODataset(Dataset):
+
+class CrowdHumanDataset(Dataset):
     def __init__(self, 
                  img_size     :int = 640,
                  data_dir     :str = None, 
-                 image_set    :str = 'train2017',
+                 image_set    :str = 'train',
                  trans_config = None,
                  transform    = None,
-                 is_train     :bool =False,
-                 load_cache   :bool = False,
+                 is_train     :bool = False
                  ):
         # ----------- Basic parameters -----------
         self.img_size = img_size
@@ -38,19 +35,12 @@ class COCODataset(Dataset):
         self.is_train = is_train
         # ----------- Path parameters -----------
         self.data_dir = data_dir
-        if image_set == 'train2017':
-            self.json_file='instances_train2017.json'
-        elif image_set == 'val2017':
-            self.json_file='instances_val2017.json'
-        elif image_set == 'test2017':
-            self.json_file='image_info_test-dev2017.json'
-        else:
-            raise NotImplementedError("Unknown json image set {}.".format(image_set))
+        self.json_file = '{}.json'.format(image_set)
         # ----------- Data parameters -----------
         self.coco = COCO(os.path.join(self.data_dir, 'annotations', self.json_file))
         self.ids = self.coco.getImgIds()
         self.class_ids = sorted(self.coco.getCatIds())
-        self.dataset_size = len(self.ids)
+
         # ----------- Transform parameters -----------
         self.transform = transform
         self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
@@ -60,12 +50,6 @@ class COCODataset(Dataset):
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
         print('==============================')
-        # ----------- Cached data -----------
-        self.load_cache = load_cache
-        self.cached_datas = None
-        if self.load_cache:
-            self.cached_datas = self._load_cache()
-
 
     # ------------ Basic dataset function ------------
     def __len__(self):
@@ -73,38 +57,6 @@ class COCODataset(Dataset):
 
     def __getitem__(self, index):
         return self.pull_item(index)
-
-    def _load_cache(self):
-        data_items = []
-        for idx in range(self.dataset_size):
-            if idx % 2000 == 0:
-                print("Caching images and targets : {} / {} ...".format(idx, self.dataset_size))
-
-            # load a data
-            image, target = self.load_image_target(idx)
-            orig_h, orig_w, _ = image.shape
-
-            # resize image
-            r = self.img_size / max(orig_h, orig_w)
-            if r != 1: 
-                interp = cv2.INTER_LINEAR
-                new_size = (int(orig_w * r), int(orig_h * r))
-                image = cv2.resize(image, new_size, interpolation=interp)
-            img_h, img_w = image.shape[:2]
-
-            # rescale bbox
-            boxes = target["boxes"].copy()
-            boxes[:, [0, 2]] = boxes[:, [0, 2]] / orig_w * img_w
-            boxes[:, [1, 3]] = boxes[:, [1, 3]] / orig_h * img_h
-            target["boxes"] = boxes
-
-            dict_item = {}
-            dict_item["image"] = image
-            dict_item["target"] = target
-
-            data_items.append(dict_item)
-        
-        return data_items
 
     # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
@@ -147,25 +99,17 @@ class COCODataset(Dataset):
     
     # ------------ Load data function ------------
     def load_image_target(self, index):
-        # == Load a data from the cached data ==
-        if self.cached_datas is not None:
-            # load a data
-            data_item = self.cached_datas[index]
-            image = data_item["image"]
-            target = data_item["target"]
-        # == Load a data from the local disk ==
-        else:        
-            # load an image
-            image, _ = self.pull_image(index)
-            height, width, channels = image.shape
+        # load an image
+        image, _ = self.pull_image(index)
+        height, width, channels = image.shape
 
-            # load a target
-            bboxes, labels = self.pull_anno(index)
-            target = {
-                "boxes": bboxes,
-                "labels": labels,
-                "orig_size": [height, width]
-            }
+        # load a target
+        bboxes, labels = self.pull_anno(index)
+        target = {
+            "boxes": bboxes,
+            "labels": labels,
+            "orig_size": [height, width]
+        }
 
         return image, target
 
@@ -189,26 +133,21 @@ class COCODataset(Dataset):
         return image, target, deltas
 
     def pull_image(self, index):
-        img_id = self.ids[index]
-        img_file = os.path.join(self.data_dir, self.image_set,
-                                '{:012}'.format(img_id) + '.jpg')
+        id_ = self.ids[index]
+        im_ann = self.coco.loadImgs(id_)[0]
+        img_id = im_ann["file_name"][:-4]
+        img_file = os.path.join(
+                self.data_dir, 'CrowdHuman_{}'.format(self.image_set), 'Images', im_ann["file_name"])
         image = cv2.imread(img_file)
-
-        if self.json_file == 'instances_val5k.json' and image is None:
-            img_file = os.path.join(self.data_dir, 'train2017',
-                                    '{:012}'.format(img_id) + '.jpg')
-            image = cv2.imread(img_file)
-
-        assert image is not None
 
         return image, img_id
 
     def pull_anno(self, index):
         img_id = self.ids[index]
         im_ann = self.coco.loadImgs(img_id)[0]
-        anno_ids = self.coco.getAnnIds(imgIds=[int(img_id)], iscrowd=False)
+        anno_ids = self.coco.getAnnIds(imgIds=[int(img_id)], iscrowd=0)
         annotations = self.coco.loadAnns(anno_ids)
-
+        
         # image infor
         width = im_ann['width']
         height = im_ann['height']
@@ -223,7 +162,7 @@ class COCODataset(Dataset):
                 y1 = np.max((0, anno['bbox'][1]))
                 x2 = np.min((width - 1, x1 + np.max((0, anno['bbox'][2] - 1))))
                 y2 = np.min((height - 1, y1 + np.max((0, anno['bbox'][3] - 1))))
-                if x2 < x1 or y2 < y1:
+                if x2 <= x1 or y2 <= y1:
                     continue
                 # class label
                 cls_id = self.class_ids.index(anno['category_id'])
@@ -243,10 +182,10 @@ if __name__ == "__main__":
     import argparse
     from build import build_transform
     
-    parser = argparse.ArgumentParser(description='COCO-Dataset')
+    parser = argparse.ArgumentParser(description='CrowdHuman-Dataset')
 
     # opt
-    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/COCO/',
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/CrowdHuman/',
                         help='data root')
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='input image size.')
@@ -260,9 +199,7 @@ if __name__ == "__main__":
                         help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
-    parser.add_argument('--load_cache', action="store_true", default=False,
-                        help='load cached data.')
-    
+
     args = parser.parse_args()
 
     trans_config = {
@@ -287,14 +224,12 @@ if __name__ == "__main__":
 
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
 
-    dataset = COCODataset(
+    dataset = CrowdHumanDataset(
         img_size=args.img_size,
         data_dir=args.root,
-        image_set='val2017',
-        trans_config=trans_config,
+        image_set='val',
         transform=transform,
-        is_train=args.is_train,
-        load_cache=args.load_cache
+        trans_config=trans_config,
         )
     
     np.random.seed(0)
@@ -323,7 +258,7 @@ if __name__ == "__main__":
             cls_id = int(label)
             color = class_colors[cls_id]
             # class name
-            label = coco_class_labels[coco_class_index[cls_id]]
+            label = crowd_class_labels[cls_id]
             image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
             # put the test on the bbox
             cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
