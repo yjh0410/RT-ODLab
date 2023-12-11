@@ -70,7 +70,7 @@ if [ $WORLD_SIZE == 1 ]; then
             --fp16 \
             --multi_scale
 elif [[ $WORLD_SIZE -gt 1 && $WORLD_SIZE -le 8 ]]; then
-    python -m torch.distributed.run --nproc_per_node=8 train.py \
+    python -m torch.distributed.run --nproc_per_node=${WORLD_SIZE} train.py \
             --cuda \
             -dist \
             --dataset ${DATASET} \
