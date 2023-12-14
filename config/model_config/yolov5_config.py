@@ -32,7 +32,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolov5_nano',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -77,7 +77,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolov5_small',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -122,7 +122,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolov5_medium',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -167,7 +167,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolov5_large',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -212,7 +212,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolov5_huge',
         # ---------------- Assignment config ----------------
         ## matcher
