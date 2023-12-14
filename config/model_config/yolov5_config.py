@@ -5,7 +5,6 @@ yolov5_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -33,7 +32,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.0],   # 320 -> 640
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_nano',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -44,14 +43,13 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtcdet',
     },
 
     'yolov5_s':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -79,7 +77,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.0],   # 320 -> 640
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_small',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -90,14 +88,13 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtcdet',
     },
 
     'yolov5_m':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -125,7 +122,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.0],   # 320 -> 640
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_medium',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -136,14 +133,13 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtcdet',
     },
 
     'yolov5_l':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -171,7 +167,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.0],   # 320 -> 640
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_large',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -182,14 +178,13 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtcdet',
     },
 
     'yolov5_x':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -217,7 +212,7 @@ yolov5_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.0],   # 320 -> 640
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_huge',
         # ---------------- Assignment config ----------------
         ## matcher
@@ -228,7 +223,7 @@ yolov5_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'yolov8',
+        'trainer_type': 'rtcdet',
     },
 
 }

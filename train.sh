@@ -35,13 +35,27 @@ elif [[ $MODEL == *"yolov7"* ]]; then
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
-elif [[ $MODEL == *"yolov5"* || $MODEL == *"yolov4"* || $MODEL == *"yolov3"* ]]; then
+elif [[ $MODEL == *"yolov5"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
-    NO_AUG_EPOCH=15
+    NO_AUG_EPOCH=20
+elif [[ $MODEL == *"yolov4"* ]]; then
+    # Epoch setting
+    BATCH_SIZE=128
+    MAX_EPOCH=300
+    WP_EPOCH=3
+    EVAL_EPOCH=10
+    NO_AUG_EPOCH=20
+elif [[ $MODEL == *"yolov3"* ]]; then
+    # Epoch setting
+    BATCH_SIZE=128
+    MAX_EPOCH=300
+    WP_EPOCH=3
+    EVAL_EPOCH=10
+    NO_AUG_EPOCH=20
 else
     # Epoch setting
     BATCH_SIZE=128

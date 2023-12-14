@@ -12,12 +12,12 @@ class YOLOv5(nn.Module):
     def __init__(self, 
                  cfg,
                  device, 
-                 num_classes = 20, 
-                 conf_thresh = 0.05,
-                 nms_thresh = 0.6,
-                 trainable = False, 
-                 topk = 1000,
-                 deploy = False,
+                 num_classes = 20,
+                 conf_thresh = 0.01,
+                 nms_thresh  = 0.5,
+                 topk        = 1000,
+                 trainable   = False,
+                 deploy      = False,
                  nms_class_agnostic = False):
         super(YOLOv5, self).__init__()
         # ---------------------- Basic Parameters ----------------------
@@ -41,7 +41,7 @@ class YOLOv5(nn.Module):
         
         # ------------------- Network Structure -------------------
         ## Backbone
-        self.backbone, feats_dim = build_backbone(cfg, trainable&cfg['pretrained'])
+        self.backbone, feats_dim = build_backbone(cfg)
         
         ## FPN
         self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))
