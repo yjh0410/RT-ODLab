@@ -3,11 +3,11 @@
 |   Model  | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOX2-N | 8xb16 |  640  |                        |                   |                   |                    |  |
-<!-- | YOLOX2-S | 8xb16 |  640  |          42.0          |        60.2       |        27.6       |          9.2       | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox2_s_coco.pth) | -->
 | YOLOX2-S | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOX2-M | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOX2-L | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOX2-X | 8xb16 |  640  |                        |                   |                   |                    |  |
+<!-- | YOLOX2-S | 8xb16 |  640  |          42.0          |        60.2       |        27.6       |          9.2       | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox2_s_coco.pth) | -->
 
 - For training, we train YOLOX2 series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the YOLOX.
