@@ -82,8 +82,8 @@ class Conv(nn.Module):
 
 
 # --------------------- Yolov8 modules ---------------------
-## Yolo BottleNeck
-class YoloBottleneck(nn.Module):
+## Yolov8 BottleNeck
+class Yolov8Bottleneck(nn.Module):
     def __init__(self,
                  in_dim,
                  out_dim,
@@ -93,9 +93,9 @@ class YoloBottleneck(nn.Module):
                  act_type     = 'silu',
                  norm_type    = 'BN',
                  depthwise    = False,):
-        super(YoloBottleneck, self).__init__()
+        super(Yolov8Bottleneck, self).__init__()
         inter_dim = int(out_dim * expand_ratio)  # hidden channels            
-        self.cv1 = Conv(in_dim, inter_dim,  k=kernel_sizes[0], p=kernel_sizes[0]//2, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
+        self.cv1 = Conv(in_dim, inter_dim, k=kernel_sizes[0], p=kernel_sizes[0]//2, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
         self.cv2 = Conv(inter_dim, out_dim, k=kernel_sizes[1], p=kernel_sizes[1]//2, norm_type=norm_type, act_type=act_type, depthwise=depthwise)
         self.shortcut = shortcut and in_dim == out_dim
 
@@ -104,40 +104,34 @@ class YoloBottleneck(nn.Module):
 
         return x + h if self.shortcut else h
 
-## Yolo StageBlock
-class Yolox2StageBlock(nn.Module):
+# Yolov8 StageBlock
+class Yolov8StageBlock(nn.Module):
     def __init__(self,
-                 in_dim     :int,
-                 out_dim    :int,
-                 num_blocks :int  = 1,
-                 shortcut   :bool = False,
-                 act_type   :str  = 'silu',
-                 norm_type  :str  = 'BN',
-                 depthwise  :bool = False,):
-        super(Yolox2StageBlock, self).__init__()
+                 in_dim,
+                 out_dim,
+                 num_blocks = 1,
+                 shortcut   = False,
+                 act_type   = 'silu',
+                 norm_type  = 'BN',
+                 depthwise  = False,):
+        super(Yolov8StageBlock, self).__init__()
         self.inter_dim = out_dim // 2
-        self.cv1 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.cv2 = Conv(in_dim, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.blocks = nn.Sequential(*(
-            YoloBottleneck(self.inter_dim, self.inter_dim, 1.0, [1, 3], shortcut, act_type, norm_type, depthwise)
+        self.input_proj = Conv(in_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.m = nn.Sequential(*(
+            Yolov8Bottleneck(self.inter_dim, self.inter_dim, 1.0, [3, 3], shortcut, act_type, norm_type, depthwise)
             for _ in range(num_blocks)))
-        self.cv3 = Conv(self.inter_dim * num_blocks, self.inter_dim, k=1, act_type=act_type, norm_type=norm_type)
-        self.output_proj = Conv(2 * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.output_proj = Conv((2 + num_blocks) * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
         # Input proj
-        x1 = self.cv1(x)
-        x2 = self.cv2(x)
+        x1, x2 = torch.chunk(self.input_proj(x), 2, dim=1)
+        out = list([x1, x2])
 
-        # Bottleneck
-        out = []
-        for m in self.blocks:
-            x2 = m(x2)
-            out.append(x2)
-        x2 = self.cv3(torch.cat(out, dim=1))
+        # Bottlenecl
+        out.extend(m(out[-1]) for m in self.m)
 
         # Output proj
-        out = self.output_proj(torch.cat([x1, x2], dim=1))
+        out = self.output_proj(torch.cat(out, dim=1))
 
         return out
     

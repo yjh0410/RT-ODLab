@@ -12,7 +12,7 @@
 - For optimizer, we use SGD with momentum 0.937, weight decay 0.0005 and base lr 0.01.
 - For learning rate scheduler, we use linear decay scheduler.
 - For YOLOv5's structure, we use decoupled head, following the setting of [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX).
-- For **YOLOv5-M** and **YOLOv5-L**, increasing the batch size may improve performance. Due to my computing resources, I can only set the batch size to 16.
+- For **YOLOv5-M** and **YOLOv5-L**, increasing the batch size may improve performance. Due to our computing resources, we can only set the batch size to 16.
 
 ## Train YOLOv5
 ### Single GPU

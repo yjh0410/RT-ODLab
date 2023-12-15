@@ -10,6 +10,7 @@ yolox2_cfg = {
         'bk_depthwise': False,
         'width': 0.25,
         'depth': 0.34,
+        'ratio': 2.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
@@ -56,6 +57,7 @@ yolox2_cfg = {
         'bk_depthwise': False,
         'width': 0.50,
         'depth': 0.34,
+        'ratio': 2.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
@@ -102,6 +104,7 @@ yolox2_cfg = {
         'bk_depthwise': False,
         'width': 0.75,
         'depth': 0.67,
+        'ratio': 1.5,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
@@ -148,6 +151,7 @@ yolox2_cfg = {
         'bk_depthwise': False,
         'width': 1.0,
         'depth': 1.0,
+        'ratio': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP
@@ -194,6 +198,7 @@ yolox2_cfg = {
         'bk_depthwise': False,
         'width': 1.25,
         'depth': 1.34,
+        'ratio': 1.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         ## Neck: SPP

@@ -2,22 +2,23 @@ import torch
 import torch.nn as nn
 
 try:
-    from .yolox2_basic import Conv, Yolox2StageBlock
+    from .yolox2_basic import Conv, Yolov8StageBlock
 except:
-    from yolox2_basic import Conv, Yolox2StageBlock
+    from yolox2_basic import Conv, Yolov8StageBlock
 
 
-# ---------------------------- Backbone ----------------------------
-class Yolox2Backbone(nn.Module):
-    def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
-        super(Yolox2Backbone, self).__init__()
-        self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(1024 * width)]
+# ---------------------------- Basic functions ----------------------------
+## ELAN-CSPNet
+class Yolov8Backbone(nn.Module):
+    def __init__(self, width=1.0, depth=1.0, ratio=1.0, act_type='silu', norm_type='BN', depthwise=False):
+        super(Yolov8Backbone, self).__init__()
+        self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(512 * width * ratio)]
         # P1/2
-        self.layer_1 = Conv(3, self.feat_dims[0], k=6, p=2, s=2, act_type=act_type, norm_type=norm_type)
+        self.layer_1 = Conv(3, self.feat_dims[0], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type)
         # P2/4
         self.layer_2 = nn.Sequential(
             Conv(self.feat_dims[0], self.feat_dims[1], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Yolox2StageBlock(in_dim     = self.feat_dims[1],
+            Yolov8StageBlock(in_dim     = self.feat_dims[1],
                              out_dim    = self.feat_dims[1],
                              num_blocks = round(3*depth),
                              shortcut   = True,
@@ -28,9 +29,9 @@ class Yolox2Backbone(nn.Module):
         # P3/8
         self.layer_3 = nn.Sequential(
             Conv(self.feat_dims[1], self.feat_dims[2], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Yolox2StageBlock(in_dim     = self.feat_dims[2],
+            Yolov8StageBlock(in_dim     = self.feat_dims[2],
                              out_dim    = self.feat_dims[2],
-                             num_blocks = round(9*depth),
+                             num_blocks = round(6*depth),
                              shortcut   = True,
                              act_type   = act_type,
                              norm_type  = norm_type,
@@ -39,9 +40,9 @@ class Yolox2Backbone(nn.Module):
         # P4/16
         self.layer_4 = nn.Sequential(
             Conv(self.feat_dims[2], self.feat_dims[3], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Yolox2StageBlock(in_dim     = self.feat_dims[3],
+            Yolov8StageBlock(in_dim     = self.feat_dims[3],
                              out_dim    = self.feat_dims[3],
-                             num_blocks = round(9*depth),
+                             num_blocks = round(6*depth),
                              shortcut   = True,
                              act_type   = act_type,
                              norm_type  = norm_type,
@@ -50,7 +51,7 @@ class Yolox2Backbone(nn.Module):
         # P5/32
         self.layer_5 = nn.Sequential(
             Conv(self.feat_dims[3], self.feat_dims[4], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type),
-            Yolox2StageBlock(in_dim     = self.feat_dims[4],
+            Yolov8StageBlock(in_dim     = self.feat_dims[4],
                              out_dim    = self.feat_dims[4],
                              num_blocks = round(3*depth),
                              shortcut   = True,
@@ -72,11 +73,12 @@ class Yolox2Backbone(nn.Module):
 
 
 # ---------------------------- Functions ----------------------------
-## build Backbone
+## build Yolov8's Backbone
 def build_backbone(cfg): 
     # model
-    backbone = Yolox2Backbone(width=cfg['width'],
+    backbone = Yolov8Backbone(width=cfg['width'],
                               depth=cfg['depth'],
+                              ratio=cfg['ratio'],
                               act_type=cfg['bk_act'],
                               norm_type=cfg['bk_norm'],
                               depthwise=cfg['bk_depthwise']
@@ -95,6 +97,7 @@ if __name__ == '__main__':
         'bk_depthwise': False,
         'width': 1.0,
         'depth': 1.0,
+        'ratio': 1.0,
     }
     model, feats = build_backbone(cfg)
     x = torch.randn(1, 3, 640, 640)
