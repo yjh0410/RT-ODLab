@@ -1,16 +1,32 @@
 # YOLOX:
 
-|   Model |   Backbone   | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------|--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOX-S | CSPDarkNet-S | 8xb8  |  640  |         40.1           |       60.3        |   26.8            |   8.9              | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox_s_coco.pth) |
-| YOLOX-M | CSPDarkNet-M | 8xb8  |  640  |         46.2           |       66.0        |   74.3            |   25.4             | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox_m_coco.pth) |
-| YOLOX-L | CSPDarkNet-L | 8xb8  |  640  |         48.7           |       68.0        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox_l_coco.pth) |
-| YOLOX-X | CSPDarkNet-X | 8xb8  |  640  |                        |                   |                   |                    |  |
+|   Model | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOX-S | 8xb8  |  640  |         40.1           |       60.3        |   26.8            |   8.9              | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox_s_coco.pth) |
+| YOLOX-M | 8xb8  |  640  |         46.2           |       66.0        |   74.3            |   25.4             | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox_m_coco.pth) |
+| YOLOX-L | 8xb8  |  640  |         48.7           |       68.0        |   155.4           |   54.2             | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolox_l_coco.pth) |
+| YOLOX-X | 8xb8  |  640  |                        |                   |                   |                    |  |
 
 - For training, we train YOLOX series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation.
 - For optimizer, we use SGD with weight decay 0.0005 and base per image lr 0.01 / 64,.
 - For learning rate scheduler, we use Cosine decay scheduler.
+
+On the other hand, we are trying to use **AdamW** to train our reproduced YOLOX. We will update the new results as soon as possible.
+
+|   Model | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|---------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| YOLOX-N | 8xb16 |  640  |                        |                   |                   |                    |  |
+| YOLOX-T | 8xb16 |  640  |                        |                   |                   |                    |  |
+| YOLOX-S | 8xb16 |  640  |                        |                   |                   |                    |  |
+| YOLOX-M | 8xb16 |  640  |                        |                   |                   |                    |  |
+| YOLOX-L | 8xb16 |  640  |                        |                   |                   |                    |  |
+| YOLOX-X | 8xb16 |  640  |                        |                   |                   |                    |  |
+
+- For training, we train YOLOX series with 300 epochs on COCO.
+- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation.
+- For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64,.
+- For learning rate scheduler, we use linear decay scheduler.
 
 ## Train YOLOX
 ### Single GPU
