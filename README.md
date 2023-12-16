@@ -2,6 +2,12 @@
 
 English | [简体中文](https://github.com/yjh0410/RT-ODLab/blob/main/README_CN.md)
 
+We are trying to build our real-time general target detection code base based on the core concepts of YOLO. We have reproduced most of the YOLO series. In addition, we have also written an introductory tutorial on YOLO. We hope that by learning YOLO, a very popular general target detection framework, beginners can master the basic knowledge necessary to study general target detection. 
+
+If you are interested in our book, you can purchase it on e-commerce platforms such as Taobao and JD.com in China.
+
+![image](./img_files/yolo_tutorial.png)
+
 ## Requirements
 - We recommend you to use Anaconda to create a conda environment:
 ```Shell
