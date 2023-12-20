@@ -66,7 +66,7 @@ else
 fi
 
 # -------------------------- Train Pipeline --------------------------
-WORLD_SIZE=4
+WORLD_SIZE=$1
 if [ $WORLD_SIZE == 1 ]; then
     python train.py \
             --cuda \
