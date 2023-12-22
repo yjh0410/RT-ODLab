@@ -153,7 +153,7 @@ class VOCAPIEvaluator():
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.dataset.ids):
                     dets = all_boxes[cls_ind][im_ind]
-                    if dets == []:
+                    if len(dets) == 0:
                         continue
                     # the VOCdevkit expects 1-based indices
                     for k in range(dets.shape[0]):
