@@ -17,10 +17,6 @@ try:
 except:
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
-# please define our class labels
-our_class_labels = ('bird', 'butterfly', 'cat', 'cow', 'dog', 'lion', 'person', 'pig', 'tiger', )
-
-
 
 class OurDataset(Dataset):
     def __init__(self, 
@@ -235,6 +231,13 @@ if __name__ == "__main__":
     import time
     import argparse
     from build import build_transform
+
+    import sys
+    sys.path.append("..")
+    from config.data_config.dataset_config import dataset_cfg
+    data_config = dataset_cfg["ourdataset"]
+    categories = data_config["class_names"]
+
     
     parser = argparse.ArgumentParser(description='FreeYOLOv2')
 
@@ -314,7 +317,7 @@ if __name__ == "__main__":
             cls_id = int(label)
             color = class_colors[cls_id]
             # class name
-            label = our_class_labels[cls_id]
+            label = categories[cls_id]
             if x2 - x1 > 0. and y2 - y1 > 0.:
                 # draw bbox
                 image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)

@@ -71,8 +71,8 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                              image_set    = image_set,
                              transform    = transform,
                              trans_config = trans_config,
-                             s_train      = is_train,
-                             oad_cache    = args.load_cache
+                             is_train      = is_train,
+                             load_cache    = args.load_cache
                              )
 
     return dataset, dataset_info
