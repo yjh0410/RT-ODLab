@@ -3,14 +3,14 @@ import json
 import xml.etree.ElementTree as ET
 import glob
 
+import sys
+sys.path.append("..")
+from config.data_config.dataset_config import dataset_cfg
+data_config = dataset_cfg["ourdataset"]
+num_classes = data_config["num_classes"]
+categories = data_config["class_names"]
 START_BOUNDING_BOX_ID = 1
-PRE_DEFINE_CATEGORIES = None
-# If necessary, pre-define category and its id
-#  PRE_DEFINE_CATEGORIES = {"aeroplane": 1, "bicycle": 2, "bird": 3, "boat": 4,
-#  "bottle":5, "bus": 6, "car": 7, "cat": 8, "chair": 9,
-#  "cow": 10, "diningtable": 11, "dog": 12, "horse": 13,
-#  "motorbike": 14, "person": 15, "pottedplant": 16,
-#  "sheep": 17, "sofa": 18, "train": 19, "tvmonitor": 20}
+PRE_DEFINE_CATEGORIES = {categories[i]: i + 1 for i in range(num_classes)} 
 
 
 def get(root, name):
@@ -73,13 +73,7 @@ def convert(xml_files, json_file):
             print('[{}] / [{}]'.format(i, len(xml_files)))
         tree = ET.parse(xml_file)
         root = tree.getroot()
-        path = get(root, "path")
-        if len(path) == 1:
-            filename = os.path.basename(path[0].text)
-        elif len(path) == 0:
-            filename = get_and_check(root, "filename", 1).text
-        else:
-            raise ValueError("%d paths found in %s" % (len(path), xml_file))
+        filename = get_and_check(root, "filename", 1).text
         ## The filename must be a number
         image_id = get_filename_as_int(filename)
         size = get_and_check(root, "size", 1)
@@ -156,4 +150,4 @@ if __name__ == "__main__":
     print("Number of xml files: {}".format(len(xml_files)))
     print("Converting to COCO format ...")
     convert(xml_files, json_file)
-    print("Success: {}".format(args.json_file))
+    print("Success: {}".format(json_file))

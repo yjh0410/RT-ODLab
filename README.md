@@ -300,7 +300,26 @@ OurDataset
 |  ...
 ```
 
-- Step-2: Convert ourdataset to COCO format.
+- Step-2: Make the configuration for our dataset.
+```Shell
+cd <PyTorch_YOLO_Tutorial_HOME>
+cd config/data_config
+```
+You need to edit the `dataset_cfg` defined in `dataset_config.py`. You can refer to the `ourdataset` defined in `dataset_cfg` to modify the relevant parameters, such as `num_classes`, `classes_names`, to adapt to our dataset.
+
+For example:
+```Shell
+dataset_cfg = {
+    'ourdataset':{
+        'data_name': 'AnimalDataset',
+        'num_classes': 9,
+        'class_indexs': (0, 1, 2, 3, 4, 5, 6, 7, 8),
+        'class_names': ('bird', 'butterfly', 'cat', 'cow', 'dog', 'lion', 'person', 'pig', 'tiger', ),
+    },
+}
+```
+
+- Step-3: Convert ourdataset to COCO format.
 
 ```Shell
 cd <PyTorch_YOLO_Tutorial_HOME>
@@ -336,11 +355,7 @@ OurDataset
 |  ...
 ```
 
-- Step-3 Define our class labels.
-
-Please open `dataset/ourdataset.py` file and change `our_class_labels = ('cat',)` according to our definition of categories.
-
-- Step-4 Check
+- Step-4 Check the data.
 
 ```Shell
 cd <PyTorch_YOLO_Tutorial_HOME>
