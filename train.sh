@@ -7,6 +7,7 @@ DATA_ROOT="/data/datasets/"
 MODEL="yolox_s"
 IMAGE_SIZE=640
 # RESUME="weights/coco/yolov5_s/yolov5_s_best.pth"
+RESUME="none"
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
