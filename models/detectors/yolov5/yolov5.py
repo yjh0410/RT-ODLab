@@ -1,3 +1,5 @@
+import numpy as np
+
 import torch
 import torch.nn as nn
 
@@ -18,6 +20,7 @@ class YOLOv5(nn.Module):
                  topk        = 1000,
                  trainable   = False,
                  deploy      = False,
+                 no_multi_labels = False,
                  nms_class_agnostic = False):
         super(YOLOv5, self).__init__()
         # ---------------------- Basic Parameters ----------------------
@@ -28,9 +31,10 @@ class YOLOv5(nn.Module):
         self.trainable = trainable
         self.conf_thresh = conf_thresh
         self.nms_thresh = nms_thresh
-        self.topk = topk
-        self.deploy = deploy
+        self.topk_candidates = topk
+        self.no_multi_labels = no_multi_labels
         self.nms_class_agnostic = nms_class_agnostic
+        self.deploy = deploy
         
         # ------------------- Anchor box -------------------
         self.num_levels = 3
@@ -91,59 +95,70 @@ class YOLOv5(nn.Module):
         return anchors
         
     ## post-process
-    def post_process(self, obj_preds, cls_preds, box_preds):
+    def post_process(self, cls_preds, box_preds, obj_preds=None):
         """
         Input:
-            obj_preds: List(Tensor) [[H x W x A, 1], ...]
-            cls_preds: List(Tensor) [[H x W x A, C], ...]
-            box_preds: List(Tensor) [[H x W x A, 4], ...]
-            anchors:   List(Tensor) [[H x W x A, 2], ...]
+            cls_preds: List[np.array] -> [[M, C], ...]
+            box_preds: List[np.array] -> [[M, 4], ...]
+            obj_preds: List[np.array] -> [[M, 1], ...] or None
+        Output:
+            bboxes: np.array -> [N, 4]
+            scores: np.array -> [N,]
+            labels: np.array -> [N,]
         """
+        assert len(cls_preds) == self.num_levels
         all_scores = []
         all_labels = []
         all_bboxes = []
-        
-        for obj_pred_i, cls_pred_i, box_pred_i in zip(obj_preds, cls_preds, box_preds):
-            # (H x W x KA x C,)
-            scores_i = (torch.sqrt(obj_pred_i.sigmoid() * cls_pred_i.sigmoid())).flatten()
 
-            # Keep top k top scoring indices only.
-            num_topk = min(self.topk, box_pred_i.size(0))
+        for level in range(self.num_levels):
+            cls_pred_i = cls_preds[level]
+            box_pred_i = box_preds[level]
+            num_topk = min(self.topk_candidates, box_pred_i.shape[0])
 
-            # torch.sort is actually faster than .topk (at least on GPUs)
-            predicted_prob, topk_idxs = scores_i.sort(descending=True)
-            topk_scores = predicted_prob[:num_topk]
-            topk_idxs = topk_idxs[:num_topk]
+            # filter out by objectness
+            obj_preds_i = obj_preds[level]
+            keep_idxs = obj_preds_i[..., 0] > self.conf_thresh
+            cls_pred_i = obj_preds_i[keep_idxs] * cls_pred_i[keep_idxs]
+            box_pred_i = box_pred_i[keep_idxs]
 
-            # filter out the proposals with low confidence score
-            keep_idxs = topk_scores > self.conf_thresh
-            scores = topk_scores[keep_idxs]
-            topk_idxs = topk_idxs[keep_idxs]
+            if self.no_multi_labels:
+                # [M,]
+                scores_i, labels_i = np.max(cls_pred_i, axis=1), np.argmax(cls_pred_i, axis=1)
 
-            anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
-            labels = topk_idxs % self.num_classes
+                # topk candidates
+                topk_idxs = np.argsort(-scores_i)
+                topk_idxs = topk_idxs[:num_topk]
+                scores_i = scores_i[topk_idxs]
+                labels_i = labels_i[topk_idxs]
+                bboxes_i = box_pred_i[topk_idxs]
+            else:
+                # [M, C] -> [MC,]
+                scores_i = cls_pred_i.flatten()
 
-            bboxes = box_pred_i[anchor_idxs]
+                # topk candidates
+                predicted_prob, topk_idxs = np.sort(scores_i)[::-1], np.argsort(-scores_i)
+                scores_i = predicted_prob[:num_topk]
+                topk_idxs = topk_idxs[:num_topk]
 
-            all_scores.append(scores)
-            all_labels.append(labels)
-            all_bboxes.append(bboxes)
+                anchor_idxs = topk_idxs // self.num_classes
+                bboxes_i = box_pred_i[anchor_idxs]
 
-        scores = torch.cat(all_scores)
-        labels = torch.cat(all_labels)
-        bboxes = torch.cat(all_bboxes)
+                labels_i = topk_idxs % self.num_classes
 
-        # to cpu & numpy
-        scores = scores.cpu().numpy()
-        labels = labels.cpu().numpy()
-        bboxes = bboxes.cpu().numpy()
+            all_scores.append(scores_i)
+            all_labels.append(labels_i)
+            all_bboxes.append(bboxes_i)
+
+        scores = np.concatenate(all_scores, axis=0)
+        labels = np.concatenate(all_labels, axis=0)
+        bboxes = np.concatenate(all_bboxes, axis=0)
 
         # nms
         scores, labels, bboxes = multiclass_nms(
             scores, labels, bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
 
         return bboxes, scores, labels
-
 
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
@@ -200,8 +215,10 @@ class YOLOv5(nn.Module):
             return outputs
         else:
             # post process
-            bboxes, scores, labels = self.post_process(
-                all_obj_preds, all_cls_preds, all_box_preds)
+            obj_preds = [obj_pred_i.sigmoid().cpu().numpy() for obj_pred_i in all_obj_preds]
+            cls_preds = [cls_pred_i.sigmoid().cpu().numpy() for cls_pred_i in all_cls_preds]
+            box_preds = [box_pred_i.cpu().numpy()           for box_pred_i in all_box_preds]
+            bboxes, scores, labels = self.post_process(cls_preds, box_preds, obj_preds)
         
             return bboxes, scores, labels
 

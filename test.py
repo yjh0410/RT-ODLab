@@ -43,7 +43,7 @@ def parse_args():
                         help='build yolo')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
-    parser.add_argument('-ct', '--conf_thresh', default=0.25, type=float,
+    parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,
                         help='confidence threshold')
     parser.add_argument('-nt', '--nms_thresh', default=0.5, type=float,
                         help='NMS threshold')
@@ -53,6 +53,8 @@ def parse_args():
                         help="not decode in inference or yes")
     parser.add_argument('--fuse_conv_bn', action='store_true', default=False,
                         help='fuse Conv & BN')
+    parser.add_argument('--no_multi_labels', action='store_true', default=False,
+                        help='Perform post-process with multi-labels trick.')
     parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
                         help='Perform NMS operations regardless of category.')
 
