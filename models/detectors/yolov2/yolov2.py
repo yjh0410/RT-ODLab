@@ -20,6 +20,7 @@ class YOLOv2(nn.Module):
                  topk=100,
                  trainable=False,
                  deploy=False,
+                 no_multi_labels=False,
                  nms_class_agnostic=False):
         super(YOLOv2, self).__init__()
         # ------------------- Basic parameters -------------------
@@ -29,9 +30,10 @@ class YOLOv2(nn.Module):
         self.trainable = trainable                     # 训练的标记
         self.conf_thresh = conf_thresh                 # 得分阈值
         self.nms_thresh = nms_thresh                   # NMS阈值
-        self.topk = topk                               # topk
+        self.topk_candidates = topk                    # topk
         self.stride = 32                               # 网络的最大步长
         self.deploy = deploy
+        self.no_multi_labels = no_multi_labels
         self.nms_class_agnostic = nms_class_agnostic
         # ------------------- Anchor box -------------------
         self.anchor_size = torch.as_tensor(cfg['anchor_size']).float().view(-1, 2) # [A, 2]
@@ -113,30 +115,50 @@ class YOLOv2(nn.Module):
             cls_pred: (Tensor) [H*W*A, C]
             reg_pred: (Tensor) [H*W*A, 4]
         """
+        if self.no_multi_labels:
+            # [M,]
+            scores, labels = torch.max(torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid()), dim=1)
+
+            # Keep top k top scoring indices only.
+            num_topk = min(self.topk_candidates, reg_pred.size(0))
+
+            # topk candidates
+            predicted_prob, topk_idxs = scores.sort(descending=True)
+            topk_scores = predicted_prob[:num_topk]
+            topk_idxs = topk_idxs[:num_topk]
+
+            # filter out the proposals with low confidence score
+            keep_idxs = topk_scores > self.conf_thresh
+            scores = topk_scores[keep_idxs]
+            topk_idxs = topk_idxs[keep_idxs]
+
+            labels = labels[topk_idxs]
+            bboxes = self.decode_boxes(anchors[topk_idxs], reg_pred[topk_idxs])
+        else:
         # (H x W x A x C,)
-        scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid()).flatten()
+            scores = torch.sqrt(obj_pred.sigmoid() * cls_pred.sigmoid()).flatten()
 
-        # Keep top k top scoring indices only.
-        num_topk = min(self.topk, reg_pred.size(0))
+            # Keep top k top scoring indices only.
+            num_topk = min(self.topk_candidates, reg_pred.size(0))
 
-        # torch.sort is actually faster than .topk (at least on GPUs)
-        predicted_prob, topk_idxs = scores.sort(descending=True)
-        topk_scores = predicted_prob[:num_topk]
-        topk_idxs = topk_idxs[:num_topk]
+            # torch.sort is actually faster than .topk (at least on GPUs)
+            predicted_prob, topk_idxs = scores.sort(descending=True)
+            topk_scores = predicted_prob[:num_topk]
+            topk_idxs = topk_idxs[:num_topk]
 
-        # filter out the proposals with low confidence score
-        keep_idxs = topk_scores > self.conf_thresh
-        scores = topk_scores[keep_idxs]
-        topk_idxs = topk_idxs[keep_idxs]
+            # filter out the proposals with low confidence score
+            keep_idxs = topk_scores > self.conf_thresh
+            scores = topk_scores[keep_idxs]
+            topk_idxs = topk_idxs[keep_idxs]
 
-        anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
-        labels = topk_idxs % self.num_classes
+            anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
+            labels = topk_idxs % self.num_classes
 
-        reg_pred = reg_pred[anchor_idxs]
-        anchors = anchors[anchor_idxs]
+            reg_pred = reg_pred[anchor_idxs]
+            anchors = anchors[anchor_idxs]
 
-        # 解算边界框, 并归一化边界框: [H*W*A, 4]
-        bboxes = self.decode_boxes(anchors, reg_pred)
+            # 解算边界框, 并归一化边界框: [H*W*A, 4]
+            bboxes = self.decode_boxes(anchors, reg_pred)
 
         # to cpu & numpy
         scores = scores.cpu().numpy()

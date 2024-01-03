@@ -24,6 +24,7 @@ class YOLOX2(nn.Module):
                  topk        = 1000,
                  trainable   = False,
                  deploy      = False,
+                 no_multi_labels = False,
                  nms_class_agnostic = False):
         super(YOLOX2, self).__init__()
         # ---------------------- Basic Parameters ----------------------
@@ -36,8 +37,9 @@ class YOLOX2(nn.Module):
         self.nms_thresh = nms_thresh
         self.num_levels = len(self.strides)
         self.num_classes = num_classes
-        self.topk = topk
+        self.topk_candidates = topk
         self.deploy = deploy
+        self.no_multi_labels = no_multi_labels
         self.nms_class_agnostic = nms_class_agnostic
         self.head_dim = round(256 * cfg['width'])
         
@@ -68,9 +70,14 @@ class YOLOX2(nn.Module):
     def post_process(self, cls_preds, box_preds):
         """
         Input:
-            cls_preds: List(Tensor) [[H x W, C], ...]
-            box_preds: List(Tensor) [[H x W, 4], ...]
+            cls_preds: List[np.array] -> [[M, C], ...]
+            box_preds: List[np.array] -> [[M, 4], ...]
+        Output:
+            bboxes: np.array -> [N, 4]
+            scores: np.array -> [N,]
+            labels: np.array -> [N,]
         """
+        assert len(cls_preds) == self.num_levels
         all_scores = []
         all_labels = []
         all_bboxes = []
@@ -78,35 +85,54 @@ class YOLOX2(nn.Module):
         for cls_pred_i, box_pred_i in zip(cls_preds, box_preds):
             cls_pred_i = cls_pred_i[0]
             box_pred_i = box_pred_i[0]
-            
-            # (H x W x C,)
-            scores_i = cls_pred_i.sigmoid().flatten()
+            if self.no_multi_labels:
+                # [M,]
+                scores, labels = torch.max(cls_pred_i.sigmoid(), dim=1)
 
-            # Keep top k top scoring indices only.
-            num_topk = min(self.topk, box_pred_i.size(0))
+                # Keep top k top scoring indices only.
+                num_topk = min(self.topk_candidates, box_pred_i.size(0))
 
-            # torch.sort is actually faster than .topk (at least on GPUs)
-            predicted_prob, topk_idxs = scores_i.sort(descending=True)
-            topk_scores = predicted_prob[:num_topk]
-            topk_idxs = topk_idxs[:num_topk]
+                # topk candidates
+                predicted_prob, topk_idxs = scores.sort(descending=True)
+                topk_scores = predicted_prob[:num_topk]
+                topk_idxs = topk_idxs[:num_topk]
 
-            # filter out the proposals with low confidence score
-            keep_idxs = topk_scores > self.conf_thresh
-            scores = topk_scores[keep_idxs]
-            topk_idxs = topk_idxs[keep_idxs]
+                # filter out the proposals with low confidence score
+                keep_idxs = topk_scores > self.conf_thresh
+                scores = topk_scores[keep_idxs]
+                topk_idxs = topk_idxs[keep_idxs]
 
-            anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
-            labels = topk_idxs % self.num_classes
+                labels = labels[topk_idxs]
+                bboxes = box_pred_i[topk_idxs]
+            else:
+                # [M, C] -> [MC,]
+                scores_i = cls_pred_i.sigmoid().flatten()
 
-            bboxes = box_pred_i[anchor_idxs]
+                # Keep top k top scoring indices only.
+                num_topk = min(self.topk_candidates, box_pred_i.size(0))
+
+                # torch.sort is actually faster than .topk (at least on GPUs)
+                predicted_prob, topk_idxs = scores_i.sort(descending=True)
+                topk_scores = predicted_prob[:num_topk]
+                topk_idxs = topk_idxs[:num_topk]
+
+                # filter out the proposals with low confidence score
+                keep_idxs = topk_scores > self.conf_thresh
+                scores = topk_scores[keep_idxs]
+                topk_idxs = topk_idxs[keep_idxs]
+
+                anchor_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
+                labels = topk_idxs % self.num_classes
+
+                bboxes = box_pred_i[anchor_idxs]
 
             all_scores.append(scores)
             all_labels.append(labels)
             all_bboxes.append(bboxes)
 
-        scores = torch.cat(all_scores)
-        labels = torch.cat(all_labels)
-        bboxes = torch.cat(all_bboxes)
+        scores = torch.cat(all_scores, dim=0)
+        labels = torch.cat(all_labels, dim=0)
+        bboxes = torch.cat(all_bboxes, dim=0)
 
         # to cpu & numpy
         scores = scores.cpu().numpy()
@@ -116,9 +142,9 @@ class YOLOX2(nn.Module):
         # nms
         scores, labels, bboxes = multiclass_nms(
             scores, labels, bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
-        
-        return bboxes, scores, labels
 
+        return bboxes, scores, labels
+    
     # ---------------------- Main Process for Inference ----------------------
     @torch.no_grad()
     def inference_single_image(self, x):

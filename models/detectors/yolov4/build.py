@@ -25,6 +25,7 @@ def build_yolov4(args, cfg, device, num_classes=80, trainable=False, deploy=Fals
                    nms_thresh         = args.nms_thresh,
                    topk               = args.topk,
                    deploy             = deploy,
+                   no_multi_labels    = args.no_multi_labels,
                    nms_class_agnostic = args.nms_class_agnostic
                    )
 
