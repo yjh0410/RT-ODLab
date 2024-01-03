@@ -81,6 +81,8 @@ def parse_args():
                         help='load pretrained weight')
     parser.add_argument('-r', '--resume', default=None, type=str,
                         help='keep training')
+    parser.add_argument('--no_multi_labels', action='store_true', default=False,
+                        help='Perform NMS operations regardless of category.')
     parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
                         help='Perform NMS operations regardless of category.')
 
