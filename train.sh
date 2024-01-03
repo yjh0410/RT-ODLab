@@ -4,9 +4,9 @@ DATA_ROOT="/data/datasets/"
 # DATA_ROOT="/Users/liuhaoran/Desktop/python_work/object-detection/dataset/"
 
 # MODEL setting
-MODEL="yolov5_s"
+MODEL="yolox_s"
 IMAGE_SIZE=640
-RESUME="weights/coco/yolov5_s/yolov5_s_best.pth"
+# RESUME="weights/coco/yolov5_s/yolov5_s_best.pth"
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
@@ -23,11 +23,11 @@ elif [[ $MODEL == *"yolox2"* ]]; then
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolox"* ]]; then
     # Epoch setting
-    BATCH_SIZE=64
+    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
-    NO_AUG_EPOCH=15
+    NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolov7"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
