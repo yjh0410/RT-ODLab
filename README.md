@@ -122,18 +122,8 @@ python test.py -d coco \
                --img_size 640 \
                --weight path/to/weight \
                --root path/to/dataset/ \
-               --show
-```
-
-For YOLOv7, since it uses the RepConv in PaFPN, you can add `--fuse_repconv` to fuse the RepConv block.
-```Shell
-python test.py -d coco \
-               --cuda \
-               -m yolov7_large \
-               --fuse_repconv \
-               --img_size 640 \
-               --weight path/to/weight \
-               --root path/to/dataset/ \
+               --no_multi_labels \
+               --visual_threshold 0.35 \
                --show
 ```
 

@@ -126,19 +126,8 @@ python test.py -d coco \
                --img_size 640 \
                --weight path/to/weight \
                --root path/to/dataset/ \
-               --show
-```
-
-对于YOLOv7，由于YOLOv7的PaFPN中包含了RepConv模块，因此你可以在测试命中加上`--fuse_repconv`来融合其中的RepConv:
-
-```Shell
-python test.py -d coco \
-               --cuda \
-               -v yolov7_large \
-               --fuse_repconv \
-               --img_size 640 \
-               --weight path/to/weight \
-               --root path/to/dataset/ \
+               --no_multi_labels \
+               --visual_threshold 0.35 \
                --show
 ```
 
