@@ -17,27 +17,29 @@ class Yolov5Matcher(object):
     def compute_iou(self, anchor_boxes, gt_box):
         """
             anchor_boxes : ndarray -> [KA, 4] (cx, cy, bw, bh).
-            gt_box : ndarray -> [1, 4] (cx, cy, bw, bh).
+            gt_box       : ndarray -> [1, 4] (cx, cy, bw, bh).
         """
         # anchors: [KA, 4]
-        anchors = np.zeros_like(anchor_boxes)
-        anchors[..., :2] = anchor_boxes[..., :2] - anchor_boxes[..., 2:] * 0.5  # x1y1
-        anchors[..., 2:] = anchor_boxes[..., :2] + anchor_boxes[..., 2:] * 0.5  # x2y2
+        anchors_xyxy = np.zeros_like(anchor_boxes)
         anchors_area = anchor_boxes[..., 2] * anchor_boxes[..., 3]
+        # convert [cx, cy, bw, bh] -> [x1, y1, x2, y2]
+        anchors_xyxy[..., :2] = anchor_boxes[..., :2] - anchor_boxes[..., 2:] * 0.5  # x1y1
+        anchors_xyxy[..., 2:] = anchor_boxes[..., :2] + anchor_boxes[..., 2:] * 0.5  # x2y2
         
-        # gt_box: [1, 4] -> [KA, 4]
+        # expand gt_box: [1, 4] -> [KA, 4]
         gt_box = np.array(gt_box).reshape(-1, 4)
-        gt_box = np.repeat(gt_box, anchors.shape[0], axis=0)
-        gt_box_ = np.zeros_like(gt_box)
-        gt_box_[..., :2] = gt_box[..., :2] - gt_box[..., 2:] * 0.5  # x1y1
-        gt_box_[..., 2:] = gt_box[..., :2] + gt_box[..., 2:] * 0.5  # x2y2
-        gt_box_area = np.prod(gt_box[..., 2:] - gt_box[..., :2], axis=1)
+        gt_box = np.repeat(gt_box, anchors_xyxy.shape[0], axis=0)
+        gt_box_area = gt_box[..., 2] * gt_box[..., 3]
+        # convert [cx, cy, bw, bh] -> [x1, y1, x2, y2]
+        gt_box_xyxy = np.zeros_like(gt_box)
+        gt_box_xyxy[..., :2] = gt_box[..., :2] - gt_box[..., 2:] * 0.5  # x1y1
+        gt_box_xyxy[..., 2:] = gt_box[..., :2] + gt_box[..., 2:] * 0.5  # x2y2
 
         # intersection
-        inter_w = np.minimum(anchors[:, 2], gt_box_[:, 2]) - \
-                  np.maximum(anchors[:, 0], gt_box_[:, 0])
-        inter_h = np.minimum(anchors[:, 3], gt_box_[:, 3]) - \
-                  np.maximum(anchors[:, 1], gt_box_[:, 1])
+        inter_w = np.minimum(anchors_xyxy[:, 2], gt_box_xyxy[:, 2]) - \
+                  np.maximum(anchors_xyxy[:, 0], gt_box_xyxy[:, 0])
+        inter_h = np.minimum(anchors_xyxy[:, 3], gt_box_xyxy[:, 3]) - \
+                  np.maximum(anchors_xyxy[:, 1], gt_box_xyxy[:, 1])
         inter_area = inter_w * inter_h
         
         # union
