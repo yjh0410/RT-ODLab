@@ -11,13 +11,11 @@ def box_cxcywh_to_xyxy(x):
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
     return torch.stack(b, dim=-1)
 
-
 def box_xyxy_to_cxcywh(x):
     x0, y0, x1, y1 = x.unbind(-1)
     b = [(x0 + x1) / 2, (y0 + y1) / 2,
          (x1 - x0), (y1 - y0)]
     return torch.stack(b, dim=-1)
-
 
 def rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas=None):
     origin_h, origin_w = origin_img_size
@@ -40,7 +38,6 @@ def rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas=None):
         bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], a_min=0., a_max=origin_h)
 
     return bboxes
-
 
 def bbox2dist(anchor_points, bbox, reg_max):
     '''Transform bbox(xyxy) to dist(ltrb).'''
@@ -67,7 +64,6 @@ def box_iou(boxes1, boxes2):
     iou = inter / union
     return iou, union
 
-
 def generalized_box_iou(boxes1, boxes2):
     """
     Generalized IoU from https://giou.stanford.edu/
@@ -90,7 +86,6 @@ def generalized_box_iou(boxes1, boxes2):
     area = wh[:, :, 0] * wh[:, :, 1]
 
     return iou - (area - union) / area
-
 
 def get_ious(bboxes1,
              bboxes2,
