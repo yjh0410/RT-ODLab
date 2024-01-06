@@ -330,8 +330,9 @@ def multiclass_nms(scores, labels, bboxes, nms_thresh, num_classes, class_agnost
 # ---------------------------- Processor for Deployment ----------------------------
 ## Pre-processer
 class PreProcessor(object):
-    def __init__(self, img_size):
+    def __init__(self, img_size, keep_ratio=True):
         self.img_size = img_size
+        self.keep_ratio = keep_ratio
         self.input_size = [img_size, img_size]
         
 
@@ -346,23 +347,32 @@ class PreProcessor(object):
         else:
             padded_img = np.ones(self.input_size, np.float32) * 114.
         # resize
-        orig_h, orig_w = image.shape[:2]
-        r = min(self.input_size[0] / orig_h, self.input_size[1] / orig_w)
-        resize_size = (int(orig_w * r), int(orig_h * r))
-        if r != 1:
-            resized_img = cv2.resize(image, resize_size, interpolation=cv2.INTER_LINEAR)
+        if self.keep_ratio:
+            orig_h, orig_w = image.shape[:2]
+            r = min(self.input_size[0] / orig_h, self.input_size[1] / orig_w)
+            resize_size = (int(orig_w * r), int(orig_h * r))
+            if r != 1:
+                resized_img = cv2.resize(image, resize_size, interpolation=cv2.INTER_LINEAR)
+            else:
+                resized_img = image
+
+            # padding
+            padded_img[:resized_img.shape[0], :resized_img.shape[1]] = resized_img
+            
+            # [H, W, C] -> [C, H, W]
+            padded_img = padded_img.transpose(swap)
+            padded_img = np.ascontiguousarray(padded_img, dtype=np.float32) / 255.
+
+            return padded_img, r
         else:
-            resized_img = image
+            orig_h, orig_w = image.shape[:2]
+            r = np.array([self.input_size[0] / orig_w, self.input_size[1] / orig_w])
+            if [orig_h, orig_w] == self.input_size:
+                resized_img = image
+            else:
+                resized_img = cv2.resize(image, self.input_size, interpolation=cv2.INTER_LINEAR)
 
-        # padding
-        padded_img[:resized_img.shape[0], :resized_img.shape[1]] = resized_img
-        
-        # [H, W, C] -> [C, H, W]
-        padded_img = padded_img.transpose(swap)
-        padded_img = np.ascontiguousarray(padded_img, dtype=np.float32) / 255.
-
-
-        return padded_img, r
+            return resized_img, r
 
 ## Post-processer
 class PostProcessor(object):
