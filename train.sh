@@ -1,13 +1,11 @@
 # Dataset setting
 DATASET="coco"
 DATA_ROOT="/data/datasets/"
-# DATA_ROOT="/Users/liuhaoran/Desktop/python_work/object-detection/dataset/"
 
 # MODEL setting
 MODEL="yolox_s"
 IMAGE_SIZE=640
 RESUME="None"
-RESUME="weights/coco/yolox_s/yolox_s_best.pth"
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
