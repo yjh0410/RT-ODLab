@@ -2,7 +2,7 @@
 
 
 # ----------------------- YOLOv5-Style Transform -----------------------
-yolov5_huge_trans_config = {
+yolov5_x_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -22,7 +22,7 @@ yolov5_huge_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolov5_large_trans_config = {
+yolov5_l_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -42,7 +42,7 @@ yolov5_large_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolov5_medium_trans_config = {
+yolov5_m_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -62,7 +62,7 @@ yolov5_medium_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolov5_small_trans_config = {
+yolov5_s_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -82,7 +82,7 @@ yolov5_small_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolov5_nano_trans_config = {
+yolov5_n_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -102,7 +102,7 @@ yolov5_nano_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolov5_pico_trans_config = {
+yolov5_p_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 0.0,
@@ -124,7 +124,7 @@ yolov5_pico_trans_config = {
 
 
 # ----------------------- YOLOX-Style Transform -----------------------
-yolox_huge_trans_config = {
+yolox_x_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 10.0,
@@ -144,7 +144,7 @@ yolox_huge_trans_config = {
     'mixup_scale': [0.5, 1.5]
 }
 
-yolox_large_trans_config = {
+yolox_l_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 10.0,
@@ -164,7 +164,7 @@ yolox_large_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolox_medium_trans_config = {
+yolox_m_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 10.0,
@@ -184,7 +184,7 @@ yolox_medium_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolox_small_trans_config = {
+yolox_s_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 10.0,
@@ -204,7 +204,7 @@ yolox_small_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolox_nano_trans_config = {
+yolox_n_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 10.0,
@@ -224,7 +224,7 @@ yolox_nano_trans_config = {
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
-yolox_pico_trans_config = {
+yolox_p_trans_config = {
     'aug_type': 'yolov5',
     # Basic Augment
     'degrees': 10.0,

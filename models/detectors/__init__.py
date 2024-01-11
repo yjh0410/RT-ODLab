@@ -11,6 +11,8 @@ from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
+# My RTCDet series
+from .rtcdet.build import build_rtcdet
 
 
 # build object detector
@@ -49,8 +51,12 @@ def build_model(args,
         model, criterion = build_yolov8(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX
-    elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
+    elif args.model in ['yolox_n', 'yolox_t', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         model, criterion = build_yolox(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # RTCDet
+    elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
+        model, criterion = build_rtcdet(
             args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:

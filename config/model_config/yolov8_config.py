@@ -37,7 +37,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_nano',
+        'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -87,7 +87,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_small',
+        'trans_type': 'yolov5_s',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -137,7 +137,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_medium',
+        'trans_type': 'yolov5_m',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -187,7 +187,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_large',
+        'trans_type': 'yolov5_l',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -237,7 +237,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_huge',
+        'trans_type': 'yolov5_x',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",

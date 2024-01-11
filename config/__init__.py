@@ -17,19 +17,19 @@ def build_dataset_config(args):
 # ------------------ Transform Config ------------------
 from .data_config.transform_config import (
     # YOLOv5-Style
-    yolov5_pico_trans_config,
-    yolov5_nano_trans_config,
-    yolov5_small_trans_config,
-    yolov5_medium_trans_config,
-    yolov5_large_trans_config,
-    yolov5_huge_trans_config,
+    yolov5_p_trans_config,
+    yolov5_n_trans_config,
+    yolov5_s_trans_config,
+    yolov5_m_trans_config,
+    yolov5_l_trans_config,
+    yolov5_x_trans_config,
     # YOLOX-Style
-    yolox_pico_trans_config,
-    yolox_nano_trans_config,
-    yolox_small_trans_config,
-    yolox_medium_trans_config,
-    yolox_large_trans_config,
-    yolox_huge_trans_config,
+    yolox_p_trans_config,
+    yolox_n_trans_config,
+    yolox_s_trans_config,
+    yolox_m_trans_config,
+    yolox_l_trans_config,
+    yolox_x_trans_config,
     # SSD-Style
     ssd_trans_config,
 )
@@ -43,32 +43,32 @@ def build_trans_config(trans_config='ssd'):
         cfg = ssd_trans_config
 
     # YOLOv5-style transform 
-    elif trans_config == 'yolov5_pico':
-        cfg = yolov5_pico_trans_config
-    elif trans_config == 'yolov5_nano':
-        cfg = yolov5_nano_trans_config
-    elif trans_config == 'yolov5_small':
-        cfg = yolov5_small_trans_config
-    elif trans_config == 'yolov5_medium':
-        cfg = yolov5_medium_trans_config
-    elif trans_config == 'yolov5_large':
-        cfg = yolov5_large_trans_config
-    elif trans_config == 'yolov5_huge':
-        cfg = yolov5_huge_trans_config
+    elif trans_config == 'yolov5_p':
+        cfg = yolov5_p_trans_config
+    elif trans_config == 'yolov5_n':
+        cfg = yolov5_n_trans_config
+    elif trans_config == 'yolov5_s':
+        cfg = yolov5_s_trans_config
+    elif trans_config == 'yolov5_m':
+        cfg = yolov5_m_trans_config
+    elif trans_config == 'yolov5_l':
+        cfg = yolov5_l_trans_config
+    elif trans_config == 'yolov5_x':
+        cfg = yolov5_x_trans_config
         
     # YOLOX-style transform 
-    elif trans_config == 'yolox_pico':
-        cfg = yolox_pico_trans_config
-    elif trans_config == 'yolox_nano':
-        cfg = yolox_nano_trans_config
-    elif trans_config == 'yolox_small':
-        cfg = yolox_small_trans_config
-    elif trans_config == 'yolox_medium':
-        cfg = yolox_medium_trans_config
-    elif trans_config == 'yolox_large':
-        cfg = yolox_large_trans_config
-    elif trans_config == 'yolox_huge':
-        cfg = yolox_huge_trans_config
+    elif trans_config == 'yolox_p':
+        cfg = yolox_p_trans_config
+    elif trans_config == 'yolox_n':
+        cfg = yolox_n_trans_config
+    elif trans_config == 'yolox_s':
+        cfg = yolox_s_trans_config
+    elif trans_config == 'yolox_m':
+        cfg = yolox_m_trans_config
+    elif trans_config == 'yolox_l':
+        cfg = yolox_l_trans_config
+    elif trans_config == 'yolox_x':
+        cfg = yolox_x_trans_config
 
     print('Transform Config: {} \n'.format(cfg))
 
@@ -85,6 +85,8 @@ from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config import yolox_cfg
+## My RTCDet series
+from .model_config.rtcdet_config import rtcdet_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -111,8 +113,11 @@ def build_model_config(args):
     elif args.model in ['yolov8_n', 'yolov8_s', 'yolov8_m', 'yolov8_l', 'yolov8_x']:
         cfg = yolov8_cfg[args.model]
     # YOLOX
-    elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
+    elif args.model in ['yolox_n', 'yolox_t', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
+    # RTCDet
+    elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
+        cfg = rtcdet_cfg[args.model]
 
     return cfg
 

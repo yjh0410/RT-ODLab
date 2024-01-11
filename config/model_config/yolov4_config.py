@@ -34,7 +34,7 @@ yolov4_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolov5_large',
+        'trans_type': 'yolov5_l',
         'multi_scale': [0.5, 1.0],
         # ---------------- Assignment config ----------------
         ## matcher
@@ -81,7 +81,7 @@ yolov4_cfg = {
                         [116, 90],  [156, 198], [373, 326]],  # P5
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolov5_nano',
+        'trans_type': 'yolov5_n',
         'multi_scale': [0.5, 1.0],
         # ---------------- Assignment config ----------------
         ## matcher

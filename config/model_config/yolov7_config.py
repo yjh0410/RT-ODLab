@@ -35,7 +35,7 @@ yolov7_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolox_small',
+        'trans_type': 'yolox_s',
         'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
         ## matcher
@@ -84,7 +84,7 @@ yolov7_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolox_large',
+        'trans_type': 'yolox_l',
         'multi_scale': [0.5, 1.25], # 320 -> 800
         # ---------------- Assignment config ----------------
         ## matcher
@@ -133,7 +133,7 @@ yolov7_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
-        'trans_type': 'yolox_huge',
+        'trans_type': 'yolox_x',
         'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
         ## matcher
