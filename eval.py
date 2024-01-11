@@ -22,7 +22,7 @@ from models.detectors import build_model
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='YOLO-Tutorial')
+    parser = argparse.ArgumentParser(description='Real-time Object Detection LAB')
     # basic
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')

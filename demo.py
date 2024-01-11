@@ -20,7 +20,7 @@ from config import build_model_config, build_trans_config, build_dataset_config
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='YOLO Demo')
+    parser = argparse.ArgumentParser(description='Real-time Object Detection LAB')
     # Basic setting
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')
