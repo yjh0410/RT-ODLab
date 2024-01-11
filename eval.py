@@ -6,7 +6,9 @@ import torch
 
 from evaluator.voc_evaluator import VOCAPIEvaluator
 from evaluator.coco_evaluator import COCOAPIEvaluator
-from evaluator.ourdataset_evaluator import OurDatasetEvaluator
+from evaluator.crowdhuman_evaluator  import CrowdHumanEvaluator
+from evaluator.widerface_evaluator import WiderFaceEvaluator
+from evaluator.customed_evaluator import CustomedEvaluator
 
 # load transform
 from dataset.build import build_transform
@@ -99,8 +101,30 @@ def coco_test(model, data_dir, device, transform, test=False):
     evaluator.evaluate(model)
 
 
-def our_test(model, data_dir, device, transform):
-    evaluator = OurDatasetEvaluator(
+def crowdhuman_test(model, data_dir, device, transform):
+    evaluator = CrowdHumanEvaluator(
+        data_dir=data_dir,
+        device=device,
+        image_set='val',
+        transform=transform)
+
+    # WiderFace evaluation
+    evaluator.evaluate(model)
+
+
+def widerface_test(model, data_dir, device, transform):
+    evaluator = WiderFaceEvaluator(
+        data_dir=data_dir,
+        device=device,
+        image_set='val',
+        transform=transform)
+
+    # WiderFace evaluation
+    evaluator.evaluate(model)
+
+
+def customed_test(model, data_dir, device, transform):
+    evaluator = CustomedEvaluator(
         data_dir=data_dir,
         device=device,
         image_set='val',
@@ -156,4 +180,4 @@ if __name__ == '__main__':
         elif args.dataset == 'coco-test':
             coco_test(model, data_dir, device, val_transform, test=True)
         elif args.dataset == 'ourdataset':
-            our_test(model, data_dir, device, val_transform)
+            customed_test(model, data_dir, device, val_transform)

@@ -1,7 +1,7 @@
 import json
 import tempfile
 import torch
-from dataset.ourdataset import OurDataset
+from dataset.customed import CustomedDataset
 from utils.box_ops import rescale_bboxes
 
 try:
@@ -10,7 +10,7 @@ except:
     print("It seems that the COCOAPI is not installed.")
 
 
-class OurDatasetEvaluator():
+class CustomedEvaluator():
     def __init__(self, data_dir, device, image_set='val', transform=None):
         # ----------------- Basic parameters -----------------
         self.image_set = image_set
@@ -21,7 +21,7 @@ class OurDatasetEvaluator():
         self.ap50_95 = 0.
         self.ap50 = 0.
         # ----------------- Dataset -----------------
-        self.dataset = OurDataset(data_dir=data_dir, image_set=image_set)
+        self.dataset = CustomedDataset(data_dir=data_dir, image_set=image_set)
 
 
     @torch.no_grad()
@@ -51,26 +51,25 @@ class OurDatasetEvaluator():
             orig_h, orig_w, _ = img.shape
 
             # preprocess
-            x, _, deltas = self.transform(img)
+            x, _, ratio = self.transform(img)
             x = x.unsqueeze(0).to(self.device) / 255.
             
             id_ = int(id_)
             ids.append(id_)
+
             # inference
             outputs = model(x)
-            bboxes, scores, cls_inds = outputs
+            bboxes, scores, labels = outputs
 
             # rescale bboxes
-            origin_img_size = [orig_h, orig_w]
-            cur_img_size = [*x.shape[-2:]]
-            bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas)
+            bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
 
             for i, box in enumerate(bboxes):
                 x1 = float(box[0])
                 y1 = float(box[1])
                 x2 = float(box[2])
                 y2 = float(box[3])
-                label = self.dataset.class_ids[int(cls_inds[i])]
+                label = self.dataset.class_ids[int(labels[i])]
                 
                 bbox = [x1, y1, x2 - x1, y2 - y1]
                 score = float(scores[i]) # object score * class score

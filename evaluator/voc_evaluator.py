@@ -66,7 +66,7 @@ class VOCAPIEvaluator():
             orig_h, orig_w = img.shape[:2]
 
             # preprocess
-            x, _, deltas = self.transform(img)
+            x, _, ratio = self.transform(img)
             x = x.unsqueeze(0).to(self.device) / 255.
 
             # forward
@@ -75,9 +75,7 @@ class VOCAPIEvaluator():
             detect_time = time.time() - t0
 
             # rescale bboxes
-            origin_img_size = [orig_h, orig_w]
-            cur_img_size = [*x.shape[-2:]]
-            bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas)
+            bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
 
             for j in range(len(self.labelmap)):
                 inds = np.where(labels == j)[0]

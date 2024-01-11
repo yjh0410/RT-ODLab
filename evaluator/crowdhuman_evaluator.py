@@ -5,9 +5,9 @@ import numpy as np
 
 import torch
 
-
 from dataset.crowdhuman import CrowdHumanDataset
 from .crowdhuman_tools import compute_JI, compute_APMR
+from utils.box_ops import rescale_bboxes
 
 
 class CrowdHumanEvaluator():
@@ -75,21 +75,15 @@ class CrowdHumanEvaluator():
             gt_bboxes = np.concatenate([gt_bboxes, gt_tag], axis=-1)
 
             # preprocess
-            x, _, deltas = self.transform(img)
+            x, _, ratio = self.transform(img)
             x = x.unsqueeze(0).to(self.device) / 255.
             
             # inference
             outputs = model(x)
             bboxes, scores, labels = outputs
             
-            # rescale
-            img_h, img_w = x.shape[-2:]
-            bboxes[..., [0, 2]] = bboxes[..., [0, 2]] / (img_w - deltas[0]) * orig_w
-            bboxes[..., [1, 3]] = bboxes[..., [1, 3]] / (img_h - deltas[1]) * orig_h
-            
-            # clip bboxes
-            bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=orig_w)
-            bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], a_min=0., a_max=orig_h)
+            # rescale bboxes
+            bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
 
             pd_tag = np.ones_like(scores)
             pd_bboxes = np.concatenate(

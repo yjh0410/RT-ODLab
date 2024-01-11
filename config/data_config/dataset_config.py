@@ -4,7 +4,8 @@ dataset_cfg = {
     'voc': {
         'data_name': 'VOCdevkit',
         'num_classes': 20,
-        'class_indexs': None,
+        'class_indexs': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                         10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
         'class_names': ('aeroplane', 'bicycle', 'bird', 'boat',
                          'bottle', 'bus', 'car', 'cat', 'chair',
                          'cow', 'diningtable', 'dog', 'horse',
@@ -39,14 +40,14 @@ dataset_cfg = {
     'crowdhuman':{
         'data_name': 'CrowdHuman',
         'num_classes': 1,
-        'class_indexs': None,
+        'class_indexs': [0],
         'class_names': ('person',),
     },
 
-    'ourdataset':{
+    'customed':{
         'data_name': 'AnimalDataset',
         'num_classes': 9,
-        'class_indexs': (0, 1, 2, 3, 4, 5, 6, 7, 8),
+        'class_indexs': [0, 1, 2, 3, 4, 5, 6, 7, 8],
         'class_names': ('bird', 'butterfly', 'cat', 'cow', 'dog', 'lion', 'person', 'pig', 'tiger', ),
     },
 

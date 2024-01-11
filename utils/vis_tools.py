@@ -2,38 +2,40 @@ import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from dataset.coco import coco_class_index, coco_class_labels
 
 
 # -------------------------- For Detection Task --------------------------
-## draw bbox & label on the image
-def plot_bbox_labels(img, bbox, label, cls_color, test_scale=0.4):
+## Draw bbox & label on the image
+def plot_bbox_labels(img, bbox, label=None, cls_color=None, text_scale=0.4):
     x1, y1, x2, y2 = bbox
     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
     t_size = cv2.getTextSize(label, 0, fontScale=1, thickness=2)[0]
     # plot bbox
     cv2.rectangle(img, (x1, y1), (x2, y2), cls_color, 2)
-    # plot title bbox
-    cv2.rectangle(img, (x1, y1-t_size[1]), (int(x1 + t_size[0] * test_scale), y1), cls_color, -1)
-    # put the test on the title bbox
-    cv2.putText(img, label, (int(x1), int(y1 - 5)), 0, test_scale, (0, 0, 0), 1, lineType=cv2.LINE_AA)
+    
+    if label is not None:
+        # plot title bbox
+        cv2.rectangle(img, (x1, y1-t_size[1]), (int(x1 + t_size[0] * text_scale), y1), cls_color, -1)
+        # put the test on the title bbox
+        cv2.putText(img, label, (int(x1), int(y1 - 5)), 0, text_scale, (0, 0, 0), 1, lineType=cv2.LINE_AA)
 
     return img
 
-## visualize the detection results
-def visualize(img, bboxes, scores, labels, class_colors, vis_thresh=0.3):
+## Visualize the detection results
+def visualize(image, bboxes, scores, labels, class_colors, class_names, class_indexs):
     ts = 0.4
     for i, bbox in enumerate(bboxes):
-        if scores[i] > vis_thresh:
-            cls_color = class_colors[int(labels[i])]
-            cls_id = coco_class_index[int(labels[i])]
-            mess = '%s: %.2f' % (coco_class_labels[cls_id], scores[i])
-            img = plot_bbox_labels(img, bbox, mess, cls_color, test_scale=ts)
+        cls_id = int(labels[i])
+        cls_color = class_colors[cls_id]
+        cls_id = class_indexs[cls_id]
+            
+        mess = '%s: %.2f' % (class_names[cls_id], scores[i])
+        image = plot_bbox_labels(image, bbox, mess, cls_color, text_scale=ts)
 
-    return img
-
-## visualize the input data during the training stage
-def vis_data(images, targets):
+    return image
+        
+## Visualize the input data during the training stage
+def vis_data(images, targets, num_classes=80):
     """
         images: (tensor) [B, 3, H, W]
         targets: (list) a list of targets
@@ -42,7 +44,7 @@ def vis_data(images, targets):
     np.random.seed(0)
     class_colors = [(np.random.randint(255),
                      np.random.randint(255),
-                     np.random.randint(255)) for _ in range(20)]
+                     np.random.randint(255)) for _ in range(num_classes)]
 
     for bi in range(batch_size):
         # to numpy
@@ -112,7 +114,6 @@ def get_color(idx):
     color = ((37 * idx) % 255, (17 * idx) % 255, (29 * idx) % 255)
 
     return color
-
 
 def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=None):
     im = np.ascontiguousarray(np.copy(image))

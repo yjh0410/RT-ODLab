@@ -3,7 +3,7 @@ import os
 from evaluator.coco_evaluator import COCOAPIEvaluator
 from evaluator.voc_evaluator import VOCAPIEvaluator
 from evaluator.crowdhuman_evaluator import CrowdHumanEvaluator
-from evaluator.ourdataset_evaluator import OurDatasetEvaluator
+from evaluator.customed_evaluator import CustomedEvaluator
 
 
 
@@ -33,7 +33,7 @@ def build_evluator(args, data_cfg, transform, device):
                                         )
     ## Custom dataset Evaluator
     elif args.dataset == 'ourdataset':
-        evaluator = OurDatasetEvaluator(data_dir  = data_dir,
+        evaluator = CustomedEvaluator(data_dir  = data_dir,
                                         device    = device,
                                         image_set = 'val',
                                         transform = transform

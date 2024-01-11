@@ -4,15 +4,17 @@ try:
     from .voc import VOCDataset
     from .coco import COCODataset
     from .crowdhuman import CrowdHumanDataset
-    from .ourdataset import OurDataset
+    from .widerface import WiderFaceDataset
+    from .customed import CustomedDataset
     from .data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
 except:
-    from voc import VOCDataset
+    from .voc import VOCDataset
     from coco import COCODataset
     from crowdhuman import CrowdHumanDataset
-    from ourdataset import OurDataset
+    from widerface import WiderFaceDataset
+    from dataset.customed import CustomedDataset
     from data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
@@ -63,17 +65,27 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                                     trans_config = trans_config,
                                     is_train     = is_train,
                                     )
-    ## Custom dataset
-    elif args.dataset == 'ourdataset':
+    ## WiderFace dataset
+    elif args.dataset == 'widerface':
         image_set = 'train' if is_train else 'val'
-        dataset = OurDataset(data_dir     = data_dir,
-                             img_size     = args.img_size,
-                             image_set    = image_set,
-                             transform    = transform,
-                             trans_config = trans_config,
-                             is_train      = is_train,
-                             load_cache    = args.load_cache
-                             )
+        dataset = WiderFaceDataset(img_size     = args.img_size,
+                                    data_dir     = data_dir,
+                                    image_set    = image_set,
+                                    transform    = transform,
+                                    trans_config = trans_config,
+                                    is_train     = is_train,
+                                    )
+    ## Custom dataset
+    elif args.dataset == 'customed':
+        image_set = 'train' if is_train else 'val'
+        dataset = CustomedDataset(data_dir     = data_dir,
+                                  img_size     = args.img_size,
+                                  image_set    = image_set,
+                                  transform    = transform,
+                                  trans_config = trans_config,
+                                  is_train      = is_train,
+                                  load_cache    = args.load_cache
+                                  )
 
     return dataset, dataset_info
 

@@ -12,6 +12,7 @@ from dataset.build import build_dataset, build_transform
 # load some utils
 from utils.misc import load_weight, compute_flops
 from utils.box_ops import rescale_bboxes
+from utils.vis_tools import visualize
 
 from config import build_dataset_config, build_model_config, build_trans_config
 from models.detectors import build_model
@@ -31,8 +32,6 @@ def parse_args():
                         help='use cuda.')
     parser.add_argument('--save_folder', default='det_results/', type=str,
                         help='Dir to save results')
-    parser.add_argument('-vt', '--visual_threshold', default=0.3, type=float,
-                        help='Final confidence threshold')
     parser.add_argument('-ws', '--window_scale', default=1.0, type=float,
                         help='resize window of cv2 for visualization.')
     parser.add_argument('--resave', action='store_true', default=False, 
@@ -43,7 +42,7 @@ def parse_args():
                         help='build yolo')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
-    parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,
+    parser.add_argument('-ct', '--conf_thresh', default=0.3, type=float,
                         help='confidence threshold')
     parser.add_argument('-nt', '--nms_thresh', default=0.5, type=float,
                         help='NMS threshold')
@@ -74,47 +73,6 @@ def parse_args():
 
     return parser.parse_args()
 
-
-def plot_bbox_labels(img, bbox, label=None, cls_color=None, text_scale=0.4):
-    x1, y1, x2, y2 = bbox
-    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-    t_size = cv2.getTextSize(label, 0, fontScale=1, thickness=2)[0]
-    # plot bbox
-    cv2.rectangle(img, (x1, y1), (x2, y2), cls_color, 2)
-    
-    if label is not None:
-        # plot title bbox
-        cv2.rectangle(img, (x1, y1-t_size[1]), (int(x1 + t_size[0] * text_scale), y1), cls_color, -1)
-        # put the test on the title bbox
-        cv2.putText(img, label, (int(x1), int(y1 - 5)), 0, text_scale, (0, 0, 0), 1, lineType=cv2.LINE_AA)
-
-    return img
-
-
-def visualize(img, 
-              bboxes, 
-              scores, 
-              labels, 
-              vis_thresh, 
-              class_colors, 
-              class_names, 
-              class_indexs=None, 
-              dataset_name='voc'):
-    ts = 0.4
-    for i, bbox in enumerate(bboxes):
-        if scores[i] > vis_thresh:
-            cls_id = int(labels[i])
-            if dataset_name == 'coco':
-                cls_color = class_colors[cls_id]
-                cls_id = class_indexs[cls_id]
-            else:
-                cls_color = class_colors[cls_id]
-                
-            mess = '%s: %.2f' % (class_names[cls_id], scores[i])
-            img = plot_bbox_labels(img, bbox, mess, cls_color, text_scale=ts)
-
-    return img
-        
 
 @torch.no_grad()
 def test(args,
@@ -148,16 +106,13 @@ def test(args,
         bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
 
         # vis detection
-        img_processed = visualize(
-                            img=image,
-                            bboxes=bboxes,
-                            scores=scores,
-                            labels=labels,
-                            vis_thresh=args.visual_threshold,
-                            class_colors=class_colors,
-                            class_names=class_names,
-                            class_indexs=class_indexs,
-                            dataset_name=args.dataset)
+        img_processed = visualize(image=image,
+                                  bboxes=bboxes,
+                                  scores=scores,
+                                  labels=labels,
+                                  class_colors=class_colors,
+                                  class_names=class_names,
+                                  class_indexs=class_indexs)
         if args.show:
             h, w = img_processed.shape[:2]
             sw, sh = int(w*args.window_scale), int(h*args.window_scale)

@@ -1,7 +1,8 @@
 import json
 import tempfile
 import torch
-from dataset.coco import COCODataset
+import numpy as np
+from dataset.widerface import WiderFaceDataset
 from utils.box_ops import rescale_bboxes
 
 try:
@@ -10,35 +11,29 @@ except:
     print("It seems that the COCOAPI is not installed.")
 
 
-class COCOAPIEvaluator():
+class WiderFaceEvaluator():
     """
     COCO AP Evaluation class.
     All the data in the val2017 dataset are processed \
     and evaluated by COCO API.
     """
-    def __init__(self, data_dir, device, testset=False, transform=None):
+    def __init__(self, data_dir, device, image_set='val', transform=None):
         """
-        Args:
             data_dir (str): dataset root directory
-            img_size (int): image size after preprocess. images are resized \
-                to squares whose shape is (img_size, img_size).
-            confthre (float):
-                confidence threshold ranging from 0 to 1, \
-                which is defined in the config file.
-            nmsthre (float):
-                IoU threshold of non-max supression ranging from 0 to 1.
+            device: (int): CUDA or CPU.
+            image_set: train or val.
+            transform: used to preprocess inputs.
         """
         # ----------------- Basic parameters -----------------
-        self.image_set = 'test2017' if testset else 'val2017'
+        self.image_set = image_set
         self.transform = transform
         self.device = device
-        self.testset = testset
         # ----------------- Metrics -----------------
         self.map = 0.
         self.ap50_95 = 0.
         self.ap50 = 0.
         # ----------------- Dataset -----------------
-        self.dataset = COCODataset(data_dir=data_dir, image_set=self.image_set)
+        self.dataset = WiderFaceDataset(data_dir=data_dir, image_set=image_set)
 
 
     @torch.no_grad()
@@ -81,7 +76,6 @@ class COCOAPIEvaluator():
             # rescale bboxes
             bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
 
-            # process outputs
             for i, box in enumerate(bboxes):
                 x1 = float(box[0])
                 y1 = float(box[1])
@@ -102,28 +96,23 @@ class COCOAPIEvaluator():
             print('evaluating ......')
             cocoGt = self.dataset.coco
             # workaround: temporarily write data to json file because pycocotools can't process dict in py36.
-            if self.testset:
-                json.dump(data_dict, open('coco_test-dev.json', 'w'))
-                cocoDt = cocoGt.loadRes('coco_test-dev.json')
-                return -1, -1
-            else:
-                _, tmp = tempfile.mkstemp()
-                json.dump(data_dict, open(tmp, 'w'))
-                cocoDt = cocoGt.loadRes(tmp)
-                cocoEval = COCOeval(self.dataset.coco, cocoDt, annType[1])
-                cocoEval.params.imgIds = ids
-                cocoEval.evaluate()
-                cocoEval.accumulate()
-                cocoEval.summarize()
+            _, tmp = tempfile.mkstemp()
+            json.dump(data_dict, open(tmp, 'w'))
+            cocoDt = cocoGt.loadRes(tmp)
+            cocoEval = COCOeval(self.dataset.coco, cocoDt, annType[1])
+            cocoEval.params.imgIds = ids
+            cocoEval.evaluate()
+            cocoEval.accumulate()
+            cocoEval.summarize()
 
-                ap50_95, ap50 = cocoEval.stats[0], cocoEval.stats[1]
-                print('ap50_95 : ', ap50_95)
-                print('ap50 : ', ap50)
-                self.map = ap50_95
-                self.ap50_95 = ap50_95
-                self.ap50 = ap50
+            ap50_95, ap50 = cocoEval.stats[0], cocoEval.stats[1]
+            print('ap50_95 : ', ap50_95)
+            print('ap50 : ', ap50)
+            self.map = ap50_95
+            self.ap50_95 = ap50_95
+            self.ap50 = ap50
 
-                return ap50, ap50_95
+            return ap50, ap50_95
         else:
             return 0, 0
 

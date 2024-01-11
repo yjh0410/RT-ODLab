@@ -1,10 +1,9 @@
 import os
 import cv2
-import time
 import random
 import numpy as np
+import time
 
-import torch
 from torch.utils.data import Dataset
 
 try:
@@ -18,15 +17,21 @@ except:
     from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
 
 
-class OurDataset(Dataset):
+widerface_class_labels = ('face',)
+
+
+
+class WiderFaceDataset(Dataset):
+    """
+    CrowdHuman dataset class.
+    """
     def __init__(self, 
-                 img_size     :int  = 640,
-                 data_dir     :str  = None, 
-                 image_set    :str  = 'train',
-                 transform          = None,
-                 trans_config       = None,
-                 is_train     :bool =False,
-                 load_cache   :bool = False,
+                 img_size     :int = 640,
+                 data_dir     :str = None, 
+                 image_set    :str = 'train',
+                 trans_config = None,
+                 transform    = None,
+                 is_train     :bool = False
                  ):
         # ----------- Basic parameters -----------
         self.img_size = img_size
@@ -36,31 +41,19 @@ class OurDataset(Dataset):
         self.data_dir = data_dir
         self.json_file = '{}.json'.format(image_set)
         # ----------- Data parameters -----------
-        self.coco = COCO(os.path.join(self.data_dir, image_set, 'annotations', self.json_file))
+        self.coco = COCO(os.path.join(self.data_dir, 'annotations', self.json_file))
         self.ids = self.coco.getImgIds()
         self.class_ids = sorted(self.coco.getCatIds())
-        self.dataset_size = len(self.ids)
+
         # ----------- Transform parameters -----------
         self.transform = transform
-        self.mosaic_prob = 0
-        self.mixup_prob = 0
+        self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
+        self.mixup_prob = trans_config['mixup_prob'] if trans_config else 0.0
         self.trans_config = trans_config
-        if trans_config is not None:
-            self.mosaic_prob = trans_config['mosaic_prob']
-            self.mixup_prob = trans_config['mixup_prob']
-
         print('==============================')
-        print('Image Set: {}'.format(image_set))
-        print('Json file: {}'.format(self.json_file))
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
         print('==============================')
-        # ----------- Cached data -----------
-        self.load_cache = load_cache
-        self.cached_datas = None
-        if self.load_cache:
-            self.cached_datas = self._load_cache()
-
 
     # ------------ Basic dataset function ------------
     def __len__(self):
@@ -68,38 +61,6 @@ class OurDataset(Dataset):
 
     def __getitem__(self, index):
         return self.pull_item(index)
-
-    def _load_cache(self):
-        data_items = []
-        for idx in range(self.dataset_size):
-            if idx % 2000 == 0:
-                print("Caching images and targets : {} / {} ...".format(idx, self.dataset_size))
-
-            # load a data
-            image, target = self.load_image_target(idx)
-            orig_h, orig_w, _ = image.shape
-
-            # resize image
-            r = self.img_size / max(orig_h, orig_w)
-            if r != 1: 
-                interp = cv2.INTER_LINEAR
-                new_size = (int(orig_w * r), int(orig_h * r))
-                image = cv2.resize(image, new_size, interpolation=interp)
-            img_h, img_w = image.shape[:2]
-
-            # rescale bbox
-            boxes = target["boxes"].copy()
-            boxes[:, [0, 2]] = boxes[:, [0, 2]] / orig_w * img_w
-            boxes[:, [1, 3]] = boxes[:, [1, 3]] / orig_h * img_h
-            target["boxes"] = boxes
-
-            dict_item = {}
-            dict_item["image"] = image
-            dict_item["target"] = target
-
-            data_items.append(dict_item)
-        
-        return data_items
 
     # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
@@ -142,25 +103,17 @@ class OurDataset(Dataset):
     
     # ------------ Load data function ------------
     def load_image_target(self, index):
-        # == Load a data from the cached data ==
-        if self.cached_datas is not None:
-            # load a data
-            data_item = self.cached_datas[index]
-            image = data_item["image"]
-            target = data_item["target"]
-        # == Load a data from the local disk ==
-        else:        
-            # load an image
-            image, _ = self.pull_image(index)
-            height, width, channels = image.shape
+        # load an image
+        image, _ = self.pull_image(index)
+        height, width, channels = image.shape
 
-            # load a target
-            bboxes, labels = self.pull_anno(index)
-            target = {
-                "boxes": bboxes,
-                "labels": labels,
-                "orig_size": [height, width]
-            }
+        # load a target
+        bboxes, labels = self.pull_anno(index)
+        target = {
+            "boxes": bboxes,
+            "labels": labels,
+            "orig_size": [height, width]
+        }
 
         return image, target
 
@@ -187,7 +140,7 @@ class OurDataset(Dataset):
         id_ = self.ids[index]
         im_ann = self.coco.loadImgs(id_)[0] 
         img_file = os.path.join(
-                self.data_dir, self.image_set, 'images', im_ann["file_name"])
+                self.data_dir, 'WIDER_{}'.format(self.image_set), 'images', im_ann["file_name"])
         image = cv2.imread(img_file)
 
         return image, id_
@@ -231,65 +184,55 @@ if __name__ == "__main__":
     import time
     import argparse
     from build import build_transform
-
-    import sys
-    sys.path.append("..")
-    from config.data_config.dataset_config import dataset_cfg
-    data_config = dataset_cfg["ourdataset"]
-    categories = data_config["class_names"]
-
     
-    parser = argparse.ArgumentParser(description='FreeYOLOv2')
+    parser = argparse.ArgumentParser(description='WiderFace-Dataset')
 
     # opt
-    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/AnimalDataset/',
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/WiderFace/',
                         help='data root')
-    parser.add_argument('--split', default='train',
-                        help='data split')
-    parser.add_argument('-size', '--img_size', default=640, type=int, 
-                        help='input image size')
-    parser.add_argument('--min_box_size', default=8.0, type=float,
-                        help='min size of target bounding box.')
-    parser.add_argument('--mosaic', default=None, type=float,
+    parser.add_argument('-size', '--img_size', default=640, type=int,
+                        help='input image size.')
+    parser.add_argument('--aug_type', type=str, default='ssd',
+                        help='augmentation type')
+    parser.add_argument('--mosaic', default=0., type=float,
                         help='mosaic augmentation.')
-    parser.add_argument('--mixup', default=None, type=float,
+    parser.add_argument('--mixup', default=0., type=float,
+                        help='mixup augmentation.')
+    parser.add_argument('--mixup_type', type=str, default='yolov5_mixup',
                         help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
-    parser.add_argument('--load_cache', action="store_true", default=False,
-                        help='load cached data.')
-    
+
     args = parser.parse_args()
 
     trans_config = {
-        'aug_type': 'yolov5',  # optional: ssd, yolov5
+        'aug_type': args.aug_type,    # optional: ssd, yolov5
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
-        'scale': [0.5, 2.0],
+        'scale': [0.1, 2.0],
         'shear': 0.0,
         'perspective': 0.0,
         'hsv_h': 0.015,
         'hsv_s': 0.7,
         'hsv_v': 0.4,
+        'use_ablu': True,
         # Mosaic & Mixup
-        'mosaic_prob': 1.0,
-        'mixup_prob': 1.0,
+        'mosaic_prob': args.mosaic,
+        'mixup_prob': args.mixup,
         'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolov5_mixup',
+        'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
         'mixup_scale': [0.5, 1.5]
     }
 
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
 
-    dataset = OurDataset(
+    dataset = WiderFaceDataset(
         img_size=args.img_size,
         data_dir=args.root,
-        image_set=args.split,
+        image_set='val',
         transform=transform,
         trans_config=trans_config,
-        is_train=args.is_train,
-        load_cache=args.load_cache
         )
     
     np.random.seed(0)
@@ -305,6 +248,7 @@ if __name__ == "__main__":
 
         # to numpy
         image = image.permute(1, 2, 0).numpy()
+        # to uint8
         image = image.astype(np.uint8)
         image = image.copy()
         img_h, img_w = image.shape[:2]
@@ -317,12 +261,10 @@ if __name__ == "__main__":
             cls_id = int(label)
             color = class_colors[cls_id]
             # class name
-            label = categories[cls_id]
-            if x2 - x1 > 0. and y2 - y1 > 0.:
-                # draw bbox
-                image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
-                # put the test on the bbox
-                cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
+            label = widerface_class_labels[cls_id]
+            image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
+            # put the test on the bbox
+            cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
         cv2.imshow('gt', image)
         # cv2.imwrite(str(i)+'.jpg', img)
         cv2.waitKey(0)
