@@ -268,7 +268,7 @@ Besides the popular datasets, we can also train the model on ourself dataset. To
 - Step-1: Prepare the images (JPG/JPEG/PNG ...) and use `labelimg` to make XML format annotation files.
 
 ```
-OurDataset
+CustomedDataset
 |_ train
 |  |_ images     
 |     |_ 0.jpg
@@ -295,12 +295,12 @@ OurDataset
 cd <PyTorch_YOLO_Tutorial_HOME>
 cd config/data_config
 ```
-You need to edit the `dataset_cfg` defined in `dataset_config.py`. You can refer to the `ourdataset` defined in `dataset_cfg` to modify the relevant parameters, such as `num_classes`, `classes_names`, to adapt to our dataset.
+You need to edit the `dataset_cfg` defined in `dataset_config.py`. You can refer to the `customed` defined in `dataset_cfg` to modify the relevant parameters, such as `num_classes`, `classes_names`, to adapt to our dataset.
 
 For example:
 ```Shell
 dataset_cfg = {
-    'ourdataset':{
+    'customed':{
         'data_name': 'AnimalDataset',
         'num_classes': 9,
         'class_indexs': (0, 1, 2, 3, 4, 5, 6, 7, 8),
@@ -309,7 +309,7 @@ dataset_cfg = {
 }
 ```
 
-- Step-3: Convert ourdataset to COCO format.
+- Step-3: Convert customed to COCO format.
 
 ```Shell
 cd <PyTorch_YOLO_Tutorial_HOME>
@@ -321,7 +321,7 @@ python convert_ours_to_coco.py --root path/to/dataset/ --split val
 ```
 Then, we can get a `train.json` file and a `val.json` file, as shown below.
 ```
-OurDataset
+CustomedDataset
 |_ train
 |  |_ images     
 |     |_ 0.jpg
@@ -351,9 +351,9 @@ OurDataset
 cd <PyTorch_YOLO_Tutorial_HOME>
 cd dataset
 # convert train split
-python ourdataset.py --root path/to/dataset/ --split train
+python customed.py --root path/to/dataset/ --split train
 # convert val split
-python ourdataset.py --root path/to/dataset/ --split val
+python customed.py --root path/to/dataset/ --split val
 ```
 
 - Step-5 **Train**
@@ -362,7 +362,7 @@ For example:
 
 ```Shell
 cd <PyTorch_YOLO_Tutorial_HOME>
-python train.py --root path/to/dataset/ -d ourdataset -m yolov1 -bs 16 --max_epoch 100 --wp_epoch 1 --eval_epoch 5 -p path/to/yolov1_coco.pth
+python train.py --root path/to/dataset/ -d customed -m yolov1 -bs 16 --max_epoch 100 --wp_epoch 1 --eval_epoch 5 -p path/to/yolov1_coco.pth
 ```
 
 - Step-6 **Test**
@@ -371,7 +371,7 @@ For example:
 
 ```Shell
 cd <PyTorch_YOLO_Tutorial_HOME>
-python test.py --root path/to/dataset/ -d ourdataset -m yolov1 --weight path/to/checkpoint --show
+python test.py --root path/to/dataset/ -d customed -m yolov1 --weight path/to/checkpoint --show
 ```
 
 - Step-7 **Eval**
@@ -380,7 +380,7 @@ For example:
 
 ```Shell
 cd <PyTorch_YOLO_Tutorial_HOME>
-python eval.py --root path/to/dataset/ -d ourdataset -m yolov1 --weight path/to/checkpoint
+python eval.py --root path/to/dataset/ -d customed -m yolov1 --weight path/to/checkpoint
 ```
 
 
