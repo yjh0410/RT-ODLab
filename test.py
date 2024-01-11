@@ -59,7 +59,7 @@ def parse_args():
                         help='Perform NMS operations regardless of category.')
 
     # dataset
-    parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/',
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc.')
@@ -136,7 +136,7 @@ def test(args,
         orig_h, orig_w, _ = image.shape
 
         # prepare
-        x, _, deltas = transform(image)
+        x, _, ratio = transform(image)
         x = x.unsqueeze(0).to(device) / 255.
 
         t0 = time.time()
@@ -145,9 +145,7 @@ def test(args,
         print("detection time used ", time.time() - t0, "s")
         
         # rescale bboxes
-        origin_img_size = [orig_h, orig_w]
-        cur_img_size = [*x.shape[-2:]]
-        bboxes = rescale_bboxes(bboxes, origin_img_size, cur_img_size, deltas)
+        bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
 
         # vis detection
         img_processed = visualize(

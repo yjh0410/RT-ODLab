@@ -363,10 +363,12 @@ class SSDAugmentation(object):
         ])
 
     def __call__(self, image, target, mosaic=False):
+        orig_h, orig_w = image.shape[:2]
+        ratio = [self.img_size / orig_w, self.img_size / orig_h]
+
+        # augment
         boxes = target['boxes'].copy()
         labels = target['labels'].copy()
-        deltas = None
-        # augment
         image, boxes, labels = self.augment(image, boxes, labels)
 
         # to tensor
@@ -375,7 +377,7 @@ class SSDAugmentation(object):
         target['labels'] = torch.from_numpy(labels).float()
         
 
-        return img_tensor, target, deltas
+        return img_tensor, target, ratio
     
 
 ## SSD-style valTransform
@@ -384,9 +386,9 @@ class SSDBaseTransform(object):
         self.img_size = img_size
 
     def __call__(self, image, target=None, mosaic=False):
-        deltas = None
         # resize
         orig_h, orig_w = image.shape[:2]
+        ratio = [self.img_size / orig_w, self.img_size / orig_h]
         image = cv2.resize(image, (self.img_size, self.img_size)).astype(np.float32)
         
         # scale targets
@@ -404,4 +406,4 @@ class SSDBaseTransform(object):
             target['boxes'] = torch.from_numpy(boxes).float()
             target['labels'] = torch.from_numpy(labels).float()
             
-        return img_tensor, target, deltas
+        return img_tensor, target, ratio

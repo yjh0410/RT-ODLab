@@ -339,10 +339,10 @@ class YOLOv5Augmentation(object):
     def __call__(self, image, target, mosaic=False):
         # --------------- Keep ratio Resize ---------------
         img_h0, img_w0 = image.shape[:2]
-        r = self.img_size / max(img_h0, img_w0)
-        if r != 1: 
+        ratio = self.img_size / max(img_h0, img_w0)
+        if ratio != 1: 
             interp = cv2.INTER_LINEAR
-            new_shape = (int(round(img_w0 * r)), int(round(img_h0 * r)))
+            new_shape = (int(round(img_w0 * ratio)), int(round(img_h0 * ratio)))
             img = cv2.resize(image, new_shape, interpolation=interp)
         else:
             img = image
@@ -406,7 +406,7 @@ class YOLOv5Augmentation(object):
         dh = self.img_size - img_h0
         dw = self.img_size - img_w0
 
-        return pad_image, target, [dw, dh]
+        return pad_image, target, ratio #[dw, dh]
 
 ## YOLOv5-style Transform for Eval
 class YOLOv5BaseTransform(object):
@@ -419,9 +419,9 @@ class YOLOv5BaseTransform(object):
         # --------------- Keep ratio Resize ---------------
         ## Resize image
         img_h0, img_w0 = image.shape[:2]
-        r = self.img_size / max(img_h0, img_w0)
-        if r != 1: 
-            new_shape = (int(round(img_w0 * r)), int(round(img_h0 * r)))
+        ratio = self.img_size / max(img_h0, img_w0)
+        if ratio != 1: 
+            new_shape = (int(round(img_w0 * ratio)), int(round(img_h0 * ratio)))
             img = cv2.resize(image, new_shape, interpolation=cv2.INTER_LINEAR)
         else:
             img = image
@@ -452,4 +452,4 @@ class YOLOv5BaseTransform(object):
         pad_image = torch.ones([img_tensor.size(0), pad_img_h, pad_img_w]).float() * 114.
         pad_image[:, :img_h0, :img_w0] = img_tensor
 
-        return pad_image, target, [dw, dh]
+        return pad_image, target, ratio #[dw, dh]
