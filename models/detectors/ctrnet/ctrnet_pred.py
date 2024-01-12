@@ -60,7 +60,8 @@ class SDetPDLayer(nn.Module):
 
         return anchors
         
-    def forward(self, cls_feat, reg_feat):
+    def forward(self, inputs):
+        cls_feat, reg_feat = inputs['cls_feat'], inputs['reg_feat']
         # pred
         cls_pred = self.cls_pred(cls_feat)
         reg_pred = self.reg_pred(reg_feat)

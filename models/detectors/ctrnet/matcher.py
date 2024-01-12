@@ -16,18 +16,15 @@ class AlignedSimOTA(object):
 
     @torch.no_grad()
     def __call__(self, 
-                 fpn_strides, 
+                 stride, 
                  anchors, 
                  pred_cls, 
                  pred_box, 
                  gt_labels,
                  gt_bboxes):
         # [M,]
-        strides = torch.cat([torch.ones_like(anchor_i[:, 0]) * stride_i
-                                for stride_i, anchor_i in zip(fpn_strides, anchors)], dim=-1)
-        # List[F, M, 2] -> [M, 2]
+        stride_tensor = torch.ones_like(anchors[:, 0]) * stride
         num_gt = len(gt_labels)
-        anchors = torch.cat(anchors, dim=0)
 
         # check gt
         if num_gt == 0 or gt_bboxes.max().item() == 0.:
@@ -46,7 +43,7 @@ class AlignedSimOTA(object):
         # ----------------------------------- soft center prior -----------------------------------
         gt_center = (gt_bboxes[..., :2] + gt_bboxes[..., 2:]) / 2.0
         distance = (anchors.unsqueeze(0) - gt_center.unsqueeze(1)
-                    ).pow(2).sum(-1).sqrt() / strides.unsqueeze(0)  # [N, M]
+                    ).pow(2).sum(-1).sqrt() / stride_tensor.unsqueeze(0)  # [N, M]
         distance = distance * valid_mask.unsqueeze(0)
         soft_center_prior = torch.pow(10, distance - self.soft_center_radius)
 

@@ -87,6 +87,7 @@ from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config import yolox_cfg
 ## My RTCDet series
 from .model_config.rtcdet_config import rtcdet_cfg, rtcdet_seg_cfg, rtcdet_pos_cfg, rtcdet_seg_pos_cfg
+from .model_config.ctrnet_config import ctrnet_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -118,6 +119,9 @@ def build_model_config(args):
     # RTCDet
     elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         cfg = rtcdet_cfg[args.model]
+    # CenterNet
+    elif args.model in ['ctrnet_n', 'ctrnet_t', 'ctrnet_s', 'ctrnet_m', 'ctrnet_l', 'ctrnet_x']:
+        cfg = ctrnet_cfg[args.model]
 
     return cfg
 

@@ -13,6 +13,7 @@ from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
 # My RTCDet series
 from .rtcdet.build import build_rtcdet
+from .ctrnet.build import build_ctrnet
 
 
 # build object detector
@@ -57,6 +58,10 @@ def build_model(args,
     # RTCDet
     elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         model, criterion = build_rtcdet(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # CenterNet
+    elif args.model in ['ctrnet_n', 'ctrnet_t', 'ctrnet_s', 'ctrnet_m', 'ctrnet_l', 'ctrnet_x']:
+        model, criterion = build_ctrnet(
             args, model_cfg, device, num_classes, trainable, deploy)
 
     if trainable:

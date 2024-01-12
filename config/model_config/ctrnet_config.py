@@ -11,7 +11,6 @@ ctrnet_cfg = {
         'bk_depthwise': False,
         'width': 0.25,
         'depth': 0.34,
-        'ratio': 2.0,
         'max_stride': 32,
         'out_stride': 4,
         ## Neck
@@ -27,8 +26,8 @@ ctrnet_cfg = {
         'dec_depthwise': False,
         ## Head
         'head': 'decoupled_head',
-        'num_cls_head': 2,
-        'num_reg_head': 2,
+        'num_cls_head': 4,
+        'num_reg_head': 4,
         'head_act': 'silu',
         'head_norm': 'BN',
         'head_depthwise': False,  

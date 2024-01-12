@@ -36,7 +36,7 @@ class CTRDecoder(nn.Module):
         layers = []
         for _ in range(self.num_layers):
             layer = nn.Sequential(
-                RTCBlock(in_dim, out_dim, 1, False, act_type, norm_type, depthwise),
+                RTCBlock(in_dim, out_dim, 3, False, act_type, norm_type, depthwise),
                 DeConv(out_dim, out_dim, kernel_size=4, stride=2, act_type=act_type, norm_type=norm_type)
             )
             layers.append(layer)

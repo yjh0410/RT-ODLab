@@ -102,13 +102,13 @@ class Criterion(object):
                     'losses':  (torch.Tensor) It is a scalar.),
                 }
         """
-        bs = outputs['pred_cls'][0].shape[0]
-        device = outputs['pred_cls'][0].device
-        fpn_strides = outputs['strides']
+        bs = outputs['pred_cls'].shape[0]
+        device = outputs['pred_cls'].device
+        stride = outputs['stride']
         anchors = outputs['anchors']
         # preds: [B, M, C]
-        cls_preds = torch.cat(outputs['pred_cls'], dim=1)
-        box_preds = torch.cat(outputs['pred_box'], dim=1)
+        cls_preds = outputs['pred_cls']
+        box_preds = outputs['pred_box']
         
         # --------------- label assignment ---------------
         cls_targets = []
@@ -118,15 +118,15 @@ class Criterion(object):
             tgt_labels = targets[batch_idx]["labels"].to(device)  # [N,]
             tgt_bboxes = targets[batch_idx]["boxes"].to(device)   # [N, 4]
             if not aux_loss:
-                assigned_result = self.matcher(fpn_strides=fpn_strides,
-                                            anchors=anchors,
-                                            pred_cls=cls_preds[batch_idx].detach(),
-                                            pred_box=box_preds[batch_idx].detach(),
-                                            gt_labels=tgt_labels,
-                                            gt_bboxes=tgt_bboxes
-                                            )
+                assigned_result = self.matcher(stride=stride,
+                                               anchors=anchors,
+                                               pred_cls=cls_preds[batch_idx].detach(),
+                                               pred_box=box_preds[batch_idx].detach(),
+                                               gt_labels=tgt_labels,
+                                               gt_bboxes=tgt_bboxes
+                                               )
             else:
-                assigned_result = self.aux_matcher(fpn_strides=fpn_strides,
+                assigned_result = self.aux_matcher(stride=stride,
                                                    anchors=anchors,
                                                    pred_cls=cls_preds[batch_idx].detach(),
                                                    pred_box=box_preds[batch_idx].detach(),
@@ -170,13 +170,13 @@ class Criterion(object):
         loss_box_aux = None
         if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
             ## reg_preds
-            reg_preds = torch.cat(outputs['pred_reg'], dim=1)
+            reg_preds = outputs['pred_reg']
             reg_preds_pos = reg_preds.view(-1, 4)[pos_inds]
             ## anchor tensors
-            anchors_tensors = torch.cat(outputs['anchors'], dim=0)[None].repeat(bs, 1, 1)
+            anchors_tensors = outputs['anchors'][None].repeat(bs, 1, 1)
             anchors_tensors_pos = anchors_tensors.view(-1, 2)[pos_inds]
             ## stride tensors
-            stride_tensors = torch.cat(outputs['stride_tensors'], dim=0)[None].repeat(bs, 1, 1)
+            stride_tensors = outputs['stride_tensors'][None].repeat(bs, 1, 1)
             stride_tensors_pos = stride_tensors.view(-1, 1)[pos_inds]
             ## aux loss
             loss_box_aux = self.loss_bboxes_aux(reg_preds_pos, box_targets_pos, anchors_tensors_pos, stride_tensors_pos)
@@ -216,7 +216,7 @@ class Criterion(object):
                 loss_dict[k] = main_loss_dict[k]
         for k in aux_loss_dict:
             if k != 'losses':
-                loss_dict[k] = main_loss_dict[k]
+                loss_dict[k+'_aux'] = aux_loss_dict[k]
         
         return loss_dict
 

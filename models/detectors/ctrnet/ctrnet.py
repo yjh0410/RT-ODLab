@@ -13,7 +13,7 @@ from .ctrnet_pred    import build_det_pred
 
 
 # CenterNet
-class CenterNet():
+class CenterNet(nn.Module):
     def __init__(self,
                  cfg,
                  device,
@@ -42,7 +42,7 @@ class CenterNet():
         
         # ---------------- Network Parameters ----------------
         ## Encoder
-        self.encoder, feat_dims = build_encoder(cfg, pretrained=cfg['bk_pretrained']&trainable)
+        self.encoder, feat_dims = build_encoder(cfg)
 
         ## Neck
         self.neck = build_neck(cfg, feat_dims[-1], feat_dims[-1])
@@ -135,9 +135,9 @@ class CenterNet():
         feat = self.decoder(feat)
 
         # ---------------- Head ----------------
-        outputs = self.det_head(x)
+        outputs = self.det_head(feat)
         if self.trainable:
-            outputs['aux_outputs'] = self.aux_det_head(x)
+            outputs['aux_outputs'] = self.aux_det_head(feat)
 
         # ---------------- Post-process ----------------
         if not self.trainable:
