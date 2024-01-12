@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 
-def build_pred(cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3):
+def build_det_pred(cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3):
     pred_layers = MDetPDLayer(cls_dim     = cls_dim,
                               reg_dim     = reg_dim,
                               strides     = strides,
@@ -12,6 +12,12 @@ def build_pred(cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=
                               num_levels  = num_levels) 
 
     return pred_layers
+
+def build_seg_pred():
+    return MaskPDLayer()
+
+def build_pose_pred():
+    return PosePDLayer()
 
 
 # ---------------------------- Detection predictor ----------------------------
@@ -153,3 +159,21 @@ class MDetPDLayer(nn.Module):
                    }
 
         return outputs
+
+
+# -------------------- Segmentation predictor --------------------
+class MaskPDLayer(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+    
+    def forward(self, x):
+        return
+
+
+# -------------------- Human-Pose predictor --------------------
+class PosePDLayer(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+    
+    def forward(self, x):
+        return

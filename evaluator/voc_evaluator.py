@@ -71,7 +71,10 @@ class VOCAPIEvaluator():
 
             # forward
             t0 = time.time()
-            bboxes, scores, labels = net(x)
+            outputs = net(x)
+            scores = outputs['scores']
+            labels = outputs['labels']
+            bboxes = outputs['bboxes']
             detect_time = time.time() - t0
 
             # rescale bboxes

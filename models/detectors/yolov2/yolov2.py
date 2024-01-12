@@ -211,13 +211,18 @@ class YOLOv2(nn.Module):
             # [n_anchors_all, 4 + C]
             outputs = torch.cat([bboxes, scores], dim=-1)
 
-            return outputs
         else:
             # post process
             bboxes, scores, labels = self.postprocess(
                 obj_pred, cls_pred, reg_pred, anchors)
 
-            return bboxes, scores, labels
+            outputs = {
+                "scores": scores,
+                "labels": labels,
+                "bboxes": bboxes
+            }
+
+        return outputs
 
 
     def forward(self, x):

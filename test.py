@@ -20,8 +20,7 @@ from models.detectors import build_model
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Real-time Object Detection LAB')
-
-    # basic
+    # Basic setting
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')
     parser.add_argument('--show', action='store_true', default=False,
@@ -37,7 +36,7 @@ def parse_args():
     parser.add_argument('--resave', action='store_true', default=False, 
                         help='resave checkpoints without optimizer state dict.')
 
-    # model
+    # Model setting
     parser.add_argument('-m', '--model', default='yolov1', type=str,
                         help='build yolo')
     parser.add_argument('--weight', default=None,
@@ -57,7 +56,7 @@ def parse_args():
     parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
                         help='Perform NMS operations regardless of category.')
 
-    # dataset
+    # Data setting
     parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/',
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
@@ -71,18 +70,22 @@ def parse_args():
     parser.add_argument('--load_cache', action='store_true', default=False,
                         help='load data into memory.')
 
+    # Task setting
+    parser.add_argument('-t', '--task', default='det', choices=['det', 'det_seg', 'det_pos', 'det_seg_pos'],
+                        help='task type.')
+
     return parser.parse_args()
 
 
 @torch.no_grad()
-def test(args,
-         model, 
-         device, 
-         dataset,
-         transform=None,
-         class_colors=None, 
-         class_names=None, 
-         class_indexs=None):
+def test_det(args,
+             model, 
+             device, 
+             dataset,
+             transform=None,
+             class_colors=None, 
+             class_names=None, 
+             class_indexs=None):
     num_images = len(dataset)
     save_path = os.path.join('det_results/', args.dataset, args.model)
     os.makedirs(save_path, exist_ok=True)
@@ -99,7 +102,10 @@ def test(args,
 
         t0 = time.time()
         # inference
-        bboxes, scores, labels = model(x)
+        outputs = model(x)
+        scores = outputs['scores']
+        labels = outputs['labels']
+        bboxes = outputs['bboxes']
         print("detection time used ", time.time() - t0, "s")
         
         # rescale bboxes
@@ -124,6 +130,18 @@ def test(args,
         if args.save:
             # save result
             cv2.imwrite(os.path.join(save_path, str(index).zfill(6) +'.jpg'), img_processed)
+
+@torch.no_grad()
+def test_det_seg():
+    pass
+
+@torch.no_grad()
+def test_det_pos():
+    pass
+
+@torch.no_grad()
+def test_det_seg_pos():
+    pass
 
 
 if __name__ == '__main__':
@@ -181,12 +199,19 @@ if __name__ == '__main__':
         
     print("================= DETECT =================")
     # run
-    test(args=args,
-         model=model, 
-         device=device, 
-         dataset=dataset,
-         transform=val_transform,
-         class_colors=class_colors,
-         class_names=dataset_info['class_names'],
-         class_indexs=dataset_info['class_indexs'],
-         )
+    if args.task == "det":
+        test_det(args=args,
+                model=model, 
+                device=device, 
+                dataset=dataset,
+                transform=val_transform,
+                class_colors=class_colors,
+                class_names=dataset_info['class_names'],
+                class_indexs=dataset_info['class_indexs'],
+                )
+    elif args.task == "det_seg":
+        test_det_seg()
+    elif args.task == "det_pos":
+        test_det_pos()
+    elif args.task == "det_seg_pos":
+        test_det_seg_pos()

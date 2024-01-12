@@ -156,7 +156,6 @@ class YOLOv1(nn.Module):
             # [n_anchors_all, 4 + C]
             outputs = torch.cat([bboxes, scores], dim=-1)
 
-            return outputs
         else:
             # 将预测放在cpu处理上，以便进行后处理
             scores = scores.cpu().numpy()
@@ -165,7 +164,13 @@ class YOLOv1(nn.Module):
             # 后处理
             bboxes, scores, labels = self.postprocess(bboxes, scores)
 
-        return bboxes, scores, labels
+            outputs = {
+                "scores": scores,
+                "labels": labels,
+                "bboxes": bboxes
+            }
+
+        return outputs
 
 
     def forward(self, x):

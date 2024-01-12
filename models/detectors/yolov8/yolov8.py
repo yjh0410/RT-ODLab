@@ -175,12 +175,16 @@ class YOLOv8(nn.Module):
             # [n_anchors_all, 4 + C]
             outputs = torch.cat([bboxes, scores], dim=-1)
 
-            return outputs
         else:
             # post process
             bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
+            outputs = {
+                "scores": scores,
+                "labels": labels,
+                "bboxes": bboxes
+            }
         
-            return bboxes, scores, labels
+        return outputs
 
     def forward(self, x):
         if not self.trainable:

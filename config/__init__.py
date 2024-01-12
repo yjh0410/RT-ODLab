@@ -86,7 +86,7 @@ from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config import yolox_cfg
 ## My RTCDet series
-from .model_config.rtcdet_config import rtcdet_cfg
+from .model_config.rtcdet_config import rtcdet_cfg, rtcdet_seg_cfg, rtcdet_pos_cfg, rtcdet_seg_pos_cfg
 
 def build_model_config(args):
     print('==============================')

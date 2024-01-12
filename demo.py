@@ -114,7 +114,10 @@ def detect(args,
                 
                 # inference
                 t0 = time.time()
-                bboxes, scores, labels = model(x)
+                outputs = model(x)
+                scores = outputs['scores']
+                labels = outputs['labels']
+                bboxes = outputs['bboxes']
                 t1 = time.time()
                 print("Infer time: {:.1f} ms. ".format((t1 - t0) * 1000))
 
@@ -180,7 +183,10 @@ def detect(args,
 
                 # inference
                 t0 = time.time()
-                bboxes, scores, labels = model(x)
+                outputs = model(x)
+                scores = outputs['scores']
+                labels = outputs['labels']
+                bboxes = outputs['bboxes']
                 t1 = time.time()
                 print("Infer time: {:.1f} ms. ".format((t1 - t0) * 1000))
 
@@ -234,7 +240,10 @@ def detect(args,
 
             # inference
             t0 = time.time()
-            bboxes, scores, labels = model(x)
+            outputs = model(x)
+            scores = outputs['scores']
+            labels = outputs['labels']
+            bboxes = outputs['bboxes']
             t1 = time.time()
             print("Infer time: {:.1f} ms. ".format((t1 - t0) * 1000))
 

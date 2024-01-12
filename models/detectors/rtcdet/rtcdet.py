@@ -1,3 +1,5 @@
+# Real-time Convolutional Object Detector
+
 # --------------- Torch components ---------------
 import torch
 import torch.nn as nn
@@ -6,8 +8,8 @@ import torch.nn as nn
 from .rtcdet_backbone import build_backbone
 from .rtcdet_neck import build_neck
 from .rtcdet_pafpn import build_fpn
-from .rtcdet_head import build_head
-from .rtcdet_pred import build_pred
+from .rtcdet_head import build_det_head, build_seg_head, build_pose_head
+from .rtcdet_pred import build_det_pred, build_seg_pred, build_pose_pred
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
@@ -57,10 +59,18 @@ class RTCDet(nn.Module):
         self.fpn_dims = self.fpn.out_dim
 
         ## ----------- Head -----------
-        self.head = build_head(cfg, self.fpn_dims, self.head_dim, self.num_levels)
-
-        ## ----------- Pred -----------
-        self.pred = build_pred(self.head_dim, self.head_dim, self.strides, num_classes, 4, self.num_levels)
+        self.det_head = nn.Sequential(
+            build_det_head(cfg['det_head'], self.fpn_dims, self.head_dim, self.num_levels),
+            build_det_pred(self.head_dim, self.head_dim, self.strides, num_classes, 4, self.num_levels)
+        )
+        self.seg_head = nn.Sequential(
+            build_seg_head(cfg['seg_head']),
+            build_seg_pred()
+        ) if cfg['seg_head']['name'] is not None else None
+        self.pos_head = nn.Sequential(
+            build_pose_head(cfg['pos_head']),
+            build_pose_pred()
+        ) if cfg['pos_head']['name'] is not None else None
 
     # Post process
     def post_process(self, cls_preds, box_preds):
@@ -141,32 +151,6 @@ class RTCDet(nn.Module):
 
         return bboxes, scores, labels
     
-    def forward_det_task(self, x):
-        # ---------------- Heads ----------------
-        outputs = self.head['det'](x)
-
-        # ---------------- Post-process ----------------
-        if self.trainable:
-            return outputs
-        else:
-            all_cls_preds = outputs['pred_cls']
-            all_box_preds = outputs['pred_box']
-
-            if self.deploy:
-                cls_preds = torch.cat(all_cls_preds, dim=1)[0]
-                box_preds = torch.cat(all_box_preds, dim=1)[0]
-                scores = cls_preds.sigmoid()
-                bboxes = box_preds
-                # [n_anchors_all, 4 + C]
-                outputs = torch.cat([bboxes, scores], dim=-1)
-
-                return outputs
-            else:
-                # post process
-                bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
-            
-                return bboxes, scores, labels
-
     # Main process
     def forward(self, x):
         # ---------------- Backbone ----------------
@@ -179,15 +163,37 @@ class RTCDet(nn.Module):
         pyramid_feats = self.fpn(pyramid_feats)
 
         # ---------------- Head ----------------
-        pyramid_feats = self.head(pyramid_feats)
+        det_outpus = self.forward_det_head(pyramid_feats)
+        seg_outpus = self.forward_seg_head(pyramid_feats)
+        pos_outpus = self.forward_pos_head(pyramid_feats)
+        outputs = {
+            'det_outputs': det_outpus,
+            'seg_outputs': seg_outpus,
+            'pos_outputs': pos_outpus
+        }
 
-        # ---------------- Pred ----------------
-        outputs = self.pred(pyramid_feats)
+        if not self.trainable:
+            if seg_outpus is not None:
+                det_outpus.update(seg_outpus)
+            if pos_outpus is not None:
+                det_outpus.update(pos_outpus)
+            outputs = det_outpus
+        
+        else:
+            outputs = {
+                'det_outputs': det_outpus,
+                'seg_outputs': seg_outpus,
+                'pos_outputs': pos_outpus
+            }
+
+        return outputs
+
+    def forward_det_head(self, x):
+        # ---------------- Heads ----------------
+        outputs = self.det_head(x)
 
         # ---------------- Post-process ----------------
-        if self.trainable:
-            return outputs
-        else:
+        if not self.trainable:
             all_cls_preds = outputs['pred_cls']
             all_box_preds = outputs['pred_box']
 
@@ -199,11 +205,22 @@ class RTCDet(nn.Module):
                 # [n_anchors_all, 4 + C]
                 outputs = torch.cat([bboxes, scores], dim=-1)
 
-                return outputs
             else:
                 # post process
                 bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
-            
-                return bboxes, scores, labels
 
+                outputs = {
+                    "scores": scores,
+                    "labels": labels,
+                    "bboxes": bboxes
+                }
+            
+        return outputs
+
+    def forward_seg_head(self, x):
+        if self.seg_head is None:
+            return None
     
+    def forward_pos_head(self, x):
+        if self.pos_head is None:
+            return None

@@ -76,7 +76,7 @@ class Criterion(object):
 
 
     # -------------------- Task loss functions --------------------
-    def __call__(self, outputs, targets, epoch=0):        
+    def compute_det_loss(self, outputs, targets, epoch=0):
         """
             Input:
                 outputs: (Dict) -> {
@@ -187,7 +187,84 @@ class Criterion(object):
                     )
 
         return loss_dict
-    
+
+    def compute_seg_loss(self, outputs, targets, epoch=0):
+        """
+            Input:
+                outputs: (Dict) -> {
+                    'pred_cls': (List[torch.Tensor] -> [B, M, Nc]),
+                    'pred_reg': (List[torch.Tensor] -> [B, M, 4]),
+                    'pred_box': (List[torch.Tensor] -> [B, M, 4]),
+                    'strides':  (List[Int])
+                }
+                target: (List[Dict]) [
+                    {'boxes':  (torch.Tensor) -> [N, 4], 
+                     'labels': (torch.Tensor) -> [N,],
+                     ...}, ...
+                     ]
+            Output:
+                loss_dict: (Dict) -> {
+                    'loss_cls': (torch.Tensor) It is a scalar.),
+                    'loss_box': (torch.Tensor) It is a scalar.),
+                    'loss_box_aux': (torch.Tensor) It is a scalar.),
+                    'losses':  (torch.Tensor) It is a scalar.),
+                }
+        """
+
+    def compute_pos_loss(self, outputs, targets, epoch=0):
+        """
+            Input:
+                outputs: (Dict) -> {
+                    'pred_cls': (List[torch.Tensor] -> [B, M, Nc]),
+                    'pred_reg': (List[torch.Tensor] -> [B, M, 4]),
+                    'pred_box': (List[torch.Tensor] -> [B, M, 4]),
+                    'strides':  (List[Int])
+                }
+                target: (List[Dict]) [
+                    {'boxes':  (torch.Tensor) -> [N, 4], 
+                     'labels': (torch.Tensor) -> [N,],
+                     ...}, ...
+                     ]
+            Output:
+                loss_dict: (Dict) -> {
+                    'loss_cls': (torch.Tensor) It is a scalar.),
+                    'loss_box': (torch.Tensor) It is a scalar.),
+                    'loss_box_aux': (torch.Tensor) It is a scalar.),
+                    'losses':  (torch.Tensor) It is a scalar.),
+                }
+        """
+
+    def __call__(self, outputs, targets, epoch=0, task='det'):
+        # -------------- Detection loss --------------
+        det_loss_dict = None
+        if outputs['det_outputs'] is not None:
+            det_loss_dict = self.compute_det_loss(outputs['det_outputs'], targets, epoch)
+        # -------------- Segmentation loss --------------
+        seg_loss_dict = None
+        if outputs['seg_outputs'] is not None:
+            seg_loss_dict = self.compute_seg_loss(outputs['seg_outputs'], targets, epoch)
+        # -------------- Human pose loss --------------
+        pos_loss_dict = None
+        if outputs['pos_outputs'] is not None:
+            pos_loss_dict = self.compute_seg_loss(outputs['pos_outputs'], targets, epoch)
+
+        # Loss dict
+        if task == 'det':
+            return det_loss_dict
+        
+        if task == 'det_seg':
+            return {'det_loss_dict': det_loss_dict,
+                    'seg_loss_dict': seg_loss_dict}
+        
+        if task == 'det_pos':
+            return {'det_loss_dict': det_loss_dict,
+                    'pos_loss_dict': pos_loss_dict}
+        
+        if task == 'det_seg_pos':
+            return {'det_loss_dict': det_loss_dict,
+                    'seg_loss_dict': seg_loss_dict,
+                    'pos_loss_dict': pos_loss_dict}
+
 
 def build_criterion(args, cfg, device, num_classes):
     criterion = Criterion(args, cfg, device, num_classes)

@@ -7,10 +7,16 @@ except:
     from rtcdet_basic import Conv
 
 
-def build_head(cfg, in_dims, out_dim, num_levels=3):
+def build_det_head(cfg, in_dims, out_dim, num_levels=3):
     head = MDetHead(cfg, in_dims, out_dim, num_levels)
 
     return head
+
+def build_seg_head(cfg, in_dims, out_dim):
+    return MaskHead()
+
+def build_pose_head(cfg, in_dims, out_dim):
+    return PoseHead()
 
 
 # ---------------------------- Detection Head ----------------------------
@@ -135,6 +141,24 @@ class MDetHead(nn.Module):
         return outputs
 
 
+# ---------------------------- Segmentation Head ----------------------------
+class MaskHead(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def forward(self, x):
+        return
+
+
+# ---------------------------- Human-Pose Head ----------------------------
+class PoseHead(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def forward(self, x):
+        return
+
+
 if __name__ == '__main__':
     import time
     from thop import profile
@@ -150,7 +174,7 @@ if __name__ == '__main__':
     fpn_dims = [256, 256, 256]
     out_dim = 256
     # Head-1
-    model = build_head(cfg, fpn_dims, out_dim, num_levels=3)
+    model = build_det_head(cfg, fpn_dims, out_dim, num_levels=3)
     print(model)
     fpn_feats = [torch.randn(1, fpn_dims[0], 80, 80), torch.randn(1, fpn_dims[1], 40, 40), torch.randn(1, fpn_dims[2], 20, 20)]
     t0 = time.time()

@@ -23,13 +23,13 @@ from models.detectors import build_model
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Real-time Object Detection LAB')
-    # basic
+    # Basic setting
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='the max size of input image')
     parser.add_argument('--cuda', action='store_true', default=False,
                         help='Use cuda')
 
-    # model
+    # Model setting
     parser.add_argument('-m', '--model', default='yolov1', type=str,
                         help='build yolo')
     parser.add_argument('--weight', default=None,
@@ -49,8 +49,8 @@ def parse_args():
     parser.add_argument('--nms_class_agnostic', action='store_true', default=False,
                         help='Perform NMS operations regardless of category.')
 
-    # dataset
-    parser.add_argument('--root', default='/mnt/share/ssd2/dataset',
+    # Data setting
+    parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/',
                         help='data root')
     parser.add_argument('-d', '--dataset', default='coco',
                         help='coco, voc.')

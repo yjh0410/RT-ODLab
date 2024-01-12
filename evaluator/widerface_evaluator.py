@@ -71,7 +71,9 @@ class WiderFaceEvaluator():
 
             # inference
             outputs = model(x)
-            bboxes, scores, labels = outputs
+            scores = outputs['scores']
+            labels = outputs['labels']
+            bboxes = outputs['bboxes']
 
             # rescale bboxes
             bboxes = rescale_bboxes(bboxes, [orig_w, orig_h], ratio)
