@@ -3,7 +3,7 @@ DATASET="coco"
 DATA_ROOT="/data/datasets/"
 
 # MODEL setting
-MODEL="yolox_s"
+MODEL="rtcdet_s"
 IMAGE_SIZE=640
 RESUME="None"
 if [[ $MODEL == *"yolov8"* ]]; then
@@ -13,7 +13,7 @@ if [[ $MODEL == *"yolov8"* ]]; then
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
-elif [[ $MODEL == *"yolox2"* ]]; then
+elif [[ $MODEL == *"rtcdet"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
     MAX_EPOCH=300
