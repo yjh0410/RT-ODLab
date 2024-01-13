@@ -30,6 +30,267 @@ yolox_cfg = {
         'head_depthwise': False,
         # ---------------- Train config ----------------
         ## input
+        'multi_scale': [0.7, 1.25],   # 448 -> 800
+        'trans_type': 'yolox_n',
+        # ---------------- Assignment config ----------------
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
+        # ---------------- Loss config ----------------
+        ## loss weight
+        'loss_obj_weight': 1.0,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'yolox',
+    },
+
+    'yolox_t':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'cspdarknet',
+        'bk_act': 'silu',
+        'bk_norm': 'BN',
+        'bk_dpw': False,
+        'width': 0.375,
+        'depth': 0.34,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## FPN
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': False,
+        # ---------------- Train config ----------------
+        ## input
+        'multi_scale': [0.7, 1.25],   # 448 -> 800
+        'trans_type': 'yolox_n',
+        # ---------------- Assignment config ----------------
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
+        # ---------------- Loss config ----------------
+        ## loss weight
+        'loss_obj_weight': 1.0,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'yolox',
+    },
+
+    'yolox_s':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'cspdarknet',
+        'bk_act': 'silu',
+        'bk_norm': 'BN',
+        'bk_dpw': False,
+        'width': 0.50,
+        'depth': 0.34,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## FPN
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': False,
+        # ---------------- Train config ----------------
+        ## input
+        'multi_scale': [0.7, 1.25],   # 448 -> 800
+        'trans_type': 'yolox_s',
+        # ---------------- Assignment config ----------------
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
+        # ---------------- Loss config ----------------
+        ## loss weight
+        'loss_obj_weight': 1.0,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'yolox',
+    },
+
+    'yolox_m':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'cspdarknet',
+        'bk_act': 'silu',
+        'bk_norm': 'BN',
+        'bk_dpw': False,
+        'width': 0.75,
+        'depth': 0.67,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## FPN
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': False,
+        # ---------------- Train config ----------------
+        ## input
+        'multi_scale': [0.7, 1.25],   # 448 -> 800
+        'trans_type': 'yolox_m',
+        # ---------------- Assignment config ----------------
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
+        # ---------------- Loss config ----------------
+        ## loss weight
+        'loss_obj_weight': 1.0,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'yolox',
+    },
+
+    'yolox_l':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'cspdarknet',
+        'bk_act': 'silu',
+        'bk_norm': 'BN',
+        'bk_dpw': False,
+        'width': 1.0,
+        'depth': 1.0,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## FPN
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': False,
+        # ---------------- Train config ----------------
+        ## input
+        'multi_scale': [0.7, 1.25],   # 448 -> 800
+        'trans_type': 'yolox_l',
+        # ---------------- Assignment config ----------------
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
+        # ---------------- Loss config ----------------
+        ## loss weight
+        'loss_obj_weight': 1.0,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'yolox',
+    },
+
+    'yolox_x':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'cspdarknet',
+        'bk_act': 'silu',
+        'bk_norm': 'BN',
+        'bk_dpw': False,
+        'width': 1.25,
+        'depth': 1.34,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## FPN
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': False,
+        # ---------------- Train config ----------------
+        ## input
+        'multi_scale': [0.7, 1.25],   # 448 -> 800
+        'trans_type': 'yolox_x',
+        # ---------------- Assignment config ----------------
+        ## matcher
+        'matcher': {'center_sampling_radius': 2.5,
+                    'topk_candicate': 10},
+        # ---------------- Loss config ----------------
+        ## loss weight
+        'loss_obj_weight': 1.0,
+        'loss_cls_weight': 1.0,
+        'loss_box_weight': 5.0,
+        # ---------------- Train config ----------------
+        'trainer_type': 'yolox',
+    },
+}
+
+
+yolox_adamw_cfg = {
+    'yolox_n_adamw':{
+        # ---------------- Model config ----------------
+        ## Backbone
+        'backbone': 'cspdarknet',
+        'bk_act': 'silu',
+        'bk_norm': 'BN',
+        'bk_dpw': False,
+        'width': 0.25,
+        'depth': 0.34,
+        'stride': [8, 16, 32],  # P3, P4, P5
+        'max_stride': 32,
+        ## FPN
+        'fpn': 'yolox_pafpn',
+        'fpn_reduce_layer': 'conv',
+        'fpn_downsample_layer': 'conv',
+        'fpn_core_block': 'cspblock',
+        'fpn_act': 'silu',
+        'fpn_norm': 'BN',
+        'fpn_depthwise': False,
+        ## Head
+        'head': 'decoupled_head',
+        'head_act': 'silu',
+        'head_norm': 'BN',
+        'num_cls_head': 2,
+        'num_reg_head': 2,
+        'head_depthwise': False,
+        # ---------------- Train config ----------------
+        ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'yolox_n',
         # ---------------- Assignment config ----------------
@@ -45,7 +306,7 @@ yolox_cfg = {
         'trainer_type': 'rtcdet',
     },
 
-    'yolox_t':{
+    'yolox_t_adamw':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
@@ -88,7 +349,7 @@ yolox_cfg = {
         'trainer_type': 'rtcdet',
     },
 
-    'yolox_s':{
+    'yolox_s_adamw':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
@@ -131,7 +392,7 @@ yolox_cfg = {
         'trainer_type': 'rtcdet',
     },
 
-    'yolox_m':{
+    'yolox_m_adamw':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
@@ -174,7 +435,7 @@ yolox_cfg = {
         'trainer_type': 'rtcdet',
     },
 
-    'yolox_l':{
+    'yolox_l_adamw':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
@@ -217,7 +478,7 @@ yolox_cfg = {
         'trainer_type': 'rtcdet',
     },
 
-    'yolox_x':{
+    'yolox_x_adamw':{
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
@@ -259,5 +520,4 @@ yolox_cfg = {
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
-
 }

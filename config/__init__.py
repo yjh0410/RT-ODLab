@@ -81,10 +81,10 @@ from .model_config.yolov1_config import yolov1_cfg
 from .model_config.yolov2_config import yolov2_cfg
 from .model_config.yolov3_config import yolov3_cfg
 from .model_config.yolov4_config import yolov4_cfg
-from .model_config.yolov5_config import yolov5_cfg
+from .model_config.yolov5_config import yolov5_cfg, yolov5_adamw_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolov8_config import yolov8_cfg
-from .model_config.yolox_config import yolox_cfg
+from .model_config.yolox_config import yolox_cfg, yolox_adamw_cfg
 ## My RTCDet series
 from .model_config.rtcdet_config import rtcdet_cfg, rtcdet_seg_cfg, rtcdet_pos_cfg, rtcdet_seg_pos_cfg
 from .model_config.ctrnet_config import ctrnet_cfg
@@ -107,6 +107,9 @@ def build_model_config(args):
     # YOLOv5
     elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
         cfg = yolov5_cfg[args.model]
+    # YOLOv5-AdamW
+    elif args.model in ['yolov5_n_adamw', 'yolov5_s_adamw', 'yolov5_m_adamw', 'yolov5_l_adamw', 'yolov5_x_adamw']:
+        cfg = yolov5_adamw_cfg[args.model]
     # YOLOv7
     elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         cfg = yolov7_cfg[args.model]
@@ -116,6 +119,9 @@ def build_model_config(args):
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_t', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
+    # YOLOX-AdamW
+    elif args.model in ['yolox_n_adamw', 'yolox_t_adamw', 'yolox_s_adamw', 'yolox_m_adamw', 'yolox_l_adamw', 'yolox_x_adamw']:
+        cfg = yolox_adamw_cfg[args.model]
     # RTCDet
     elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         cfg = rtcdet_cfg[args.model]

@@ -40,7 +40,11 @@ def build_model(args,
         model, criterion = build_yolov4(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv5   
-    elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
+    elif args.model in ['yolov5_n', 'yolov5_t', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
+        model, criterion = build_yolov5(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # YOLOv5-AdamW
+    elif args.model in ['yolov5_n_adamw', 'yolov5_t_adamw', 'yolov5_s_adamw', 'yolov5_m_adamw', 'yolov5_l_adamw', 'yolov5_x_adamw']:
         model, criterion = build_yolov5(
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOv7
@@ -53,6 +57,10 @@ def build_model(args,
             args, model_cfg, device, num_classes, trainable, deploy)
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_t', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
+        model, criterion = build_yolox(
+            args, model_cfg, device, num_classes, trainable, deploy)
+    # YOLOX-AdamW
+    elif args.model in ['yolox_n_adamw', 'yolox_t_adamw', 'yolox_s_adamw', 'yolox_m_adamw', 'yolox_l_adamw', 'yolox_x_adamw']:
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RTCDet
