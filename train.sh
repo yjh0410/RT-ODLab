@@ -1,11 +1,11 @@
 # Dataset setting
-DATASET=$1 #"coco"
-DATA_ROOT=$2 #"/data/datasets/"
+DATASET="coco"
+DATA_ROOT="/data/datasets/"
 
 # MODEL setting
-MODEL=$3 #"rtcdet_s"
-IMAGE_SIZE=$4 #640
-RESUME=$5 #"None"
+MODEL="rtcdet_s"
+IMAGE_SIZE=640
+RESUME="None"
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
@@ -65,7 +65,8 @@ else
 fi
 
 # -------------------------- Train Pipeline --------------------------
-WORLD_SIZE=$6
+WORLD_SIZE=$1
+MASTER_PORT=$2
 if [ $WORLD_SIZE == 1 ]; then
     python train.py \
             --cuda \
@@ -83,7 +84,6 @@ if [ $WORLD_SIZE == 1 ]; then
             --fp16 \
             --multi_scale
 elif [[ $WORLD_SIZE -gt 1 && $WORLD_SIZE -le 8 ]]; then
-    MASTER_PORT=$7
     python -m torch.distributed.run --nproc_per_node=${WORLD_SIZE} --master_port ${MASTER_PORT} train.py \
             --cuda \
             -dist \
