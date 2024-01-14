@@ -109,7 +109,7 @@ def build_encoder(cfg, pretrained=False):
 
     # Model name
     width, depth, ratio = cfg['width'], cfg['depth'], cfg['ratio']
-    model_name = "{}" if not cfg['bk_mae_pretrained'] else "mae_{}"
+    model_name = "{}" if not cfg['bk_pretrained_mae'] else "mae_{}"
     if  width == 0.25   and depth == 0.34 and ratio == 2.0:
         model_name = model_name.format("rtcnet_n")
     elif width == 0.375 and depth == 0.34 and ratio == 2.0:
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     from thop import profile
     cfg = {
         'bk_pretrained': True,
-        'bk_mae_pretrained': True,
+        'bk_pretrained_mae': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
