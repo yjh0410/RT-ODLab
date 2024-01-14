@@ -10,12 +10,13 @@ except:
 # ---------------------------- Basic functions ----------------------------
 ## Real-time Convolutional Backbone
 class CTREncoder(nn.Module):
-    def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, width=1.0, depth=1.0, ratio=1.0, act_type='silu', norm_type='BN', depthwise=False):
         super(CTREncoder, self).__init__()
         # ---------------- Basic parameters ----------------
         self.width_factor = width
         self.depth_factor = depth
-        self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(1024 * width)]
+        self.last_stage_factor = ratio
+        self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(512 * width * ratio)]
         # ---------------- Network parameters ----------------
         ## P1/2
         self.layer_1 = Conv(3, self.feat_dims[0], k=3, p=1, s=2, act_type=act_type, norm_type=norm_type)
@@ -82,6 +83,7 @@ def build_encoder(cfg):
     # build backbone model
     backbone = CTREncoder(width=cfg['width'],
                           depth=cfg['depth'],
+                          ratio=cfg['ratio'],
                           act_type=cfg['bk_act'],
                           norm_type=cfg['bk_norm'],
                           depthwise=cfg['bk_depthwise']

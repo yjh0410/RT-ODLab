@@ -34,13 +34,13 @@ class CTRDecoder(nn.Module):
 
         # ---------- Network parameters ----------
         layers = []
-        for _ in range(self.num_layers):
+        for i in range(self.num_layers):
             layer = nn.Sequential(
-                RTCBlock(in_dim, out_dim, 3, False, act_type, norm_type, depthwise),
-                DeConv(out_dim, out_dim, kernel_size=4, stride=2, act_type=act_type, norm_type=norm_type)
+                RTCBlock(in_dim, out_dim[i], 3, False, act_type, norm_type, depthwise),
+                DeConv(out_dim[i], out_dim[i], kernel_size=4, stride=2, act_type=act_type, norm_type=norm_type)
             )
             layers.append(layer)
-            in_dim = out_dim
+            in_dim = out_dim[i]
         self.layers = nn.Sequential(*layers)
 
     def forward(self, x):

@@ -11,6 +11,7 @@ ctrnet_cfg = {
         'bk_depthwise': False,
         'width': 0.25,
         'depth': 0.34,
+        'ratio': 2.0,
         'max_stride': 32,
         'out_stride': 4,
         ## Neck
