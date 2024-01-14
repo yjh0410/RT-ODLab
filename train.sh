@@ -3,7 +3,7 @@ DATASET="coco"
 DATA_ROOT="/data/datasets/"
 
 # MODEL setting
-MODEL="yolox_s"
+MODEL="yolox_s_adamw"
 IMAGE_SIZE=640
 RESUME="None"
 if [[ $MODEL == *"yolov8"* ]]; then
