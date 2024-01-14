@@ -117,16 +117,16 @@ def build_model_config(args):
     elif args.model in ['yolov8_n', 'yolov8_s', 'yolov8_m', 'yolov8_l', 'yolov8_x']:
         cfg = yolov8_cfg[args.model]
     # YOLOX
-    elif args.model in ['yolox_n', 'yolox_t', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
+    elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
     # YOLOX-AdamW
-    elif args.model in ['yolox_n_adamw', 'yolox_t_adamw', 'yolox_s_adamw', 'yolox_m_adamw', 'yolox_l_adamw', 'yolox_x_adamw']:
+    elif args.model in ['yolox_n_adamw', 'yolox_s_adamw', 'yolox_m_adamw', 'yolox_l_adamw', 'yolox_x_adamw']:
         cfg = yolox_adamw_cfg[args.model]
     # RTCDet
-    elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
+    elif args.model in ['rtcdet_n', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         cfg = rtcdet_cfg[args.model]
     # CenterNet
-    elif args.model in ['ctrnet_n', 'ctrnet_t', 'ctrnet_s', 'ctrnet_m', 'ctrnet_l', 'ctrnet_x']:
+    elif args.model in ['ctrnet_n', 'ctrnet_s', 'ctrnet_m', 'ctrnet_l', 'ctrnet_x']:
         cfg = ctrnet_cfg[args.model]
 
     return cfg

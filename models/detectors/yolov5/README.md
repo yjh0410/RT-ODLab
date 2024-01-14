@@ -19,7 +19,6 @@ On the other hand, we are trying to use **AdamW** and larger batch size to train
 |   Model   | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |-----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOv5-N  | 8xb16 |  640  |                        |                   |                   |                    |  |
-| YOLOv5-T  | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOv5-S  | 8xb16 |  640  |         39.2           |        57.9       |        27.3       |         9.0        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov5_s_coco_adamw.pth) |
 | YOLOv5-M  | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOv5-L  | 8xb16 |  640  |                        |                   |                   |                    |  |

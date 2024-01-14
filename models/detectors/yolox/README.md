@@ -17,7 +17,6 @@ On the other hand, we are trying to use **AdamW** to train our reproduced YOLOX.
 |   Model | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |---------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOX-N | 8xb16 |  640  |                        |                   |                   |                    |  |
-| YOLOX-T | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOX-S | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOX-M | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOX-L | 8xb16 |  640  |                        |                   |                   |                    |  |

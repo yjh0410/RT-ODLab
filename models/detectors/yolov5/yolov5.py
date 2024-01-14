@@ -45,7 +45,7 @@ class YOLOv5(nn.Module):
         
         # ------------------- Network Structure -------------------
         ## Backbone
-        self.backbone, feats_dim = build_backbone(cfg)
+        self.backbone, feats_dim = build_backbone(cfg, pretrained=cfg['bk_pretrained']&trainable)
         
         ## FPN
         self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))

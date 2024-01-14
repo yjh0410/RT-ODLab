@@ -116,22 +116,22 @@ class RTCBlock(nn.Module):
                  depthwise  = False,):
         super(RTCBlock, self).__init__()
         self.inter_dim = out_dim // 2
-        self.input_proj = Conv(in_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.cv1 = Conv(in_dim, self.inter_dim, k=1, norm_type=norm_type, act_type=act_type)
+        self.cv2 = Conv(in_dim, self.inter_dim, k=1, norm_type=norm_type, act_type=act_type)
         self.m = nn.Sequential(*(
             Bottleneck(self.inter_dim, self.inter_dim, 1.0, [3, 3], shortcut, act_type, norm_type, depthwise)
             for _ in range(num_blocks)))
-        self.output_proj = Conv((2 + num_blocks) * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+        self.cv3 = Conv((2 + num_blocks) * self.inter_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
+
 
     def forward(self, x):
-        # Input proj
-        x1, x2 = torch.chunk(self.input_proj(x), 2, dim=1)
+        x1 = self.cv1(x)
+        x2 = self.cv2(x)
         out = list([x1, x2])
 
-        # Bottlenecl
         out.extend(m(out[-1]) for m in self.m)
 
-        # Output proj
-        out = self.output_proj(torch.cat(out, dim=1))
+        out = self.cv3(torch.cat(out, dim=1))
 
         return out
     

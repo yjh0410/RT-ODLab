@@ -7,11 +7,28 @@ except:
     from ctrnet_basic import Conv, RTCBlock
 
 
+# Pretrained weights
+model_urls = {
+    # ImageNet-1K pretrained weight
+    "rtcnet_n": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_nano.pth",
+    "rtcnet_s": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_small.pth",
+    "rtcnet_m": None,
+    "rtcnet_l": None,
+    "rtcnet_x": None,
+    # MIM-pretrained weights
+    "mae_rtcnet_n": None,
+    "mae_rtcnet_s": None,
+    "mae_rtcnet_m": None,
+    "mae_rtcnet_l": None,
+    "mae_rtcnet_x": None,
+}
+
+
 # ---------------------------- Basic functions ----------------------------
 ## Real-time Convolutional Backbone
-class CTREncoder(nn.Module):
+class RTCBackbone(nn.Module):
     def __init__(self, width=1.0, depth=1.0, ratio=1.0, act_type='silu', norm_type='BN', depthwise=False):
-        super(CTREncoder, self).__init__()
+        super(RTCBackbone, self).__init__()
         # ---------------- Basic parameters ----------------
         self.width_factor = width
         self.depth_factor = depth
@@ -78,25 +95,78 @@ class CTREncoder(nn.Module):
 
 
 # ---------------------------- Functions ----------------------------
-## build Backbone
-def build_encoder(cfg): 
+## Build Backbone network
+def build_encoder(cfg, pretrained=False): 
     # build backbone model
-    backbone = CTREncoder(width=cfg['width'],
-                          depth=cfg['depth'],
-                          ratio=cfg['ratio'],
-                          act_type=cfg['bk_act'],
-                          norm_type=cfg['bk_norm'],
-                          depthwise=cfg['bk_depthwise']
-                          )
+    backbone = RTCBackbone(width=cfg['width'],
+                           depth=cfg['depth'],
+                           ratio=cfg['ratio'],
+                           act_type=cfg['bk_act'],
+                           norm_type=cfg['bk_norm'],
+                           depthwise=cfg['bk_depthwise']
+                           )
     feat_dims = backbone.feat_dims[-3:]
+
+    # Model name
+    width, depth, ratio = cfg['width'], cfg['depth'], cfg['ratio']
+    model_name = "{}" if not cfg['bk_mae_pretrained'] else "mae_{}"
+    if  width == 0.25   and depth == 0.34 and ratio == 2.0:
+        model_name = model_name.format("rtcnet_n")
+    elif width == 0.375 and depth == 0.34 and ratio == 2.0:
+        model_name = model_name.format("rtcnet_t")
+    elif width == 0.50  and depth == 0.34 and ratio == 2.0:
+        model_name = model_name.format("rtcnet_s")
+    elif width == 0.75  and depth == 0.67 and ratio == 1.5:
+        model_name = model_name.format("rtcnet_m")
+    elif width == 1.0   and depth == 1.0  and ratio == 1.0:
+        model_name = model_name.format("rtcnet_l")
+    elif width == 1.25  and depth == 1.34  and ratio == 1.0:
+        model_name = model_name.format("rtcnet_x")
+    else:
+        raise NotImplementedError("No such model size : width={}, depth={}, ratio={}. ".format(width, depth, ratio))
+
+    # Load pretrained weight
+    if pretrained:
+        backbone = load_pretrained_weight(backbone, model_name)
         
     return backbone, feat_dims
+
+## Load pretrained weight
+def load_pretrained_weight(model, model_name):
+    # Load pretrained weight
+    url = model_urls[model_name]
+    if url is not None:
+        print('Loading pretrained weight ...')
+        checkpoint = torch.hub.load_state_dict_from_url(
+            url=url, map_location="cpu", check_hash=True)
+        # checkpoint state dict
+        checkpoint_state_dict = checkpoint.pop("model")
+        # model state dict
+        model_state_dict = model.state_dict()
+        # check
+        for k in list(checkpoint_state_dict.keys()):
+            if k in model_state_dict:
+                shape_model = tuple(model_state_dict[k].shape)
+                shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
+                if shape_model != shape_checkpoint:
+                    checkpoint_state_dict.pop(k)
+            else:
+                checkpoint_state_dict.pop(k)
+                print(k)
+        # load the weight
+        model.load_state_dict(checkpoint_state_dict)
+    else:
+        print('No backbone pretrained for {}.'.format(model_name))
+
+    return model
 
 
 if __name__ == '__main__':
     import time
     from thop import profile
     cfg = {
+        'bk_pretrained': True,
+        'bk_mae_pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -104,7 +174,7 @@ if __name__ == '__main__':
         'depth': 1.0,
         'ratio': 1.0,
     }
-    model, feats = build_encoder(cfg)
+    model, feats = build_encoder(cfg, pretrained=cfg['bk_pretrained'])
     x = torch.randn(1, 3, 640, 640)
     t0 = time.time()
     outputs = model(x)

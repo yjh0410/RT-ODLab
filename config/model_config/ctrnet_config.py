@@ -6,6 +6,7 @@ ctrnet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
+        'bk_pretrained_mae': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
