@@ -11,8 +11,8 @@ except:
 
 # ImageNet-1K pretrained weight
 model_urls = {
-    "cspdarknet_n": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_n.pth",
-    "cspdarknet_s": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_s.pth",
+    "cspdarknet_n": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_nano.pth",
+    "cspdarknet_s": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/cspdarknet_small.pth",
     "cspdarknet_m": None,  # For Medium-level, it is not necessary to load pretrained weight.
     "cspdarknet_l": None,  # For Large-level,  it is not necessary to load pretrained weight.
     "cspdarknet_x": None,  # For Huge-level,   it is not necessary to load pretrained weight.
