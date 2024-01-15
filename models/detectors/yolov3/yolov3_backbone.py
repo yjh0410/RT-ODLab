@@ -9,7 +9,7 @@ except:
 
 model_urls = {
     "darknet_tiny": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/darknet_tiny.pth",
-    "darknet53": None,
+    "darknet53": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/darknet53_silu.pth",
 }
 
 
