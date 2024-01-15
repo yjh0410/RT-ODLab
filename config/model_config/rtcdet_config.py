@@ -43,7 +43,7 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_n',
+        'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "aligned_simota",
@@ -53,6 +53,7 @@ rtcdet_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -97,7 +98,7 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_s',
+        'trans_type': 'yolov5_s',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': "aligned_simota",
@@ -107,6 +108,7 @@ rtcdet_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -151,7 +153,7 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_m',
+        'trans_type': 'yolov5_m',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': "aligned_simota",
@@ -161,6 +163,7 @@ rtcdet_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -205,7 +208,7 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_l',
+        'trans_type': 'yolov5_l',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': "aligned_simota",
@@ -215,6 +218,7 @@ rtcdet_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -259,7 +263,7 @@ rtcdet_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_x',
+        'trans_type': 'yolov5_x',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': "aligned_simota",
@@ -269,6 +273,7 @@ rtcdet_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -318,7 +323,7 @@ rtcdet_seg_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_n',
+        'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "aligned_simota",
@@ -328,6 +333,7 @@ rtcdet_seg_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -377,7 +383,7 @@ rtcdet_pos_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_n',
+        'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "aligned_simota",
@@ -387,6 +393,7 @@ rtcdet_pos_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -436,7 +443,7 @@ rtcdet_seg_pos_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_n',
+        'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "aligned_simota",
@@ -446,6 +453,7 @@ rtcdet_seg_pos_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'loss_box_aux': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },

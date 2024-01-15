@@ -1,6 +1,4 @@
-from typing import Any
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 from utils.box_ops import get_ious
@@ -17,7 +15,7 @@ class Criterion(object):
         self.num_classes = num_classes
         self.max_epoch = args.max_epoch
         self.no_aug_epoch = args.no_aug_epoch
-        self.aux_bbox_loss = False
+        self.aux_bbox_loss = cfg['loss_box_aux']
         # --------------- Loss config ---------------
         self.loss_cls_weight = cfg['loss_cls_weight']
         self.loss_box_weight = cfg['loss_box_weight']
@@ -155,7 +153,7 @@ class Criterion(object):
 
         # ------------------ Aux regression loss ------------------
         loss_box_aux = None
-        if epoch >= (self.max_epoch - self.no_aug_epoch - 1):
+        if epoch >= (self.max_epoch - self.no_aug_epoch - 1) and self.aux_bbox_loss:
             ## reg_preds
             reg_preds = torch.cat(outputs['pred_reg'], dim=1)
             reg_preds_pos = reg_preds.view(-1, 4)[pos_inds]
