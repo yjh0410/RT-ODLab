@@ -64,7 +64,7 @@ def build_model(args,
         model, criterion = build_yolox(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RTCDet
-    elif args.model in ['rtcdet_n', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
+    elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         model, criterion = build_rtcdet(
             args, model_cfg, device, num_classes, trainable, deploy)
     # CenterNet

@@ -30,35 +30,37 @@ class RTCDet(nn.Module):
                  nms_class_agnostic = False,
                  ):
         super(RTCDet, self).__init__()
-        # ---------------- Basic Parameters ----------------
+        # ---------------- Basic settings ----------------
+        ## Basic parameters
         self.cfg = cfg
         self.device = device
-        self.strides = cfg['stride']
-        self.num_classes = num_classes
-        self.trainable = trainable
-        self.conf_thresh = conf_thresh
-        self.nms_thresh = nms_thresh
-        self.num_levels = len(self.strides)
-        self.num_classes = num_classes
-        self.topk_candidates = topk
         self.deploy = deploy
+        self.trainable = trainable
+        self.num_classes = num_classes
+        ## Network parameters
+        self.strides = cfg['stride']
+        self.num_levels = len(self.strides)
+        self.head_dim = round(256 * cfg['width'])
+        ## Post-process parameters
+        self.nms_thresh = nms_thresh
+        self.conf_thresh = conf_thresh
+        self.topk_candidates = topk
         self.no_multi_labels = no_multi_labels
         self.nms_class_agnostic = nms_class_agnostic
-        self.head_dim = round(256 * cfg['width'])
         
-        # ---------------- Network Parameters ----------------
-        ## ----------- Backbone -----------
-        self.backbone, feat_dims = build_backbone(cfg, pretrained=cfg['bk_pretrained']&trainable)
+        # ---------------- Network settings ----------------
+        ## Backbone
+        self.backbone, self.fpn_feat_dims = build_backbone(cfg, pretrained=cfg['bk_pretrained']&trainable)
 
-        ## ----------- Neck: SPP -----------
-        self.neck = build_neck(cfg, feat_dims[-1], feat_dims[-1])
-        feat_dims[-1] = self.neck.out_dim
+        ## Neck: SPP
+        self.neck = build_neck(cfg, self.fpn_feat_dims[-1], self.fpn_feat_dims[-1])
+        self.fpn_feat_dims[-1] = self.neck.out_dim
         
-        ## ----------- Neck: FPN -----------
-        self.fpn = build_fpn(cfg, feat_dims, out_dim=self.head_dim)
+        ## Neck: FPN
+        self.fpn = build_fpn(cfg, self.fpn_feat_dims, self.head_dim)
         self.fpn_dims = self.fpn.out_dim
 
-        ## ----------- Head -----------
+        ## Head
         self.det_head = nn.Sequential(
             build_det_head(cfg['det_head'], self.fpn_dims, self.head_dim, self.num_levels),
             build_det_pred(self.head_dim, self.head_dim, self.strides, num_classes, 4, self.num_levels)
