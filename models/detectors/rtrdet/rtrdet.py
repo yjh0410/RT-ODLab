@@ -1,4 +1,4 @@
-# Real-time Transformer Object Detector
+# Real-time Transformer-based Object Detector
 
 
 class RTRDet():
