@@ -7,14 +7,20 @@ except:
     from rtcdet_basic import Conv, RTCBlock
 
 
-# MIM-Pretrained weights
+# Pretrained weights
 model_urls = {
-    "rtcnet_n": None,
-    "rtcnet_t": None,
-    "rtcnet_s": None,
+    # IN-1k classification pretrained
+    "rtcnet_n": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_nano.pth",
+    "rtcnet_s": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_small.pth",
     "rtcnet_m": None,
     "rtcnet_l": None,
     "rtcnet_x": None,
+    # IN-1k MIM pretrained
+    "mae_rtcnet_n": None,
+    "mae_rtcnet_s": None,
+    "mae_rtcnet_m": None,
+    "mae_rtcnet_l": None,
+    "mae_rtcnet_x": None,
 }
 
 
@@ -103,18 +109,17 @@ def build_backbone(cfg, pretrained=False):
 
     # Model name
     width, depth, ratio = cfg['width'], cfg['depth'], cfg['ratio']
+    model_name = "{}" if not cfg['bk_pretrained_mae'] else "mae_{}"
     if  width == 0.25   and depth == 0.34 and ratio == 2.0:
-        model_name = "rtcnet_n"
-    elif width == 0.375 and depth == 0.34 and ratio == 2.0:
-        model_name = "rtcnet_t"
+        model_name = model_name.format("rtcnet_n")
     elif width == 0.50  and depth == 0.34 and ratio == 2.0:
-        model_name = "rtcnet_s"
+        model_name = model_name.format("rtcnet_s")
     elif width == 0.75  and depth == 0.67 and ratio == 1.5:
-        model_name = "rtcnet_m"
+        model_name = model_name.format("rtcnet_m")
     elif width == 1.0   and depth == 1.0  and ratio == 1.0:
-        model_name = "rtcnet_l"
+        model_name = model_name.format("rtcnet_l")
     elif width == 1.25  and depth == 1.34  and ratio == 1.0:
-        model_name = "rtcnet_x"
+        model_name = model_name.format("rtcnet_x")
     else:
         raise NotImplementedError("No such model size : width={}, depth={}, ratio={}. ".format(width, depth, ratio))
 
