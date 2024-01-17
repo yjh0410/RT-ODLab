@@ -5,66 +5,58 @@ DATA_ROOT="/data/datasets/"
 # MODEL setting
 MODEL=$1
 RESUME="None"
+BATCH_SIZE=$2
 IMAGE_SIZE=640
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=500
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolox"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolov7"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolov5"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolov4"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolov3"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"rtcdet"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 elif [[ $MODEL == *"ctrnet"* ]]; then
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=300
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
 else
     # Epoch setting
-    BATCH_SIZE=128
     MAX_EPOCH=150
     WP_EPOCH=3
     EVAL_EPOCH=10
@@ -72,8 +64,8 @@ else
 fi
 
 # -------------------------- Train Pipeline --------------------------
-WORLD_SIZE=$2
-MASTER_PORT=$3
+WORLD_SIZE=$3
+MASTER_PORT=$4
 if [ $WORLD_SIZE == 1 ]; then
     python train.py \
             --cuda \
