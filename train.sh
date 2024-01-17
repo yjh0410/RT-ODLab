@@ -1,11 +1,15 @@
+# Args parameters
+MODEL=$1
+BATCH_SIZE=$2
+WORLD_SIZE=$3
+MASTER_PORT=$4
+
 # Dataset setting
 DATASET="coco"
 DATA_ROOT="/data/datasets/"
 
 # MODEL setting
-MODEL=$1
 RESUME="None"
-BATCH_SIZE=$2
 IMAGE_SIZE=640
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
@@ -64,8 +68,6 @@ else
 fi
 
 # -------------------------- Train Pipeline --------------------------
-WORLD_SIZE=$3
-MASTER_PORT=$4
 if [ $WORLD_SIZE == 1 ]; then
     python train.py \
             --cuda \

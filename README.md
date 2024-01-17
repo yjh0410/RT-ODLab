@@ -292,7 +292,7 @@ CustomedDataset
 
 - Step-2: Make the configuration for our dataset.
 ```Shell
-cd <PyTorch_YOLO_Tutorial_HOME>
+cd <RT-ODLab>
 cd config/data_config
 ```
 You need to edit the `dataset_cfg` defined in `dataset_config.py`. You can refer to the `customed` defined in `dataset_cfg` to modify the relevant parameters, such as `num_classes`, `classes_names`, to adapt to our dataset.
@@ -312,7 +312,7 @@ dataset_cfg = {
 - Step-3: Convert customed to COCO format.
 
 ```Shell
-cd <PyTorch_YOLO_Tutorial_HOME>
+cd <RT-ODLab>
 cd tools
 # convert train split
 python convert_ours_to_coco.py --root path/to/dataset/ --split train
@@ -348,7 +348,7 @@ CustomedDataset
 - Step-4 Check the data.
 
 ```Shell
-cd <PyTorch_YOLO_Tutorial_HOME>
+cd <RT-ODLab>
 cd dataset
 # convert train split
 python customed.py --root path/to/dataset/ --split train
@@ -361,7 +361,7 @@ python customed.py --root path/to/dataset/ --split val
 For example:
 
 ```Shell
-cd <PyTorch_YOLO_Tutorial_HOME>
+cd <RT-ODLab>
 python train.py --root path/to/dataset/ -d customed -m yolov1 -bs 16 --max_epoch 100 --wp_epoch 1 --eval_epoch 5 -p path/to/yolov1_coco.pth
 ```
 
@@ -370,7 +370,7 @@ python train.py --root path/to/dataset/ -d customed -m yolov1 -bs 16 --max_epoch
 For example:
 
 ```Shell
-cd <PyTorch_YOLO_Tutorial_HOME>
+cd <RT-ODLab>
 python test.py --root path/to/dataset/ -d customed -m yolov1 --weight path/to/checkpoint --show
 ```
 
@@ -379,7 +379,7 @@ python test.py --root path/to/dataset/ -d customed -m yolov1 --weight path/to/ch
 For example:
 
 ```Shell
-cd <PyTorch_YOLO_Tutorial_HOME>
+cd <RT-ODLab>
 python eval.py --root path/to/dataset/ -d customed -m yolov1 --weight path/to/checkpoint
 ```
 
