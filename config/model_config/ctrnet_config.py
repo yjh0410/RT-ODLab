@@ -29,8 +29,8 @@ ctrnet_cfg = {
         'dec_depthwise': False,
         ## Head
         'head': 'decoupled_head',
-        'num_cls_head': 4,
-        'num_reg_head': 4,
+        'num_cls_head': 2,
+        'num_reg_head': 2,
         'head_act': 'silu',
         'head_norm': 'BN',
         'head_depthwise': False,  
