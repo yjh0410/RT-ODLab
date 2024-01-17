@@ -3,9 +3,9 @@ DATASET="coco"
 DATA_ROOT="/data/datasets/"
 
 # MODEL setting
-MODEL="rtcdet_s"
-IMAGE_SIZE=640
+MODEL=$1
 RESUME="None"
+IMAGE_SIZE=640
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     BATCH_SIZE=128
@@ -72,8 +72,8 @@ else
 fi
 
 # -------------------------- Train Pipeline --------------------------
-WORLD_SIZE=$1
-MASTER_PORT=$2
+WORLD_SIZE=$2
+MASTER_PORT=$3
 if [ $WORLD_SIZE == 1 ]; then
     python train.py \
             --cuda \
