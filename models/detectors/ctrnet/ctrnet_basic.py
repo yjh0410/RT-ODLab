@@ -136,19 +136,16 @@ class DeformableConv(nn.Module):
         self.reset_parameters()
         self._init_weight()
 
-
     def reset_parameters(self):
         n = self.in_dim * (self.kernel_size**2)
         stdv = 1. / math.sqrt(n)
         self.weight.data.uniform_(-stdv, stdv)
         self.bias.data.zero_()
 
-
     def _init_weight(self):
         # init offset_mask conv
         nn.init.constant_(self.conv_offset_mask.weight, 0.)
         nn.init.constant_(self.conv_offset_mask.bias, 0.)
-
 
     def forward(self, x):
         out = self.conv_offset_mask(x)

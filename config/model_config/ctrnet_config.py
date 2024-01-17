@@ -2,17 +2,18 @@
 
 
 ctrnet_cfg = {
-    'ctrnet_n':{
+    'ctrnet_s':{
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': True,
+        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
-        'width': 0.25,
+        'width': 0.50,
         'depth': 0.34,
         'ratio': 2.0,
+        'stride': 32,
         'max_stride': 32,
         'out_stride': 4,
         ## Neck
@@ -35,8 +36,8 @@ ctrnet_cfg = {
         'head_depthwise': False,  
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_n',
+        'multi_scale': [0.5, 1.0],   # 320 -> 640
+        'trans_type': 'yolov5_s',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "aligned_simota",

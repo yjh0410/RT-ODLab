@@ -37,6 +37,13 @@ dataset_cfg = {
                         'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'),
     },
 
+    'widerface':{
+        'data_name': 'WiderFace',
+        'num_classes': 1,
+        'class_indexs': [0],
+        'class_names': ('face',),
+    },
+
     'crowdhuman':{
         'data_name': 'CrowdHuman',
         'num_classes': 1,

@@ -111,7 +111,7 @@ def load_weight(model, model_name):
                     checkpoint_state_dict.pop(k)
             else:
                 checkpoint_state_dict.pop(k)
-                print(k)
+                print('Unused key: ', k)
 
         model.load_state_dict(checkpoint_state_dict)
     else:

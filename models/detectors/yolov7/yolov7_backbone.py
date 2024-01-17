@@ -195,7 +195,7 @@ def build_backbone(cfg, pretrained=False):
                         checkpoint_state_dict.pop(k)
                 else:
                     checkpoint_state_dict.pop(k)
-                    print(k)
+                    print('Unused key: ', k)
 
             backbone.load_state_dict(checkpoint_state_dict)
         else:

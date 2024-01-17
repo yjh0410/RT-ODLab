@@ -1,7 +1,7 @@
 import math
 import torch.nn as nn
 
-from .ctrnet_basic import DeConv, RTCBlock
+from .ctrnet_basic import DeConv, DeformableConv
 
 
 def build_decoder(cfg, in_dim, out_dim):
@@ -36,7 +36,7 @@ class CTRDecoder(nn.Module):
         layers = []
         for i in range(self.num_layers):
             layer = nn.Sequential(
-                RTCBlock(in_dim, out_dim[i], 3, False, act_type, norm_type, depthwise),
+                DeformableConv(in_dim, out_dim[i], kernel_size=3, padding=1, stride=1),
                 DeConv(out_dim[i], out_dim[i], kernel_size=4, stride=2, act_type=act_type, norm_type=norm_type)
             )
             layers.append(layer)

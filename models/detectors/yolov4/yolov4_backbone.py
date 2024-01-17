@@ -135,7 +135,7 @@ def build_backbone(model_name='cspdarknet53', pretrained=False):
                         checkpoint_state_dict.pop(k)
                 else:
                     checkpoint_state_dict.pop(k)
-                    print(k)
+                    print('Unused key: ', k)
 
             backbone.load_state_dict(checkpoint_state_dict)
         else:
