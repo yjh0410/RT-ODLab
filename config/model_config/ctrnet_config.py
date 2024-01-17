@@ -15,7 +15,7 @@ ctrnet_cfg = {
         'ratio': 2.0,
         'stride': 32,
         'max_stride': 32,
-        'out_stride': 4,
+        'out_stride': 8,
         ## Neck
         'neck': 'sppf',
         'neck_expand_ratio': 0.5,
@@ -29,8 +29,8 @@ ctrnet_cfg = {
         'dec_depthwise': False,
         ## Head
         'head': 'decoupled_head',
-        'num_cls_head': 2,
-        'num_reg_head': 2,
+        'num_cls_head': 4,
+        'num_reg_head': 4,
         'head_act': 'silu',
         'head_norm': 'BN',
         'head_depthwise': False,  
@@ -50,6 +50,7 @@ ctrnet_cfg = {
         ## loss weight
         'loss_cls_weight': 1.0,
         'loss_box_weight': 2.0,
+        'aux_bbox_loss': False,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
