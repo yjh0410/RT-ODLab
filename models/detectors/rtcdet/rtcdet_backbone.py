@@ -12,8 +12,8 @@ model_urls = {
     # IN-1k classification pretrained
     "rtcnet_n": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_nano.pth",
     "rtcnet_s": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_small.pth",
-    "rtcnet_m": None,
-    "rtcnet_l": None,
+    "rtcnet_m": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_medium.pth",
+    "rtcnet_l": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/elan_cspnet_large.pth",
     "rtcnet_x": None,
     # IN-1k MIM pretrained
     "mae_rtcnet_n": None,

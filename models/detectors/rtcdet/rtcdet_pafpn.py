@@ -12,7 +12,6 @@ except:
 class RTCDetPaFPN(nn.Module):
     def __init__(self, 
                  in_dims   = [256, 512, 512],
-                 out_dim   = None,
                  width     = 1.0,
                  depth     = 1.0,
                  ratio     = 1.0,
@@ -26,6 +25,7 @@ class RTCDetPaFPN(nn.Module):
         self.in_dims = in_dims
         self.width = width
         self.depth = depth
+        self.out_dim = [round(256 * width), round(512 * width), round(512 * width * ratio)]
         c3, c4, c5 = in_dims
 
         # ---------------- Top dwon ----------------
@@ -60,24 +60,14 @@ class RTCDetPaFPN(nn.Module):
                                            )
         ## P4 -> P5
         self.dowmsample_layer_2 = Conv(round(512*width), round(512*width), k=3, p=1, s=2, act_type=act_type, norm_type=norm_type, depthwise=depthwise)
-        self.bottom_up_layer_2  = RTCBlock(in_dim       = round(512 * width) + c5,
-                                           out_dim      = round(512 * width * ratio),
-                                           num_blocks   = round(3*depth),
-                                           shortcut     = False,
-                                           act_type     = act_type,
-                                           norm_type    = norm_type,
-                                           depthwise    = depthwise,
-                                           )
-        ## output proj layers
-        if out_dim is not None:
-            self.out_layers = nn.ModuleList([
-                Conv(in_dim, out_dim, k=1, act_type=act_type, norm_type=norm_type)
-                     for in_dim in [round(256*width), round(512*width), round(512 * width * ratio)]
-                     ])
-            self.out_dim = [out_dim] * 3
-        else:
-            self.out_layers = None
-            self.out_dim = [round(256*width), round(512*width), round(512 * width * ratio)]
+        self.bottom_up_layer_2 = RTCBlock(in_dim       = round(512 * width) + c5,
+                                          out_dim      = round(512 * width * ratio),
+                                          num_blocks   = round(3*depth),
+                                          shortcut     = False,
+                                          act_type     = act_type,
+                                          norm_type    = norm_type,
+                                          depthwise    = depthwise,
+                                          )
 
         self.init_weights()
         
@@ -114,22 +104,14 @@ class RTCDetPaFPN(nn.Module):
 
         out_feats = [c11, c14, c17] # [P3, P4, P5]
         
-        # output proj layers
-        if self.out_layers is not None:
-            out_feats_proj = []
-            for feat, layer in zip(out_feats, self.out_layers):
-                out_feats_proj.append(layer(feat))
-            return out_feats_proj
-
         return out_feats
 
 
-def build_fpn(cfg, in_dims, out_dim=None):
+def build_fpn(cfg, in_dims):
     model = cfg['fpn']
     # build neck
     if model == 'rtcdet_pafpn':
         fpn_net = RTCDetPaFPN(in_dims   = in_dims,
-                              out_dim   = out_dim,
                               width     = cfg['width'],
                               depth     = cfg['depth'],
                               ratio     = cfg['ratio'],

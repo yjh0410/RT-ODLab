@@ -7,8 +7,8 @@ except:
     from rtcdet_basic import Conv
 
 
-def build_det_head(cfg, in_dims, out_dim, num_levels=3):
-    head = MDetHead(cfg, in_dims, out_dim, num_levels)
+def build_det_head(cfg, in_dims, cls_head_dim, reg_head_dim, num_levels=3):
+    head = MDetHead(cfg, in_dims, cls_head_dim, reg_head_dim, num_levels)
 
     return head
 
@@ -101,13 +101,13 @@ class SDetHead(nn.Module):
     
 ## Multi-level Detection Head
 class MDetHead(nn.Module):
-    def __init__(self, cfg, in_dims, out_dim, num_levels=3):
+    def __init__(self, cfg, in_dims, cls_head_dim, reg_head_dim, num_levels=3):
         super().__init__()
         ## ----------- Network Parameters -----------
         self.multi_level_heads = nn.ModuleList(
-            [SDetHead(in_dim=in_dims[level],
-                      cls_head_dim = out_dim,
-                      reg_head_dim = out_dim,
+            [SDetHead(in_dim       = in_dims[level],
+                      cls_head_dim = cls_head_dim,
+                      reg_head_dim = reg_head_dim,
                       num_cls_head = cfg['num_cls_head'],
                       num_reg_head = cfg['num_reg_head'],
                       act_type     = cfg['head_act'],

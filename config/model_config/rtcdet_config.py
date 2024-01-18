@@ -34,7 +34,8 @@ rtcdet_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -42,18 +43,22 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': True,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -89,7 +94,8 @@ rtcdet_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -97,18 +103,22 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_s',
         # ---------------- Assignment config ----------------
-        ## matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        ## Matcher
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': True,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -144,7 +154,8 @@ rtcdet_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -152,18 +163,22 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_m',
         # ---------------- Assignment config ----------------
-        ## matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        ## Matcher
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': False,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -199,7 +214,8 @@ rtcdet_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -207,18 +223,22 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_l',
         # ---------------- Assignment config ----------------
-        ## matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        ## Matcher
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': False,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -254,7 +274,8 @@ rtcdet_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -262,18 +283,22 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_x',
         # ---------------- Assignment config ----------------
-        ## matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        ## Matcher
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': False,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -314,7 +339,8 @@ rtcdet_seg_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -322,18 +348,22 @@ rtcdet_seg_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': False,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -373,7 +403,8 @@ rtcdet_pos_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -381,18 +412,22 @@ rtcdet_pos_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': False,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },
@@ -432,7 +467,8 @@ rtcdet_seg_pos_cfg = {
                      'num_reg_head': 2,
                      'head_act': 'silu',
                      'head_norm': 'BN',
-                     'head_depthwise': False,  
+                     'head_depthwise': False,
+                     'reg_max': 16,  
                      },
         'seg_head': {'name': None,
                      },
@@ -440,18 +476,22 @@ rtcdet_seg_pos_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
-        'matcher': "aligned_simota",
-        'matcher_hpy': {'soft_center_radius': 3.0,
-                        'topk_candidates': 13},
+        'matcher': "tal",
+        'matcher_hpy': {'topk_candidates': 10,
+                        'alpha': 0.5,
+                        'beta':  6.0},
         # ---------------- Loss config ----------------
-        ## loss weight
-        'loss_cls_weight': 1.0,
-        'loss_box_weight': 2.0,
-        'loss_box_aux': False,
+        'loss_cls_weight': 0.5,
+        'loss_box_weight': 7.5,
+        'loss_dfl_weight': 1.5,
+        'use_qfl': False,
+        'loss_cls_weight_qfl': 1.0,
+        'loss_box_weight_qfl': 2.0,
+        'loss_dfl_weight_qfl': 1.0,
         # ---------------- Train config ----------------
         'trainer_type': 'rtcdet',
     },

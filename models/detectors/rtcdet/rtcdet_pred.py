@@ -1,15 +1,17 @@
 import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
-def build_det_pred(cls_dim, reg_dim, strides, num_classes, num_coords=4, num_levels=3):
+def build_det_pred(cls_dim, reg_dim, strides, num_classes, num_coords=4, reg_max=16, num_levels=3):
     pred_layers = MDetPDLayer(cls_dim     = cls_dim,
                               reg_dim     = reg_dim,
                               strides     = strides,
                               num_classes = num_classes,
                               num_coords  = num_coords,
-                              num_levels  = num_levels) 
+                              num_levels  = num_levels,
+                              reg_max     = reg_max) 
 
     return pred_layers
 
@@ -27,6 +29,7 @@ class SDetPDLayer(nn.Module):
                  cls_dim     :int = 256,
                  reg_dim     :int = 256,
                  stride      :int = 32,
+                 reg_max     :int = 16,
                  num_classes :int = 80,
                  num_coords  :int = 4):
         super().__init__()
@@ -34,6 +37,7 @@ class SDetPDLayer(nn.Module):
         self.stride = stride
         self.cls_dim = cls_dim
         self.reg_dim = reg_dim
+        self.reg_max = reg_max
         self.num_classes = num_classes
         self.num_coords = num_coords
 
@@ -82,22 +86,14 @@ class SDetPDLayer(nn.Module):
         
         # [B, C, H, W] -> [B, H, W, C] -> [B, M, C]
         cls_pred = cls_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, self.num_classes)
-        reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4)
-
-        # ---------------- Decode bbox ----------------
-        ctr_pred = reg_pred[..., :2] * self.stride + anchors[..., :2]
-        wh_pred = torch.exp(reg_pred[..., 2:]) * self.stride
-        pred_x1y1 = ctr_pred - wh_pred * 0.5
-        pred_x2y2 = ctr_pred + wh_pred * 0.5
-        box_pred = torch.cat([pred_x1y1, pred_x2y2], dim=-1)
-
+        reg_pred = reg_pred.permute(0, 2, 3, 1).contiguous().view(B, -1, 4*self.reg_max)
+        
         # output dict
-        outputs = {"pred_cls": cls_pred,             # (Tensor) [B, M, C]
-                   "pred_reg": reg_pred,             # (Tensor) [B, M, 4]
-                   "pred_box": box_pred,             # (Tensor) [B, M, 4] 
-                   "anchors": anchors,               # (Tensor) [M, 2]
-                   "stride": self.stride,            # (Int)
-                   "stride_tensors": stride_tensor   # List(Tensor) [M, 1]
+        outputs = {"pred_cls": cls_pred,            # List(Tensor) [B, M, C]
+                   "pred_reg": reg_pred,            # List(Tensor) [B, M, 4*(reg_max)]
+                   "anchors": anchors,              # List(Tensor) [M, 2]
+                   "strides": self.stride,          # List(Int) = [8, 16, 32]
+                   "stride_tensor": stride_tensor   # List(Tensor) [M, 1]
                    }
 
         return outputs
@@ -110,7 +106,8 @@ class MDetPDLayer(nn.Module):
                  strides,
                  num_classes :int = 80,
                  num_coords  :int = 4,
-                 num_levels  :int = 3):
+                 num_levels  :int = 3,
+                 reg_max     :int = 16):
         super().__init__()
         # --------- Basic Parameters ----------
         self.cls_dim = cls_dim
@@ -119,43 +116,67 @@ class MDetPDLayer(nn.Module):
         self.num_classes = num_classes
         self.num_coords = num_coords
         self.num_levels = num_levels
+        self.reg_max = reg_max
 
         # ----------- Network Parameters -----------
-        ## multi-level pred layers
+        ## pred layers
         self.multi_level_preds = nn.ModuleList(
             [SDetPDLayer(cls_dim     = cls_dim,
                          reg_dim     = reg_dim,
                          stride      = strides[level],
+                         reg_max     = reg_max,
                          num_classes = num_classes,
-                         num_coords  = num_coords)
+                         num_coords  = num_coords * reg_max)
                          for level in range(num_levels)
                          ])
-        
+        ## proj conv
+        proj_init = torch.arange(reg_max, dtype=torch.float)
+        self.proj_conv = nn.Conv2d(self.reg_max, 1, kernel_size=1, bias=False).requires_grad_(False)
+        self.proj_conv.weight.data[:] = nn.Parameter(proj_init.view([1, reg_max, 1, 1]))
+
     def forward(self, inputs):
+        cls_feats, reg_feats = inputs['cls_feat'], inputs['reg_feat']
         all_anchors = []
         all_strides = []
         all_cls_preds = []
-        all_box_preds = []
         all_reg_preds = []
-        cls_feats, reg_feats = inputs["cls_feat"], inputs["reg_feat"]
+        all_box_preds = []
+        all_delta_preds = []
         for level in range(self.num_levels):
-            # ---------------- Single level prediction ----------------
+            # -------------- Single-level prediction --------------
             outputs = self.multi_level_preds[level](cls_feats[level], reg_feats[level])
+
+            # -------------- Decode bbox --------------
+            B, M = outputs["pred_reg"].shape[:2]
+            # [B, M, 4*(reg_max)] -> [B, M, 4, reg_max]
+            delta_pred = outputs["pred_reg"].reshape([B, M, 4, self.reg_max])
+            # [B, M, 4, reg_max] -> [B, reg_max, 4, M]
+            delta_pred = delta_pred.permute(0, 3, 2, 1).contiguous()
+            # [B, reg_max, 4, M] -> [B, 1, 4, M]
+            delta_pred = self.proj_conv(F.softmax(delta_pred, dim=1))
+            # [B, 1, 4, M] -> [B, 4, M] -> [B, M, 4]
+            delta_pred = delta_pred.view(B, 4, M).permute(0, 2, 1).contiguous()
+            ## tlbr -> xyxy
+            x1y1_pred = outputs["anchors"][None] - delta_pred[..., :2] * self.strides[level]
+            x2y2_pred = outputs["anchors"][None] + delta_pred[..., 2:] * self.strides[level]
+            box_pred = torch.cat([x1y1_pred, x2y2_pred], dim=-1)
 
             # collect results
             all_cls_preds.append(outputs["pred_cls"])
-            all_box_preds.append(outputs["pred_box"])
             all_reg_preds.append(outputs["pred_reg"])
+            all_box_preds.append(box_pred)
+            all_delta_preds.append(delta_pred)
             all_anchors.append(outputs["anchors"])
-            all_strides.append(outputs["stride_tensors"])
+            all_strides.append(outputs["stride_tensor"])
         
         # output dict
-        outputs = {"pred_cls": all_cls_preds,      # List(Tensor) [B, M, C]
-                   "pred_box": all_box_preds,      # List(Tensor) [B, M, 4]
-                   "pred_reg": all_reg_preds,      # List(Tensor) [B, M, 4]
-                   "anchors": all_anchors,         # List(Tensor) [M, 2]
-                   "strides": self.strides,        # List(Int) [8, 16, 32]
-                   "stride_tensors": all_strides   # List(Tensor) [M, 1]
+        outputs = {"pred_cls": all_cls_preds,        # List(Tensor) [B, M, C]
+                   "pred_reg": all_reg_preds,        # List(Tensor) [B, M, 4*(reg_max)]
+                   "pred_box": all_box_preds,        # List(Tensor) [B, M, 4]
+                   "pred_delta": all_delta_preds,    # List(Tensor) [B, M, 4]
+                   "anchors": all_anchors,           # List(Tensor) [M, 2]
+                   "strides": self.strides,          # List(Int) = [8, 16, 32]
+                   "stride_tensor": all_strides      # List(Tensor) [M, 1]
                    }
 
         return outputs

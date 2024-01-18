@@ -39,8 +39,8 @@ class RTCDet(nn.Module):
         self.num_classes = num_classes
         ## Network parameters
         self.strides = cfg['stride']
+        self.reg_max = cfg['det_head']['reg_max']
         self.num_levels = len(self.strides)
-        self.head_dim = round(256 * cfg['width'])
         ## Post-process parameters
         self.nms_thresh = nms_thresh
         self.conf_thresh = conf_thresh
@@ -57,13 +57,15 @@ class RTCDet(nn.Module):
         self.fpn_feat_dims[-1] = self.neck.out_dim
         
         ## Neck: FPN
-        self.fpn = build_fpn(cfg, self.fpn_feat_dims, self.head_dim)
+        self.fpn = build_fpn(cfg, self.fpn_feat_dims)
         self.fpn_dims = self.fpn.out_dim
+        self.cls_head_dim = max(self.fpn_dims[0], min(num_classes, 100))
+        self.reg_head_dim = max(self.fpn_dims[0]//4, 16, 4*self.reg_max)
 
         ## Head
         self.det_head = nn.Sequential(
-            build_det_head(cfg['det_head'], self.fpn_dims, self.head_dim, self.num_levels),
-            build_det_pred(self.head_dim, self.head_dim, self.strides, num_classes, 4, self.num_levels)
+            build_det_head(cfg['det_head'], self.fpn_dims, self.cls_head_dim, self.reg_head_dim, self.num_levels),
+            build_det_pred(self.cls_head_dim, self.reg_head_dim, self.strides, num_classes, 4, self.reg_max, self.num_levels)
         )
         self.seg_head = nn.Sequential(
             build_seg_head(cfg['seg_head']),
