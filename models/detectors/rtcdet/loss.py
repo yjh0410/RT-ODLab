@@ -14,11 +14,10 @@ class Criterion(object):
         self.device = device
         self.num_classes = num_classes
         self.reg_max = cfg['det_head']['reg_max']
-        self.use_qfl = cfg['use_qfl']
         # --------------- Loss config ---------------
-        self.loss_cls_weight = cfg['loss_cls_weight_qfl'] if self.use_qfl else cfg['loss_cls_weight']
-        self.loss_box_weight = cfg['loss_box_weight_qfl'] if self.use_qfl else cfg['loss_box_weight']
-        self.loss_dfl_weight = cfg['loss_dfl_weight_qfl'] if self.use_qfl else cfg['loss_dfl_weight']
+        self.loss_cls_weight = cfg['loss_cls_weight']
+        self.loss_box_weight = cfg['loss_box_weight']
+        self.loss_dfl_weight = cfg['loss_dfl_weight']
         # --------------- Matcher config ---------------
         self.matcher_hpy = cfg['matcher_hpy']
         self.matcher = TaskAlignedAssigner(num_classes     = num_classes,
@@ -28,13 +27,9 @@ class Criterion(object):
                                            )
 
     # -------------------- Basic loss functions --------------------
-    def loss_classes(self, pred_cls, gt_score, use_qfl=False):
+    def loss_classes(self, pred_cls, gt_score):
         # Compute BCE loss
         loss_cls = F.binary_cross_entropy_with_logits(pred_cls, gt_score, reduction='none')
-
-        if use_qfl:
-            focal_weight = (pred_cls.sigmoid() - gt_score).pow(2.0)
-            loss_cls = loss_cls * focal_weight
 
         return loss_cls
     
@@ -148,7 +143,7 @@ class Criterion(object):
 
         # ------------------ Classification loss ------------------
         cls_preds = cls_preds.view(-1, self.num_classes)
-        loss_cls = self.loss_classes(cls_preds, gt_score_targets, self.use_qfl)
+        loss_cls = self.loss_classes(cls_preds, gt_score_targets)
         loss_cls = loss_cls.sum() / num_fgs
 
         # ------------------ Regression loss ------------------
