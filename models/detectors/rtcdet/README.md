@@ -6,19 +6,11 @@
 - **Scratch**:  We just train the detector on the COCO without any pretrained weights for the backbone.
 
 For the small model:
-|   Model  | Pretrained | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|------------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDet-S | Scratch    |  640  |                        |                   |                   |                    |  |
-| RTCDet-S | IN1K Cls   |  640  |                        |                   |                   |                    |  |
-| RTCDet-S | IN1K MIM   |  640  |                        |                   |                   |                    |  |
-
-For the large model:
-|   Model  | Pretrained | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|------------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDet-L | Scratch    |  640  |                        |                   |                   |                    |  |
-| RTCDet-L | IN1K Cls   |  640  |                        |                   |                   |                    |  |
-| RTCDet-L | IN1K MIM   |  640  |                        |                   |                   |                    |  |
-
+|   Model  | Pretrained | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
+|----------|------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
+| RTCDet-S | Scratch    |  640  |  300  |                        |                   |                   |                    |  |
+| RTCDet-S | IN1K Cls   |  640  |  300  |                        |                   |                   |                    |  |
+| RTCDet-S | IN1K MIM   |  640  |  300  |                        |                   |                   |                    |  |
 
 ## Results on the COCO-val
 |   Model  | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
@@ -31,7 +23,7 @@ For the large model:
 
 - For the backbone, we ... (not sure)
 - For training, we train RTCDet series with 300 epochs on COCO.
-- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the YOLOX.
+- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the YOLOv8.
 - For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64,.
 - For learning rate scheduler, we use Linear decay scheduler.
 
