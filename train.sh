@@ -3,13 +3,13 @@ MODEL=$1
 BATCH_SIZE=$2
 WORLD_SIZE=$3
 MASTER_PORT=$4
+RESUME=$5
 
 # Dataset setting
 DATASET="coco"
 DATA_ROOT="/data/datasets/"
 
 # MODEL setting
-RESUME="None"
 IMAGE_SIZE=640
 if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
