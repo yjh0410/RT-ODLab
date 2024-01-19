@@ -62,15 +62,19 @@ class RTCDet(nn.Module):
         self.cls_head_dim = max(self.fpn_dims[0], min(num_classes, 100))
         self.reg_head_dim = max(self.fpn_dims[0]//4, 16, 4*self.reg_max)
 
-        ## Head
+        ## Head: Detection
         self.det_head = nn.Sequential(
             build_det_head(cfg['det_head'], self.fpn_dims, self.cls_head_dim, self.reg_head_dim, self.num_levels),
             build_det_pred(self.cls_head_dim, self.reg_head_dim, self.strides, num_classes, 4, self.reg_max, self.num_levels)
         )
+
+        ## Head: Segmentation
         self.seg_head = nn.Sequential(
             build_seg_head(cfg['seg_head']),
             build_seg_pred()
         ) if cfg['seg_head']['name'] is not None else None
+
+        ## Head: Human-pose
         self.pos_head = nn.Sequential(
             build_pose_head(cfg['pos_head']),
             build_pose_pred()
