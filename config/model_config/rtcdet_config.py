@@ -42,7 +42,7 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -97,7 +97,7 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_s',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -152,7 +152,7 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_m',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -207,7 +207,7 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_l',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -262,7 +262,7 @@ rtcdet_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_x',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -322,7 +322,7 @@ rtcdet_seg_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -381,7 +381,7 @@ rtcdet_pos_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
@@ -440,7 +440,7 @@ rtcdet_seg_pos_cfg = {
                      },
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.25],   # 320 -> 800
+        'multi_scale': [0.5, 1.5],   # 320 -> 960
         'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## Matcher
