@@ -8,9 +8,8 @@
 For the small model:
 |   Model  | Pretrained | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDet-S | Scratch    |  640  |  300  |                        |                   |                   |                    |  |
-| RTCDet-S | IN1K Cls   |  640  |  300  |                        |                   |                   |                    |  |
-| RTCDet-S | IN1K MIM   |  640  |  300  |                        |                   |                   |                    |  |
+| RTCDet-S | Scratch    |  640  |  500  |                        |                   |                   |                    |  |
+| RTCDet-S | IN1K MIM   |  640  |  500  |                        |                   |                   |                    |  |
 
 ## Results on the COCO-val
 |   Model  | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |

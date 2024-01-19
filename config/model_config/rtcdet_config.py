@@ -7,7 +7,6 @@ rtcdet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -63,7 +62,6 @@ rtcdet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -119,7 +117,6 @@ rtcdet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -175,7 +172,6 @@ rtcdet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -231,7 +227,6 @@ rtcdet_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -292,7 +287,6 @@ rtcdet_seg_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -352,7 +346,6 @@ rtcdet_pos_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
@@ -412,7 +405,6 @@ rtcdet_seg_pos_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'bk_pretrained': True,
-        'bk_pretrained_mae': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_depthwise': False,
