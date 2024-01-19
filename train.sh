@@ -11,7 +11,13 @@ DATA_ROOT="/data/datasets/"
 
 # MODEL setting
 IMAGE_SIZE=640
-if [[ $MODEL == *"yolov8"* ]]; then
+if [[ $MODEL == *"rtcdet"* ]]; then
+    # Epoch setting
+    MAX_EPOCH=500
+    WP_EPOCH=3
+    EVAL_EPOCH=10
+    NO_AUG_EPOCH=20
+elif [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     MAX_EPOCH=500
     WP_EPOCH=3
@@ -47,24 +53,12 @@ elif [[ $MODEL == *"yolov3"* ]]; then
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
-elif [[ $MODEL == *"rtcdet"* ]]; then
-    # Epoch setting
-    MAX_EPOCH=300
-    WP_EPOCH=3
-    EVAL_EPOCH=10
-    NO_AUG_EPOCH=20
-elif [[ $MODEL == *"ctrnet"* ]]; then
-    # Epoch setting
-    MAX_EPOCH=300
-    WP_EPOCH=3
-    EVAL_EPOCH=10
-    NO_AUG_EPOCH=20
 else
     # Epoch setting
     MAX_EPOCH=150
     WP_EPOCH=3
     EVAL_EPOCH=10
-    NO_AUG_EPOCH=0
+    NO_AUG_EPOCH=10
 fi
 
 # -------------------------- Train Pipeline --------------------------
