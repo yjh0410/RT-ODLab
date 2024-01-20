@@ -1,6 +1,7 @@
-import torch
+from typing import List
 import math
 import numpy as np
+import torch
 from torchvision.ops.boxes import box_area
 
 
@@ -19,7 +20,11 @@ def box_xyxy_to_cxcywh(x):
 
 def rescale_bboxes(bboxes, origin_size, ratio):
     # rescale bboxes
-    bboxes /= ratio
+    if isinstance(ratio, float):
+        bboxes /= ratio
+    elif isinstance(ratio, List):
+        bboxes[..., [0, 2]] /= ratio[0]
+        bboxes[..., [1, 3]] /= ratio[1]
 
     # clip bboxes
     bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_size[0])
