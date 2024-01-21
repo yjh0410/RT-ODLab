@@ -9,6 +9,7 @@ import random
 # ----------------- Extra Components -----------------
 from utils import distributed_utils
 from utils.misc import ModelEMA, CollateFunc, build_dataloader
+from utils.misc import MetricLogger, SmoothedValue
 from utils.vis_tools import vis_data
 
 # ----------------- Evaluator Components -----------------
@@ -926,14 +927,20 @@ class RTCTrainer(object):
             dist.barrier()
 
     def train_one_epoch(self, model):
+        metric_logger = MetricLogger(delimiter="  ")
+        metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
+        metric_logger.add_meter('size', SmoothedValue(window_size=1, fmt='{value:d}'))
+        header = 'Epoch: [{} / {}]'.format(self.epoch, self.args.max_epoch)
+        epoch_size = len(self.train_loader)
+        print_freq = 10
+
         # basic parameters
         epoch_size = len(self.train_loader)
         img_size = self.args.img_size
-        t0 = time.time()
         nw = epoch_size * self.args.wp_epoch
 
         # Train one epoch
-        for iter_i, (images, targets) in enumerate(self.train_loader):
+        for iter_i, (images, targets) in enumerate(metric_logger.log_every(self.train_loader, print_freq, header)):
             ni = iter_i + self.epoch * epoch_size
             # Warmup
             if ni <= nw:
@@ -990,29 +997,11 @@ class RTCTrainer(object):
                 if self.model_ema is not None:
                     self.model_ema.update(model)
 
-            # Logs
-            if distributed_utils.is_main_process() and iter_i % 10 == 0:
-                t1 = time.time()
-                cur_lr = [param_group['lr']  for param_group in self.optimizer.param_groups]
-                # basic infor
-                log =  '[Epoch: {}/{}]'.format(self.epoch, self.args.max_epoch)
-                log += '[Iter: {}/{}]'.format(iter_i, epoch_size)
-                log += '[lr: {:.6f}]'.format(cur_lr[2])
-                # loss infor
-                for k in loss_dict_reduced.keys():
-                    loss_val = loss_dict_reduced[k]
-                    if k == 'losses':
-                        loss_val *= self.grad_accumulate
-                    log += '[{}: {:.2f}]'.format(k, loss_val)
-                # other infor
-                log += '[grad_norm: {:.2f}]'.format(grad_norm)
-                log += '[time: {:.2f}]'.format(t1 - t0)
-                log += '[size: {}]'.format(img_size)
-
-                # print log infor
-                print(log, flush=True)
-                
-                t0 = time.time()
+            # Update log
+            metric_logger.update(**loss_dict_reduced)
+            metric_logger.update(lr=self.optimizer.param_groups[2]["lr"])
+            metric_logger.update(grad_norm=grad_norm)
+            metric_logger.update(size=img_size)
 
             if self.args.debug:
                 print("For debug mode, we only train 1 iteration")
@@ -1021,6 +1010,10 @@ class RTCTrainer(object):
         # LR Schedule
         if not self.second_stage:
             self.lr_scheduler.step()
+
+        # Gather the stats from all processes
+        metric_logger.synchronize_between_processes()
+        print("Averaged stats:", metric_logger)
 
     def refine_targets(self, targets, min_box_size):
         # rescale targets
