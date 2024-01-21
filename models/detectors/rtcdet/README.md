@@ -6,10 +6,12 @@
 - **Scratch**:  We just train the detector on the COCO without any pretrained weights for the backbone.
 
 For the small model:
-|   Model  | Pretrained | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|----------|------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDet-S | Scratch    |  640  |  500  |                        |                   |                   |                    |  |
-| RTCDet-S | IN1K MIM   |  640  |  500  |                        |                   |                   |                    |  |
+|   Model  | Pretrained | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 |
+|----------|------------|-------|-------|------------------------|-------------------|
+| RTCDet-N | Scratch    |  640  |  500  |          36.8          |        52.9       |
+| RTCDet-N | IN1K MIM   |  640  |  500  |                        |                   |
+| RTCDet-L | Scratch    |  640  |  500  |          50.2          |        68.0       |
+| RTCDet-L | IN1K MIM   |  640  |  500  |                        |                   |
 
 ## Results on the COCO-val
 |   Model  | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
