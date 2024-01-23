@@ -10,11 +10,11 @@ try:
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
 except:
-    from .voc import VOCDataset
+    from voc import VOCDataset
     from coco import COCODataset
     from crowdhuman import CrowdHumanDataset
     from widerface import WiderFaceDataset
-    from dataset.customed import CustomedDataset
+    from customed import CustomedDataset
     from data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
 
