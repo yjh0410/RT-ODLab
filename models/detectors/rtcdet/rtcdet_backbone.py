@@ -9,7 +9,7 @@ except:
 
 # IN-1k MIM pretrained
 model_urls = {
-    "rtcnet_n": "https://github.com/yjh0410/MAE/releases/download/checkpoints/rtcnet_n.pth",
+    "rtcnet_n": None,
     "rtcnet_s": None,
     "rtcnet_m": None,
     "rtcnet_l": None,
