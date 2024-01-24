@@ -22,7 +22,7 @@ For the small model:
 | RTCDet-L | 8xb16 |  640  |                        |                   |                   |                    |  |
 | RTCDet-X | 8xb16 |  640  |                        |                   |                   |                    |  |
 
-- For the backbone, we ... (not sure)
+- For the backbone, we use the ImageNet-1K pretrained weight.
 - For training, we train RTCDet series with 300 epochs on COCO.
 - For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the YOLOv8.
 - For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64,.
