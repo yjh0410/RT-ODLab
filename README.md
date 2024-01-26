@@ -75,44 +75,20 @@ For example:
 python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-## Train
-### Single GPU
+We also kindly provide a script `train.sh` to run the training code. You need to follow the following format to use this script：
 ```Shell
-sh train_single_gpu.sh
+bash train.sh <model> <data> <data_path> <batch_size> <num_gpus> <master_port> <resume_weight>
 ```
 
-You can change the configurations of `train_single_gpu.sh`, according to your own situation.
-
-You also can add `--vis_tgt`  to check the images and targets during the training stage. For example:
+For example, we use this script to train YOLOv3 from the epoch-0:
 ```Shell
-python train.py --cuda -d coco --root path/to/coco -m yolov1 --vis_tgt
+bash train.sh yolov3 coco path/to/coco 128 4 1699 None
 ```
 
-### Multi GPUs
+We can also continue training from existing weights by passing the model's weight file to the resume parameter.
 ```Shell
-sh train_multi_gpus.sh
+bash train.sh yolov3 coco path/to/coco 128 4 1699 path/to/yolov3.pth
 ```
-
-You can change the configurations of `train_multi_gpus.sh`, according to your own situation.
-
-**In the event of a training interruption**, you can pass `--resume` the latest training
-weight path (`None` by default) to resume training. For example:
-
-```Shell
-python train.py \
-        --cuda \
-        -d coco \
-        -m yolov1 \
-        -bs 16 \
-        --max_epoch 300 \
-        --wp_epoch 3 \
-        --eval_epoch 10 \
-        --ema \
-        --fp16 \
-        --resume weights/coco/yolov1/yolov1_epoch_151_39.24.pth
-```
-
-Then, training will continue from 151 epoch.
 
 ## Test
 ```Shell
