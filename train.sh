@@ -1,13 +1,11 @@
 # Args parameters
 MODEL=$1
-BATCH_SIZE=$2
-WORLD_SIZE=$3
-MASTER_PORT=$4
-RESUME=$5
-
-# Dataset setting
-DATASET="coco"
-DATA_ROOT="/data/datasets/"
+DATASET=$2
+DATASET_ROOT=$3
+BATCH_SIZE=$4
+WORLD_SIZE=$5
+MASTER_PORT=$6
+RESUME=$7
 
 # MODEL setting
 IMAGE_SIZE=640
@@ -66,7 +64,7 @@ if [ $WORLD_SIZE == 1 ]; then
     python train.py \
             --cuda \
             --dataset ${DATASET} \
-            --root ${DATA_ROOT} \
+            --root ${DATASET_ROOT} \
             --model ${MODEL} \
             --batch_size ${BATCH_SIZE} \
             --img_size ${IMAGE_SIZE} \
@@ -83,7 +81,7 @@ elif [[ $WORLD_SIZE -gt 1 && $WORLD_SIZE -le 8 ]]; then
             --cuda \
             -dist \
             --dataset ${DATASET} \
-            --root ${DATA_ROOT} \
+            --root ${DATASET_ROOT} \
             --model ${MODEL} \
             --batch_size ${BATCH_SIZE} \
             --img_size ${IMAGE_SIZE} \
