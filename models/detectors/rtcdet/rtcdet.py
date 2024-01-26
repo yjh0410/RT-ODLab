@@ -64,8 +64,20 @@ class RTCDet(nn.Module):
 
         ## Head: Detection
         self.det_head = nn.Sequential(
-            build_det_head(cfg['det_head'], self.fpn_dims, self.cls_head_dim, self.reg_head_dim, self.num_levels),
-            build_det_pred(self.cls_head_dim, self.reg_head_dim, self.strides, num_classes, 4, self.reg_max, self.num_levels)
+            build_det_head(cfg          = cfg['det_head'],
+                           in_dims      = self.fpn_dims,
+                           cls_head_dim = self.cls_head_dim,
+                           reg_head_dim = self.reg_head_dim,
+                           num_levels   = self.num_levels
+                           ),
+            build_det_pred(cls_dim     = self.cls_head_dim,
+                           reg_dim     = self.reg_head_dim,
+                           strides     = self.strides,
+                           num_classes = num_classes,
+                           num_coords  = 4,
+                           reg_max     = self.reg_max,
+                           num_levels  = self.num_levels
+                           )
         )
 
         ## Head: Segmentation
