@@ -39,9 +39,9 @@ class COCODataset(Dataset):
         # ----------- Path parameters -----------
         self.data_dir = data_dir
         if image_set == 'train2017':
-            self.json_file='instances_train2017.json'
+            self.json_file='instances_train2017_clean.json'
         elif image_set == 'val2017':
-            self.json_file='instances_val2017.json'
+            self.json_file='instances_val2017_clean.json'
         elif image_set == 'test2017':
             self.json_file='image_info_test-dev2017.json'
         else:
@@ -248,6 +248,8 @@ if __name__ == "__main__":
     # opt
     parser.add_argument('--root', default='/Users/liuhaoran/Desktop/python_work/object-detection/dataset/COCO/',
                         help='data root')
+    parser.add_argument('--image_set', type=str, default='train2017',
+                        help='mixup augmentation.')
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='input image size.')
     parser.add_argument('--aug_type', type=str, default='ssd',

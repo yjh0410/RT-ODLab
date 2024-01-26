@@ -62,6 +62,14 @@ cd dataset/scripts/
 sh COCO2017.sh
 ```
 
+- Clean COCO
+```Shell
+cd <RT-ODLab>
+cd tools/
+python clean_coco.py --root path/to/coco --image_set val
+python clean_coco.py --root path/to/coco --image_set train
+```
+
 - Check COCO
 ```Shell
 cd <RT-ODLab>
