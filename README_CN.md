@@ -60,6 +60,14 @@ cd dataset/scripts/
 sh COCO2017.sh
 ```
 
+- 清洗COCO
+```Shell
+cd <RT-ODLab>
+cd tools/
+python clean_coco.py --root path/to/coco --image_set val
+python clean_coco.py --root path/to/coco --image_set train
+```
+
 - 检查 COCO
 ```Shell
 cd <PyTorch_YOLO_Tutorial>
@@ -70,51 +78,26 @@ python dataset/coco.py
 
 - 使用COCO训练模型
 
-For example:
+可以参考下方的命令：
 ```Shell
-python train.py --cuda -d coco --root path/to/COCO -v yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
+python train.py --cuda -d coco --root path/to/COCO -m yolov1 -bs 16 --max_epoch 150 --wp_epoch 1 --eval_epoch 10 --fp16 --ema --multi_scale
 ```
 
-由于我的计算资源有限，我不得不在训练期间将batch size设置为16甚至更小。我发现，对于*-Nano或*-Tiny这样的小模型，它们的性能似乎对batch size不太敏感，比如我复制的YOLOv5-N和S，它们甚至比官方的YOLOv5-N和S略强。然而，对于*-Large这样的大模型，其性能明显低于官方的性能，这似乎表明大模型对batch size更敏感。
-
-我提供了启用DDP训练的bash文件`train_multi_gpus.sh`，我希望有人可以使用更多的显卡和更大的batch size来训练我实现的大模型，如YOLOv5-L、YOLOX以及YOLOv7-L。如果使用更大的batch size所训练出来的性能更高，如果能将训练的模型分享给我，我会很感激的。
-
-
-## 训练
-### 使用单个GPU来训练
+另外，我们也提供了脚本 `train.sh`，可以让使用者一键开启训练。为了顺利使用此文件，请遵循下方提供的命令实例来输入相关的参数：
 ```Shell
-sh train_single_gpu.sh
+bash train.sh <model> <data> <data_path> <batch_size> <num_gpus> <master_port> <resume_weight>
 ```
 
-使用者可以根据自己的情况来调整`train_single_gpu.sh`文件中的配置，以便在自己的本地上顺利训练模型。
-
-如果使用者想查看训练时所使用的数据，可以在训练命令中输入`--vsi_tgt`参数，例如：
+例如，我们想使用该脚本来从头训练训练YOLOv3:
 ```Shell
-python train.py --cuda -d coco --root path/to/coco -v yolov1 --vis_tgt
+bash train.sh yolov3 coco path/to/coco 128 4 1699 None
 ```
 
-### 使用多个GPU来训练
+如果从已有的权重文件来继续训练模型（比如训练终端的情况），可以参考下方的运行命令：
 ```Shell
-sh train_multi_gpus.sh
+bash train.sh yolov3 coco path/to/coco 128 4 1699 path/to/yolov3.pth
 ```
 
-使用者可以根据自己的情况来调整`train_multi_gpus.sh`文件中的配置，以便在自己的本地上顺利训练模型。
-
-**当训练突然中断时**, 使用者可以在训练命令中传入`--resume`参数，并指定最新保存的权重文件（默认为`None`），以便继续训练。例如：
-
-```Shell
-python train.py \
-        --cuda \
-        -d coco \
-        -v yolov1 \
-        -bs 16 \
-        --max_epoch 150 \
-        --wp_epoch 1 \
-        --eval_epoch 10 \
-        --ema \
-        --fp16 \
-        --resume weights/coco/yolov1/yolov1_epoch_151_39.24.pth
-```
 
 ## 测试
 使用者可以参考下面的给出的例子在相应的数据集上去测试训练好的模型，正常情况下，使用者将会看到检测结果的可视化图像。
@@ -136,7 +119,7 @@ python test.py -d coco \
 使用者可以参考下面的给出的例子在相应的数据集上去验证训练好的模型，正常情况下，使用者将会看到COCO风格的AP结果输出。
 
 ```Shell
-python eval.py -d coco-val \
+python eval.py -d coco \
                --cuda \
                -v yolov1 \
                --img_size 640 \
@@ -147,7 +130,7 @@ python eval.py -d coco-val \
 
 如果使用者想测试模型在COCO test-dev数据集上的AP指标，可以遵循以下步骤：
 
-- 将上述命令中的`coco-val`修改为`coco-test`，然后运行；
+- 将上述命令中的`coco`修改为`coco-test`，然后运行；
 - 运行结束后，将会得到一个名为`coco_test-dev.json`的文件；
 - 将其压缩为一个`.zip`，按照COCO官方的要求修改压缩文件的名称，例如``;
 - 按照COCO官方的要求，将该文件上传至官方的服务器去计算AP。
