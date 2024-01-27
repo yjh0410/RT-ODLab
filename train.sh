@@ -15,6 +15,12 @@ if [[ $MODEL == *"rtcdet"* ]]; then
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
+elif [[ $MODEL == *"rtdetr"* ]]; then
+    # Epoch setting
+    MAX_EPOCH=72
+    WP_EPOCH=-1
+    EVAL_EPOCH=4
+    NO_AUG_EPOCH=-1
 elif [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     MAX_EPOCH=500

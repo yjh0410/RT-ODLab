@@ -759,7 +759,7 @@ class YoloxTrainer(object):
 
         return images, targets, new_img_size
 
-## RTCDet Trainer
+## Real-time Convolutional Object Detector Trainer
 class RTCTrainer(object):
     def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- basic parameters -------------------
@@ -1121,7 +1121,7 @@ class RTCTrainer(object):
             args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
         self.train_loader.dataset.transform = self.train_transform
    
-## RTRDet Trainer
+## Real-time Transformer-based Object Detector Trainer
 class RTRTrainer(object):
     def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
         # ------------------- Basic parameters -------------------
@@ -1132,21 +1132,14 @@ class RTRTrainer(object):
         self.criterion = criterion
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
-        self.clip_grad = 35
-        self.heavy_eval = False
-        # weak augmentatino stage
-        self.second_stage = False
-        self.third_stage = False
-        self.second_stage_epoch = args.no_aug_epoch
-        self.third_stage_epoch = args.no_aug_epoch // 2
+        self.clip_grad = 0.1
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.ema_dict = {'ema_decay': 0.9998, 'ema_tau': 2000}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.05}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1}
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -1175,70 +1168,26 @@ class RTRTrainer(object):
         self.optimizer, self.start_epoch = build_detr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch - args.no_aug_epoch)
+        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
-
-        # ---------------------------- Build Model-EMA ----------------------------
-        if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
-            print('Build ModelEMA ...')
-            self.model_ema = ModelEMA(self.ema_dict, model, self.start_epoch * len(self.train_loader))
-        else:
-            self.model_ema = None
-
 
     def train(self, model):
         for epoch in range(self.start_epoch, self.args.max_epoch):
             if self.args.distributed:
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
-            # check second stage
-            if epoch >= (self.args.max_epoch - self.second_stage_epoch - 1) and not self.second_stage:
-                self.check_second_stage()
-                # save model of the last mosaic epoch
-                weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch))
-                torch.save({'model': model.state_dict(),
-                            'mAP': round(self.evaluator.map*100, 1),
-                            'optimizer': self.optimizer.state_dict(),
-                            'epoch': self.epoch,
-                            'args': self.args}, 
-                            checkpoint_path)
-
-            # check third stage
-            if epoch >= (self.args.max_epoch - self.third_stage_epoch - 1) and not self.third_stage:
-                self.check_third_stage()
-                # save model of the last mosaic epoch
-                weight_name = '{}_last_weak_augment_epoch.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                print('Saving state of the last weak augment epoch-{}.'.format(self.epoch))
-                torch.save({'model': model.state_dict(),
-                            'mAP': round(self.evaluator.map*100, 1),
-                            'optimizer': self.optimizer.state_dict(),
-                            'epoch': self.epoch,
-                            'args': self.args}, 
-                            checkpoint_path)
-
             # train one epoch
             self.epoch = epoch
             self.train_one_epoch(model)
 
             # eval one epoch
-            if self.heavy_eval:
+            if (epoch % self.args.eval_epoch) == 0 or (epoch == self.args.max_epoch - 1):
                 model_eval = model.module if self.args.distributed else model
                 self.eval(model_eval)
-            else:
-                model_eval = model.module if self.args.distributed else model
-                if (epoch % self.args.eval_epoch) == 0 or (epoch == self.args.max_epoch - 1):
-                    self.eval(model_eval)
-
 
     def eval(self, model):
-        # chech model
-        model_eval = model if self.model_ema is None else self.model_ema.ema
-
         if distributed_utils.is_main_process():
             # check evaluator
             if self.evaluator is None:
@@ -1246,7 +1195,7 @@ class RTRTrainer(object):
                 print('Saving state, epoch: {}'.format(self.epoch))
                 weight_name = '{}_no_eval.pth'.format(self.args.model)
                 checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                torch.save({'model': model_eval.state_dict(),
+                torch.save({'model': model.state_dict(),
                             'mAP': -1.,
                             'optimizer': self.optimizer.state_dict(),
                             'epoch': self.epoch,
@@ -1255,12 +1204,12 @@ class RTRTrainer(object):
             else:
                 print('eval ...')
                 # set eval mode
-                model_eval.trainable = False
-                model_eval.eval()
+                model.trainable = False
+                model.eval()
 
                 # evaluate
                 with torch.no_grad():
-                    self.evaluator.evaluate(model_eval)
+                    self.evaluator.evaluate(model)
 
                 # save model
                 cur_map = self.evaluator.map
@@ -1271,7 +1220,7 @@ class RTRTrainer(object):
                     print('Saving state, epoch:', self.epoch)
                     weight_name = '{}_best.pth'.format(self.args.model)
                     checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                    torch.save({'model': model_eval.state_dict(),
+                    torch.save({'model': model.state_dict(),
                                 'mAP': round(self.best_map*100, 1),
                                 'optimizer': self.optimizer.state_dict(),
                                 'epoch': self.epoch,
@@ -1279,13 +1228,12 @@ class RTRTrainer(object):
                                 checkpoint_path)                      
 
                 # set train mode.
-                model_eval.trainable = True
-                model_eval.train()
+                model.trainable = True
+                model.train()
 
         if self.args.distributed:
             # wait for all processes to synchronize
             dist.barrier()
-
 
     def train_one_epoch(self, model):
         # basic parameters
@@ -1383,7 +1331,6 @@ class RTRTrainer(object):
         if not self.second_stage:
             self.lr_scheduler.step()
         
-
     def refine_targets(self, targets, min_box_size):
         # rescale targets
         for tgt in targets:
@@ -1399,7 +1346,6 @@ class RTRTrainer(object):
         
         return targets
 
-
     def normalize_bbox(self, targets, img_size):
         # normalize targets
         for tgt in targets:
@@ -1407,14 +1353,12 @@ class RTRTrainer(object):
         
         return targets
 
-
     def denormalize_bbox(self, targets, img_size):
         # normalize targets
         for tgt in targets:
             tgt["boxes"] *= img_size
         
         return targets
-
 
     def rescale_image_targets(self, images, targets, stride, min_box_size, multi_scale_range=[0.5, 1.5]):
         """
@@ -1454,61 +1398,6 @@ class RTRTrainer(object):
 
         return images, targets, new_img_size
 
-
-    def check_second_stage(self):
-        # set second stage
-        print('============== Second stage of Training ==============')
-        self.second_stage = True
-
-        # close mosaic augmentation
-        if self.train_loader.dataset.mosaic_prob > 0.:
-            print(' - Close < Mosaic Augmentation > ...')
-            self.train_loader.dataset.mosaic_prob = 0.
-            self.heavy_eval = True
-
-        # close mixup augmentation
-        if self.train_loader.dataset.mixup_prob > 0.:
-            print(' - Close < Mixup Augmentation > ...')
-            self.train_loader.dataset.mixup_prob = 0.
-            self.heavy_eval = True
-
-        # close rotation augmentation
-        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
-            print(' - Close < degress of rotation > ...')
-            self.trans_cfg['degrees'] = 0.0
-        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
-            print(' - Close < shear of rotation >...')
-            self.trans_cfg['shear'] = 0.0
-        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
-            print(' - Close < perspective of rotation > ...')
-            self.trans_cfg['perspective'] = 0.0
-
-        # build a new transform for second stage
-        print(' - Rebuild transforms ...')
-        self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
-        self.train_loader.dataset.transform = self.train_transform
-        
-
-    def check_third_stage(self):
-        # set third stage
-        print('============== Third stage of Training ==============')
-        self.third_stage = True
-
-        # close random affine
-        if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
-            print(' - Close < translate of affine > ...')
-            self.trans_cfg['translate'] = 0.0
-        if 'scale' in self.trans_cfg.keys():
-            print(' - Close < scale of affine >...')
-            self.trans_cfg['scale'] = [1.0, 1.0]
-
-        # build a new transform for second stage
-        print(' - Rebuild transforms ...')
-        self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
-        self.train_loader.dataset.transform = self.train_transform
-        
 
 # ----------------------- Det + Seg trainers -----------------------
 ## RTCDet Trainer for Det + Seg
@@ -2206,7 +2095,7 @@ def build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion
         return YoloxTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     elif model_cfg['trainer_type'] == 'rtcdet':
         return RTCTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
-    elif model_cfg['trainer_type'] == 'rtrdet':
+    elif model_cfg['trainer_type'] == 'rtdetr':
         return RTRTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     
     # ----------------------- Det + Seg trainers -----------------------
