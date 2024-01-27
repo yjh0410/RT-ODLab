@@ -114,7 +114,7 @@ python test.py -d coco \
 
 ## Evaluation
 ```Shell
-python eval.py -d coco-val \
+python eval.py -d coco \
                --cuda \
                -m yolov1 \
                --img_size 640 \
