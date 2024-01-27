@@ -1,5 +1,5 @@
 # Real-time Transformer-based Object Detector
 
 
-class RTRDet():
+class RT_DETR():
     pass

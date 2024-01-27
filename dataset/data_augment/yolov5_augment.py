@@ -123,7 +123,7 @@ class Albumentations(object):
 
 # ------------------------- Strong augmentations -------------------------
 ## YOLOv5-Mosaic
-def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params, is_train=False):
+def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params, keep_ratio=True, is_train=False):
     assert len(image_list) == 4
 
     mosaic_img = np.ones([img_size*2, img_size*2, image_list[0].shape[2]], dtype=np.uint8) * 114
@@ -141,10 +141,14 @@ def yolov5_mosaic_augment(image_list, target_list, img_size, affine_params, is_t
         orig_h, orig_w, _ = img_i.shape
 
         # resize
-        r = img_size / max(orig_h, orig_w)
-        if r != 1: 
-            interp = cv2.INTER_LINEAR if (is_train or r > 1) else cv2.INTER_AREA
-            img_i = cv2.resize(img_i, (int(orig_w * r), int(orig_h * r)), interpolation=interp)
+        if keep_ratio:
+            r = img_size / max(orig_h, orig_w)
+            if r != 1: 
+                interp = cv2.INTER_LINEAR if (is_train or r > 1) else cv2.INTER_AREA
+                img_i = cv2.resize(img_i, (int(orig_w * r), int(orig_h * r)), interpolation=interp)
+        else:
+            interp = cv2.INTER_LINEAR if is_train else cv2.INTER_AREA
+            img_i = cv2.resize(img_i, (img_size, img_size), interpolation=interp)
         h, w, _ = img_i.shape
 
         # place img in img4
@@ -332,6 +336,9 @@ class YOLOv5Augmentation(object):
     def __init__(self, img_size=640, trans_config=None, use_ablu=False):
         # Basic parameters
         self.img_size = img_size
+        self.pixel_mean = [0., 0., 0.]
+        self.pixel_std  = [1., 1., 1.]
+        self.color_format = 'bgr'
         self.trans_config = trans_config
         # Albumentations
         self.ablu_trans = Albumentations(img_size) if use_ablu else None
@@ -413,7 +420,9 @@ class YOLOv5BaseTransform(object):
     def __init__(self, img_size=640, max_stride=32):
         self.img_size = img_size
         self.max_stride = max_stride
-
+        self.pixel_mean = [0., 0., 0.]
+        self.pixel_std  = [1., 1., 1.]
+        self.color_format = 'bgr'
 
     def __call__(self, image, target=None, mosaic=False):
         # --------------- Keep ratio Resize ---------------

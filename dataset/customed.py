@@ -120,7 +120,7 @@ class CustomedDataset(Dataset):
         # Mosaic
         if self.trans_config['mosaic_type'] == 'yolov5_mosaic':
             image, target = yolov5_mosaic_augment(
-                image_list, target_list, self.img_size, self.trans_config, self.is_train)
+                image_list, target_list, self.img_size, self.trans_config, self.trans_config['mosaic_keep_ratio'], self.is_train)
 
         return image, target
 
@@ -262,25 +262,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     trans_config = {
-        'aug_type': 'yolov5',  # optional: ssd, yolov5
+        'aug_type': args.aug_type,    # optional: ssd, yolov5
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
-        'scale': [0.5, 2.0],
+        'scale': [0.1, 2.0],
         'shear': 0.0,
         'perspective': 0.0,
         'hsv_h': 0.015,
         'hsv_s': 0.7,
         'hsv_v': 0.4,
+        'use_ablu': True,
         # Mosaic & Mixup
-        'mosaic_prob': 1.0,
-        'mixup_prob': 1.0,
+        'mosaic_prob': args.mosaic,
+        'mixup_prob': args.mixup,
         'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': 'yolov5_mixup',
+        'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
+        'mosaic_keep_ratio': False,
         'mixup_scale': [0.5, 1.5]
     }
-
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
+    pixel_mean = transform.pixel_mean
+    pixel_std  = transform.pixel_std
+    color_format = transform.color_format
 
     dataset = CustomedDataset(
         img_size=args.img_size,
@@ -305,6 +309,14 @@ if __name__ == "__main__":
 
         # to numpy
         image = image.permute(1, 2, 0).numpy()
+        
+        # denormalize
+        image = image * pixel_std + pixel_mean
+        if color_format == 'rgb':
+            # RGB to BGR
+            image = image[..., (2, 1, 0)]
+
+        # to uint8
         image = image.astype(np.uint8)
         image = image.copy()
         img_h, img_w = image.shape[:2]

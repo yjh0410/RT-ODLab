@@ -1,36 +1,13 @@
+# ------------------------------------------------------------
+# Data preprocessor for SSD
+# ------------------------------------------------------------
 import cv2
 import numpy as np
 import torch
 from numpy import random
 
 
-def intersect(box_a, box_b):
-    max_xy = np.minimum(box_a[:, 2:], box_b[2:])
-    min_xy = np.maximum(box_a[:, :2], box_b[:2])
-    inter = np.clip((max_xy - min_xy), a_min=0, a_max=np.inf)
-    return inter[:, 0] * inter[:, 1]
-
-
-def jaccard_numpy(box_a, box_b):
-    """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
-    is simply the intersection over union of two boxes.
-    E.g.:
-        A ∩ B / A ∪ B = A ∩ B / (area(A) + area(B) - A ∩ B)
-    Args:
-        box_a: Multiple bounding boxes, Shape: [num_boxes,4]
-        box_b: Single bounding box, Shape: [4]
-    Return:
-        jaccard overlap: Shape: [box_a.shape[0], box_a.shape[1]]
-    """
-    inter = intersect(box_a, box_b)
-    area_a = ((box_a[:, 2]-box_a[:, 0]) *
-              (box_a[:, 3]-box_a[:, 1]))  # [A,B]
-    area_b = ((box_b[2]-box_b[0]) *
-              (box_b[3]-box_b[1]))  # [A,B]
-    union = area_a + area_b - inter
-    return inter / union  # [A,B]
-
-
+# ------------------------- Augmentations -------------------------
 class Compose(object):
     """Composes several augmentations together.
     Args:
@@ -50,12 +27,12 @@ class Compose(object):
             img, boxes, labels = t(img, boxes, labels)
         return img, boxes, labels
 
-
+## Convert Image to float type
 class ConvertFromInts(object):
     def __call__(self, image, boxes=None, labels=None):
         return image.astype(np.float32), boxes, labels
 
-
+## Convert color format
 class ConvertColor(object):
     def __init__(self, current='BGR', transform='HSV'):
         self.transform = transform
@@ -70,7 +47,7 @@ class ConvertColor(object):
             raise NotImplementedError
         return image, boxes, labels
 
-
+## Resize image
 class Resize(object):
     def __init__(self, img_size=640):
         self.img_size = img_size
@@ -86,7 +63,7 @@ class Resize(object):
 
         return image, boxes, labels
 
-
+## Random Saturation
 class RandomSaturation(object):
     def __init__(self, lower=0.5, upper=1.5):
         self.lower = lower
@@ -100,7 +77,7 @@ class RandomSaturation(object):
 
         return image, boxes, labels
 
-
+## Random Hue
 class RandomHue(object):
     def __init__(self, delta=18.0):
         assert delta >= 0.0 and delta <= 360.0
@@ -113,7 +90,7 @@ class RandomHue(object):
             image[:, :, 0][image[:, :, 0] < 0.0] += 360.0
         return image, boxes, labels
 
-
+## Random Lighting noise
 class RandomLightingNoise(object):
     def __init__(self):
         self.perms = ((0, 1, 2), (0, 2, 1),
@@ -127,7 +104,7 @@ class RandomLightingNoise(object):
             image = shuffle(image)
         return image, boxes, labels
 
-
+## Random Contrast
 class RandomContrast(object):
     def __init__(self, lower=0.5, upper=1.5):
         self.lower = lower
@@ -142,7 +119,7 @@ class RandomContrast(object):
             image *= alpha
         return image, boxes, labels
 
-
+## Random Brightness
 class RandomBrightness(object):
     def __init__(self, delta=32):
         assert delta >= 0.0
@@ -155,7 +132,7 @@ class RandomBrightness(object):
             image += delta
         return image, boxes, labels
 
-
+## Random SampleCrop
 class RandomSampleCrop(object):
     """Crop
     Arguments:
@@ -181,6 +158,21 @@ class RandomSampleCrop(object):
             # randomly sample a patch
             (None, None),
         )
+
+    def intersect(self, box_a, box_b):
+        max_xy = np.minimum(box_a[:, 2:], box_b[2:])
+        min_xy = np.maximum(box_a[:, :2], box_b[:2])
+        inter = np.clip((max_xy - min_xy), a_min=0, a_max=np.inf)
+        return inter[:, 0] * inter[:, 1]
+
+    def compute_iou(self, box_a, box_b):
+        inter = self.intersect(box_a, box_b)
+        area_a = ((box_a[:, 2]-box_a[:, 0]) *
+                (box_a[:, 3]-box_a[:, 1]))  # [A,B]
+        area_b = ((box_b[2]-box_b[0]) *
+                (box_b[3]-box_b[1]))  # [A,B]
+        union = area_a + area_b - inter
+        return inter / union  # [A,B]
 
     def __call__(self, image, boxes=None, labels=None):
         height, width, _ = image.shape
@@ -219,7 +211,7 @@ class RandomSampleCrop(object):
                 rect = np.array([int(left), int(top), int(left+w), int(top+h)])
 
                 # calculate IoU (jaccard overlap) b/t the cropped and gt boxes
-                overlap = jaccard_numpy(boxes, rect)
+                overlap = self.compute_iou(boxes, rect)
 
                 # is min and max overlap constraint satisfied? if not try again
                 if overlap.min() < min_iou and max_iou < overlap.max():
@@ -264,7 +256,7 @@ class RandomSampleCrop(object):
 
                 return current_image, current_boxes, current_labels
 
-
+## Random scaling
 class Expand(object):
     def __call__(self, image, boxes, labels):
         if random.randint(2):
@@ -288,7 +280,7 @@ class Expand(object):
 
         return image, boxes, labels
 
-
+## Random HFlip
 class RandomHorizontalFlip(object):
     def __call__(self, image, boxes, classes):
         _, width, _ = image.shape
@@ -298,7 +290,7 @@ class RandomHorizontalFlip(object):
             boxes[:, 0::2] = width - boxes[:, 2::-2]
         return image, boxes, classes
 
-
+## Random swap channels
 class SwapChannels(object):
     """Transforms a tensorized image by swapping the channels in the order
      specified in the swap tuple.
@@ -324,7 +316,7 @@ class SwapChannels(object):
         image = image[:, :, self.swaps]
         return image
 
-
+## Random color jitter
 class PhotometricDistort(object):
     def __init__(self):
         self.pd = [
@@ -348,11 +340,14 @@ class PhotometricDistort(object):
         return im, boxes, labels
 
 
-# ----------------------- Main Functions -----------------------
+# ------------------------- Preprocessers -------------------------
 ## SSD-style Augmentation
 class SSDAugmentation(object):
     def __init__(self, img_size=640):
         self.img_size = img_size
+        self.pixel_mean = [0., 0., 0.]
+        self.pixel_std  = [1., 1., 1.]
+        self.color_format = 'bgr'
         self.augment = Compose([
             ConvertFromInts(),                         # 将int类型转换为float32类型
             PhotometricDistort(),                      # 图像颜色增强
@@ -384,6 +379,9 @@ class SSDAugmentation(object):
 class SSDBaseTransform(object):
     def __init__(self, img_size):
         self.img_size = img_size
+        self.pixel_mean = [0., 0., 0.]
+        self.pixel_std  = [1., 1., 1.]
+        self.color_format = 'bgr'
 
     def __call__(self, image, target=None, mosaic=False):
         # resize

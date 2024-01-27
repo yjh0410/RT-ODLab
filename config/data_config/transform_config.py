@@ -19,6 +19,7 @@ yolov5_x_trans_config = {
     'mixup_prob': 0.2,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -39,6 +40,7 @@ yolov5_l_trans_config = {
     'mixup_prob': 0.15,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -59,6 +61,7 @@ yolov5_m_trans_config = {
     'mixup_prob': 0.10,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -79,6 +82,7 @@ yolov5_s_trans_config = {
     'mixup_prob': 0.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -99,6 +103,7 @@ yolov5_n_trans_config = {
     'mixup_prob': 0.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -119,6 +124,7 @@ yolov5_p_trans_config = {
     'mixup_prob': 0.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -141,6 +147,7 @@ yolox_x_trans_config = {
     'mixup_prob': 1.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]
 }
 
@@ -161,6 +168,7 @@ yolox_l_trans_config = {
     'mixup_prob': 1.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -181,6 +189,7 @@ yolox_m_trans_config = {
     'mixup_prob': 1.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -201,6 +210,7 @@ yolox_s_trans_config = {
     'mixup_prob': 1.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -221,6 +231,7 @@ yolox_n_trans_config = {
     'mixup_prob': 0.5,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -241,6 +252,7 @@ yolox_p_trans_config = {
     'mixup_prob': 0.0,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolox_mixup',
+    'mosaic_keep_ratio': True,
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp
 }
 
@@ -254,5 +266,20 @@ ssd_trans_config = {
     'mixup_prob': 0.,
     'mosaic_type': 'yolov5_mosaic',
     'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': False,
+    'mixup_scale': [0.5, 1.5]
+}
+
+
+# ----------------------- SSD-Style Transform -----------------------
+rtdetr_trans_config = {
+    'aug_type': 'rtdetr',
+    'use_ablu': False,
+    # Mosaic & Mixup are not used for RT_DETR-style augmentation
+    'mosaic_prob': 0.,
+    'mixup_prob': 0.,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': False,
     'mixup_scale': [0.5, 1.5]
 }

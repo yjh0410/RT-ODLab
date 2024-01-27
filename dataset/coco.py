@@ -125,7 +125,7 @@ class COCODataset(Dataset):
         # Mosaic
         if self.trans_config['mosaic_type'] == 'yolov5_mosaic':
             image, target = yolov5_mosaic_augment(
-                image_list, target_list, self.img_size, self.trans_config, self.is_train)
+                image_list, target_list, self.img_size, self.trans_config, self.trans_config['mosaic_keep_ratio'], self.is_train)
 
         return image, target
 
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='input image size.')
     parser.add_argument('--aug_type', type=str, default='ssd',
-                        help='augmentation type')
+                        help='augmentation type: ssd, yolov5, rtdetr.')
     parser.add_argument('--mosaic', default=0., type=float,
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=0., type=float,
@@ -284,10 +284,13 @@ if __name__ == "__main__":
         'mixup_prob': args.mixup,
         'mosaic_type': 'yolov5_mosaic',
         'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
+        'mosaic_keep_ratio': False,
         'mixup_scale': [0.5, 1.5]
     }
-
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
+    pixel_mean = transform.pixel_mean
+    pixel_std  = transform.pixel_std
+    color_format = transform.color_format
 
     dataset = COCODataset(
         img_size=args.img_size,
@@ -312,6 +315,13 @@ if __name__ == "__main__":
 
         # to numpy
         image = image.permute(1, 2, 0).numpy()
+        
+        # denormalize
+        image = image * pixel_std + pixel_mean
+        if color_format == 'rgb':
+            # RGB to BGR
+            image = image[..., (2, 1, 0)]
+
         # to uint8
         image = image.astype(np.uint8)
         image = image.copy()
@@ -326,7 +336,7 @@ if __name__ == "__main__":
             color = class_colors[cls_id]
             # class name
             label = coco_class_labels[coco_class_index[cls_id]]
-            image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
+            image = cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
             # put the test on the bbox
             cv2.putText(image, label, (int(x1), int(y1 - 5)), 0, 0.5, color, 1, lineType=cv2.LINE_AA)
         cv2.imshow('gt', image)

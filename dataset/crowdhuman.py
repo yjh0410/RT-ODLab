@@ -77,7 +77,7 @@ class CrowdHumanDataset(Dataset):
         # Mosaic
         if self.trans_config['mosaic_type'] == 'yolov5_mosaic':
             image, target = yolov5_mosaic_augment(
-                image_list, target_list, self.img_size, self.trans_config, self.is_train)
+                image_list, target_list, self.img_size, self.trans_config, self.trans_config['mosaic_keep_ratio'], self.is_train)
 
         return image, target
 
@@ -219,10 +219,13 @@ if __name__ == "__main__":
         'mixup_prob': args.mixup,
         'mosaic_type': 'yolov5_mosaic',
         'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
+        'mosaic_keep_ratio': False,
         'mixup_scale': [0.5, 1.5]
     }
-
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)
+    pixel_mean = transform.pixel_mean
+    pixel_std  = transform.pixel_std
+    color_format = transform.color_format
 
     dataset = CrowdHumanDataset(
         img_size=args.img_size,
@@ -245,6 +248,13 @@ if __name__ == "__main__":
 
         # to numpy
         image = image.permute(1, 2, 0).numpy()
+        
+        # denormalize
+        image = image * pixel_std + pixel_mean
+        if color_format == 'rgb':
+            # RGB to BGR
+            image = image[..., (2, 1, 0)]
+
         # to uint8
         image = image.astype(np.uint8)
         image = image.copy()

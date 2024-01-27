@@ -1,22 +1,28 @@
 import os
 
 try:
+    # dataset class
     from .voc import VOCDataset
     from .coco import COCODataset
     from .crowdhuman import CrowdHumanDataset
     from .widerface import WiderFaceDataset
     from .customed import CustomedDataset
+    # transform class
     from .data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
+    from .data_augment.rtdetr_augment import RTDetrAugmentation, RTDetrBaseTransform
 
 except:
+    # dataset class
     from voc import VOCDataset
     from coco import COCODataset
     from crowdhuman import CrowdHumanDataset
     from widerface import WiderFaceDataset
     from customed import CustomedDataset
+    # transform class
     from data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
     from data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
+    from data_augment.rtdetr_augment import RTDetrAugmentation, RTDetrBaseTransform
 
 
 # ------------------------------ Dataset ------------------------------
@@ -92,28 +98,23 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
 
 # ------------------------------ Transform ------------------------------
 def build_transform(args, trans_config, max_stride=32, is_train=False):
-    # Modify trans_config
+    # ---------------- Modify trans_config ----------------
     if is_train:
         ## mosaic prob.
         if args.mosaic is not None:
-            trans_config['mosaic_prob']=args.mosaic if is_train else 0.0
-        else:
-            trans_config['mosaic_prob']=trans_config['mosaic_prob'] if is_train else 0.0
+            trans_config['mosaic_prob'] = args.mosaic
         ## mixup prob.
         if args.mixup is not None:
-            trans_config['mixup_prob']=args.mixup if is_train else 0.0
-        else:
-            trans_config['mixup_prob']=trans_config['mixup_prob']  if is_train else 0.0
+            trans_config['mixup_prob'] = args.mixup
 
-    # Transform
+    # ---------------- Build transform ----------------
+    ## SSD-style transform
     if trans_config['aug_type'] == 'ssd':
         if is_train:
             transform = SSDAugmentation(img_size=args.img_size,)
         else:
             transform = SSDBaseTransform(img_size=args.img_size,)
-        trans_config['mosaic_prob'] = 0.0
-        trans_config['mixup_prob'] = 0.0
-
+    ## YOLO-style transform
     elif trans_config['aug_type'] == 'yolov5':
         if is_train:
             transform = YOLOv5Augmentation(
@@ -126,5 +127,14 @@ def build_transform(args, trans_config, max_stride=32, is_train=False):
                 img_size=args.img_size,
                 max_stride=max_stride
                 )
+    ## RT_DETR-style transform
+    elif trans_config['aug_type'] == 'rtdetr':
+        if is_train:
+            use_mosaic = False if trans_config['mosaic_prob'] < 0.2 else True
+            transform = RTDetrAugmentation(
+                img_size=args.img_size, pixel_mean=[123.675, 116.28, 103.53], pixel_std=[58.395, 57.12, 57.375], use_mosaic=use_mosaic)
+        else:
+            transform = RTDetrBaseTransform(
+                img_size=args.img_size, pixel_mean=[123.675, 116.28, 103.53], pixel_std=[58.395, 57.12, 57.375])
 
     return transform, trans_config
