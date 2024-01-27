@@ -1133,6 +1133,7 @@ class RTRTrainer(object):
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
         self.clip_grad = 0.1
+        self.args.fp16 = False   # No AMP for DETR
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -1140,10 +1141,9 @@ class RTRTrainer(object):
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1}
-        self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
-        self.data_cfg = data_cfg
+        self.data_cfg  = data_cfg
         self.model_cfg = model_cfg
         self.trans_cfg = trans_cfg
 
@@ -1248,14 +1248,11 @@ class RTRTrainer(object):
             # Warmup
             if ni <= nw:
                 xi = [0, nw]  # x interp
-                for j, x in enumerate(self.optimizer.param_groups):
-                    # bias lr falls from 0.1 to lr0, all other lrs rise from 0.0 to lr0
-                    x['lr'] = np.interp( ni, xi, [0.0, x['initial_lr'] * self.lf(self.epoch)])
-                    if 'momentum' in x:
-                        x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
+                for x in self.optimizer.param_groups:
+                    x['lr'] = np.interp(ni, xi, [0.0, x['initial_lr'] * self.lf(self.epoch)])
                                 
             # To device
-            images = images.to(self.device, non_blocking=True).float() / 255.
+            images = images.to(self.device, non_blocking=True).float()
 
             # Multi scale
             if self.args.multi_scale:

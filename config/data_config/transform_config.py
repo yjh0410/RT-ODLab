@@ -272,9 +272,39 @@ ssd_trans_config = {
 
 
 # ----------------------- SSD-Style Transform -----------------------
-rtdetr_trans_config = {
+rtdetr_base_trans_config = {
     'aug_type': 'rtdetr',
     'use_ablu': False,
+    'pixel_mean': [123.675, 116.28, 103.53],  # IN-1K statistics
+    'pixel_std':  [58.395, 57.12, 57.375],    # IN-1K statistics
+    # Mosaic & Mixup are not used for RT_DETR-style augmentation
+    'mosaic_prob': 0.,
+    'mixup_prob': 0.,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': False,
+    'mixup_scale': [0.5, 1.5]
+}
+
+rtdetr_l_trans_config = {
+    'aug_type': 'rtdetr',
+    'use_ablu': False,
+    'pixel_mean': [0., 0., 0.],
+    'pixel_std':  [255., 255., 255.],
+    # Mosaic & Mixup are not used for RT_DETR-style augmentation
+    'mosaic_prob': 0.,
+    'mixup_prob': 0.,
+    'mosaic_type': 'yolov5_mosaic',
+    'mixup_type': 'yolov5_mixup',
+    'mosaic_keep_ratio': False,
+    'mixup_scale': [0.5, 1.5]
+}
+
+rtdetr_x_trans_config = {
+    'aug_type': 'rtdetr',
+    'use_ablu': False,
+    'pixel_mean': [0., 0., 0.],
+    'pixel_std':  [255., 255., 255.],
     # Mosaic & Mixup are not used for RT_DETR-style augmentation
     'mosaic_prob': 0.,
     'mixup_prob': 0.,

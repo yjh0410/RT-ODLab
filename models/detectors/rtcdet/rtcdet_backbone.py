@@ -178,3 +178,7 @@ if __name__ == '__main__':
     print('==============================')
     print('GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
     print('Params : {:.2f} M'.format(params / 1e6))
+
+
+    for n, p in model.named_parameters():
+        print(n)

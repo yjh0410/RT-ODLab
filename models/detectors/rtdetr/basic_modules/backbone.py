@@ -103,7 +103,7 @@ def build_scnetv2(cfg, pretrained_weight=None):
 if __name__ == '__main__':
     cfg = {
         'backbone':      'resnet18',
-        'backbone_norm': 'FrozeBN',
+        'backbone_norm': 'BN',
         'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
@@ -115,3 +115,7 @@ if __name__ == '__main__':
     output = model(x)
     for y in output:
         print(y.size())
+
+    for n, p in model.named_parameters():
+        print(n.split(".")[-1])
+

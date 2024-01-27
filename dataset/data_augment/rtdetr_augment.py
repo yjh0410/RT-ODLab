@@ -307,6 +307,9 @@ class RTDetrAugmentation(object):
         self.pixel_mean = pixel_mean  # RGB format
         self.pixel_std = pixel_std    # RGB format
         self.color_format = 'rgb'
+        print("================= Pixel Statistics =================")
+        print("Pixel mean: {}".format(self.pixel_mean))
+        print("Pixel std:  {}".format(self.pixel_std))
 
         # ----------------- Transforms -----------------
         if use_mosaic:
@@ -348,6 +351,9 @@ class RTDetrBaseTransform(object):
         self.pixel_mean = pixel_mean  # RGB format
         self.pixel_std = pixel_std    # RGB format
         self.color_format = 'rgb'
+        print("================= Pixel Statistics =================")
+        print("Pixel mean: {}".format(self.pixel_mean))
+        print("Pixel std:  {}".format(self.pixel_std))
 
         # ----------------- Transforms -----------------
         self.transform = Compose([

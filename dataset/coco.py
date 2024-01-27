@@ -269,6 +269,8 @@ if __name__ == "__main__":
 
     trans_config = {
         'aug_type': args.aug_type,    # optional: ssd, yolov5
+        'pixel_mean': [0., 0., 0.],
+        'pixel_std':  [255., 255., 255.],
         # Basic Augment
         'degrees': 0.0,
         'translate': 0.2,
