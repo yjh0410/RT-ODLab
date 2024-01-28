@@ -61,13 +61,14 @@ def build_detr_optimizer(cfg, model, resume=None):
 
     # ------------- Divide model's parameters -------------
     param_dicts = [], [], [], [], [], []
+    norm_names = ["norm"] + ["norm{}".format(i) for i in range(10000)]
     for n, p in model.named_parameters():
         # Non-Backbone's learnable parameters
         if "backbone" not in n and p.requires_grad:
             if "bias" == n.split(".")[-1]:
                 param_dicts[0].append(p)      # no weight decay for all layers' bias
             else:
-                if "norm" == n.split(".")[-2]:
+                if n.split(".")[-2] in norm_names:
                     param_dicts[1].append(p)  # no weight decay for all NormLayers' weight
                 else:
                     param_dicts[2].append(p)  # weight decay for all Non-NormLayers' weight
@@ -76,7 +77,7 @@ def build_detr_optimizer(cfg, model, resume=None):
             if "bias" == n.split(".")[-1]:
                 param_dicts[3].append(p)      # no weight decay for all layers' bias
             else:
-                if "norm" == n.split(".")[-2]:
+                if n.split(".")[-2] in norm_names:
                     param_dicts[4].append(p)  # no weight decay for all NormLayers' weight
                 else:
                     param_dicts[5].append(p)  # weight decay for all Non-NormLayers' weight

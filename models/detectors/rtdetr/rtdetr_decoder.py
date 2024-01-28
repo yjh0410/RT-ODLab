@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 
 # ----------------- Dencoder for Detection task -----------------
+## RTDETR's Transformer
 class DetDecoder(nn.Module):
     def __init__(self, ):
         super().__init__()

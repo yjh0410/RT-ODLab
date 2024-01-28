@@ -4,9 +4,9 @@ import torch.nn.functional as F
 from typing import List
 
 try:
-    from .basic import get_clones, BasicConv, RTCBlock, TransformerLayer
+    from .basic import get_clones, BasicConv, RTCBlock, TransformerEncoder
 except:
-    from  basic import get_clones, BasicConv, RTCBlock, TransformerLayer
+    from  basic import get_clones, BasicConv, RTCBlock, TransformerEncoder
 
 
 # Build PaFPN
@@ -31,7 +31,7 @@ def build_fpn(cfg, in_dims, out_dim):
 
 
 # ----------------- Feature Pyramid Network -----------------
-## Real-time Convolutional PaFPN
+## Hybrid Encoder (Transformer encoder + Convolutional PaFPN)
 class HybridEncoder(nn.Module):
     def __init__(self, 
                  in_dims     :List  = [256, 512, 512],
@@ -60,8 +60,6 @@ class HybridEncoder(nn.Module):
         self.num_heads = num_heads
         self.num_layers = num_layers
         self.mlp_ratio = mlp_ratio
-        self.pe_temperature = pe_temperature
-        self.pos_embed = None
         c3, c4, c5 = in_dims
 
         # ---------------- Input projs ----------------
@@ -74,8 +72,14 @@ class HybridEncoder(nn.Module):
         self.dowmsample_layer_2 = BasicConv(self.out_dim, self.out_dim, kernel_size=3, padding=1, stride=2, act_type=act_type, norm_type=norm_type)
 
         # ---------------- Transformer Encoder ----------------
-        self.transformer_encoder = get_clones(
-            TransformerLayer(self.out_dim, num_heads, mlp_ratio, dropout, en_act_type), num_layers)
+        self.transformer_encoder = TransformerEncoder(d_model        = self.out_dim,
+                                                      num_heads      = num_heads,
+                                                      num_layers     = num_layers,
+                                                      mlp_ratio      = mlp_ratio,
+                                                      pe_temperature = pe_temperature,
+                                                      dropout        = dropout,
+                                                      act_type       = en_act_type
+                                                      )
 
         # ---------------- Top dwon FPN ----------------
         ## P5 -> P4
@@ -127,33 +131,6 @@ class HybridEncoder(nn.Module):
                 # reset the Conv2d initialization parameters
                 m.reset_parameters()
 
-    def build_2d_sincos_position_embedding(self, w, h, embed_dim=256, temperature=10000.):
-        assert embed_dim % 4 == 0, \
-            'Embed dimension must be divisible by 4 for 2D sin-cos position embedding'
-        
-        # ----------- Check cahed pos_embed -----------
-        if self.pos_embed is not None and \
-            self.pos_embed.shape[2:] == [h, w]:
-            return self.pos_embed
-        
-        # ----------- Generate grid coords -----------
-        grid_w = torch.arange(int(w), dtype=torch.float32)
-        grid_h = torch.arange(int(h), dtype=torch.float32)
-        grid_w, grid_h = torch.meshgrid([grid_w, grid_h])  # shape: [H, W]
-
-        pos_dim = embed_dim // 4
-        omega = torch.arange(pos_dim, dtype=torch.float32) / pos_dim
-        omega = 1. / (temperature**omega)
-
-        out_w = grid_w.flatten()[..., None] @ omega[None] # shape: [N, C]
-        out_h = grid_h.flatten()[..., None] @ omega[None] # shape: [N, C]
-
-        # shape: [1, N, C]
-        pos_embed = torch.concat([torch.sin(out_w), torch.cos(out_w), torch.sin(out_h),torch.cos(out_h)], axis=1)[None, :, :]
-        self.pos_embed = pos_embed
-
-        return pos_embed
-
     def forward(self, features):
         c3, c4, c5 = features
 
@@ -163,16 +140,7 @@ class HybridEncoder(nn.Module):
         p3 = self.reduce_layer_3(c3)
 
         # -------- Transformer encoder --------
-        if self.transformer_encoder is not None:
-            for encoder in self.transformer_encoder:
-                channels, fmp_h, fmp_w = p5.shape[1:]
-                # [B, C, H, W] -> [B, N, C], N=HxW
-                src_flatten = p5.flatten(2).permute(0, 2, 1)
-                pos_embed = self.build_2d_sincos_position_embedding(
-                        fmp_w, fmp_h, channels, self.pe_temperature)
-                memory = encoder(src_flatten, pos_embed=pos_embed)
-                # [B, N, C] -> [B, C, N] -> [B, C, H, W]
-                p5 = memory.permute(0, 2, 1).reshape([-1, channels, fmp_h, fmp_w])
+        p5 = self.transformer_encoder(p5)
 
         # -------- Top down FPN --------
         p5_up = F.interpolate(p5, scale_factor=2.0)
