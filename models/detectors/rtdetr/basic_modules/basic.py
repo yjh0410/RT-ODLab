@@ -1,6 +1,14 @@
 import math
+import copy
 import torch
 import torch.nn as nn
+
+
+def get_clones(module, N):
+    if N <= 0:
+        return None
+    else:
+        return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
 # ----------------- MLP modules -----------------
@@ -50,6 +58,8 @@ def get_activation(act_type=None):
         return nn.Mish(inplace=True)
     elif act_type == 'silu':
         return nn.SiLU(inplace=True)
+    elif act_type == 'gelu':
+        return nn.GELU()
     elif act_type is None:
         return nn.Identity()
     else:
@@ -262,18 +272,18 @@ class TransformerLayer(nn.Module):
         return tensor if pos is None else tensor + pos
 
 
-    def forward(self, src, pos):
+    def forward(self, src, pos_embed):
         """
         Input:
-            src: [torch.Tensor] -> [B, N, C]
-            pos: [torch.Tensor] -> [B, N, C]
+            src:       [torch.Tensor] -> [B, N, C]
+            pos_embed: [torch.Tensor] -> [B, N, C]
         Output:
-            src: [torch.Tensor] -> [B, N, C]
+            src:       [torch.Tensor] -> [B, N, C]
         """
-        q = k = self.with_pos_embed(src, pos)
+        q = k = self.with_pos_embed(src, pos_embed)
 
         # -------------- MHSA --------------
-        src2 = self.self_attn(q, k, value=src)
+        src2 = self.self_attn(q, k, value=src)[0]
         src = src + self.dropout(src2)
         src = self.norm(src)
 

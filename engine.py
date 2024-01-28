@@ -1133,7 +1133,6 @@ class RTRTrainer(object):
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
         self.clip_grad = 0.1
-        self.args.fp16 = False   # No AMP for DETR
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -1141,6 +1140,7 @@ class RTRTrainer(object):
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
         self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1}
+        self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
         self.data_cfg  = data_cfg
@@ -1173,6 +1173,13 @@ class RTRTrainer(object):
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
 
+        # ---------------------------- Build Model-EMA ----------------------------
+        if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
+            print('Build ModelEMA ...')
+            self.model_ema = ModelEMA(self.ema_dict, model, self.start_epoch * len(self.train_loader))
+        else:
+            self.model_ema = None
+
     def train(self, model):
         for epoch in range(self.start_epoch, self.args.max_epoch):
             if self.args.distributed:
@@ -1188,6 +1195,9 @@ class RTRTrainer(object):
                 self.eval(model_eval)
 
     def eval(self, model):
+        # chech model
+        model_eval = model if self.model_ema is None else self.model_ema.ema
+
         if distributed_utils.is_main_process():
             # check evaluator
             if self.evaluator is None:
@@ -1195,7 +1205,7 @@ class RTRTrainer(object):
                 print('Saving state, epoch: {}'.format(self.epoch))
                 weight_name = '{}_no_eval.pth'.format(self.args.model)
                 checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                torch.save({'model': model.state_dict(),
+                torch.save({'model': model_eval.state_dict(),
                             'mAP': -1.,
                             'optimizer': self.optimizer.state_dict(),
                             'epoch': self.epoch,
@@ -1204,12 +1214,12 @@ class RTRTrainer(object):
             else:
                 print('eval ...')
                 # set eval mode
-                model.trainable = False
-                model.eval()
+                model_eval.trainable = False
+                model_eval.eval()
 
                 # evaluate
                 with torch.no_grad():
-                    self.evaluator.evaluate(model)
+                    self.evaluator.evaluate(model_eval)
 
                 # save model
                 cur_map = self.evaluator.map
@@ -1220,7 +1230,7 @@ class RTRTrainer(object):
                     print('Saving state, epoch:', self.epoch)
                     weight_name = '{}_best.pth'.format(self.args.model)
                     checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                    torch.save({'model': model.state_dict(),
+                    torch.save({'model': model_eval.state_dict(),
                                 'mAP': round(self.best_map*100, 1),
                                 'optimizer': self.optimizer.state_dict(),
                                 'epoch': self.epoch,
@@ -1228,8 +1238,8 @@ class RTRTrainer(object):
                                 checkpoint_path)                      
 
                 # set train mode.
-                model.trainable = True
-                model.train()
+                model_eval.trainable = True
+                model_eval.train()
 
         if self.args.distributed:
             # wait for all processes to synchronize
