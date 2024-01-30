@@ -31,7 +31,7 @@ rtdetr_cfg = {
         'transformer': 'rtdetr_transformer',
         'hidden_dim': 256,
         'de_num_heads': 8,
-        'de_num_layers': 6,
+        'de_num_layers': 3,
         'de_mlp_ratio': 4.0,
         'de_dropout': 0.0,
         'de_act': 'gelu',
