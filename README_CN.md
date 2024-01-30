@@ -18,9 +18,20 @@ conda activate rtcdet
 ```
 
 - 接着，配置环境:
+1. 首先安装基础环境
 ```Shell
 pip install -r requirements.txt 
 ```
+
+2. (可选) 其次，可以考虑编译CUDA版本的 MSDeformableAttention 算子，以便使用DETR系列的检测器
+
+```bash
+cd ./ppdet/modeling/transformers/ext_op/
+
+python setup_ms_deformable_attn_op.py install
+```
+See [details](./models/detectors/rtdetr/basic_modules/ext_op/)
+
 
 项目作者所使用的环境配置:
 - PyTorch = 1.9.1

@@ -11,11 +11,11 @@ except:
 
 
 # ----------------- Image Encoder -----------------
-def build_image_encoder(cfg, trainable=False):
-    return ImageEncoder(cfg, trainable)
+def build_image_encoder(cfg):
+    return ImageEncoder(cfg)
 
 class ImageEncoder(nn.Module):
-    def __init__(self, cfg, trainable=False):
+    def __init__(self, cfg):
         super().__init__()
         # ---------------- Basic settings ----------------
         ## Basic parameters
@@ -27,10 +27,11 @@ class ImageEncoder(nn.Module):
         
         # ---------------- Network settings ----------------
         ## Backbone Network
-        self.backbone, fpn_feat_dims = build_backbone(cfg, pretrained=cfg['pretrained']&trainable)
+        self.backbone, fpn_feat_dims = build_backbone(cfg, pretrained=cfg['pretrained']&self.training)
 
         ## Feature Pyramid Network
         self.fpn = build_fpn(cfg, fpn_feat_dims, self.hidden_dim)
+        self.fpn_dims = self.fpn.out_dims
         
     def forward(self, x):
         pyramid_feats = self.backbone(x)
@@ -66,7 +67,8 @@ if __name__ == '__main__':
         'en_act': 'gelu',
     }
     x = torch.rand(2, 3, 640, 640)
-    model = build_image_encoder(cfg, True)
+    model = build_image_encoder(cfg)
+    model.train()
 
     t0 = time.time()
     outputs = model(x)
@@ -76,6 +78,8 @@ if __name__ == '__main__':
         print(out.shape)
 
     print('==============================')
+    model.eval()
+    x = torch.rand(1, 3, 640, 640)
     flops, params = profile(model, inputs=(x, ), verbose=False)
     print('==============================')
     print('GFLOPs : {:.2f}'.format(flops / 1e9 * 2))

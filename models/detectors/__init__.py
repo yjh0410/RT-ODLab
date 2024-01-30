@@ -13,6 +13,7 @@ from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
 # My RTCDet series
 from .rtcdet.build import build_rtcdet
+from .rtdetr.build import build_rtdetr
 
 
 # build object detector
@@ -66,6 +67,10 @@ def build_model(args,
     elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         model, criterion = build_rtcdet(
             args, model_cfg, device, num_classes, trainable, deploy)
+    # RT-DETR
+    elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:
+        model, criterion = build_rtdetr(
+            args, model_cfg, num_classes, trainable, deploy)
 
     if trainable:
         # Load pretrained weight

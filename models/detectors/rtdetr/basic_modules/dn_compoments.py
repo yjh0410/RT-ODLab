@@ -6,13 +6,16 @@ def inverse_sigmoid(x, eps=1e-5):
     return torch.log(x.clamp(min=eps) / (1 - x).clamp(min=eps))
 
 def bbox_cxcywh_to_xyxy(x):
-    cxcy, wh = torch.split(x, 2, axis=-1)
-    return torch.cat([cxcy - 0.5 * wh, cxcy + 0.5 * wh], dim=-1)
+    x_c, y_c, w, h = x.unbind(-1)
+    b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
+         (x_c + 0.5 * w), (y_c + 0.5 * h)]
+    return torch.stack(b, dim=-1)
 
 def bbox_xyxy_to_cxcywh(x):
-    x1, y1, x2, y2 = x.split(4, axis=-1)
-    return torch.cat(
-        [(x1 + x2) / 2, (y1 + y2) / 2, (x2 - x1), (y2 - y1)], axis=-1)
+    x0, y0, x1, y1 = x.unbind(-1)
+    b = [(x0 + x1) / 2, (y0 + y1) / 2,
+         (x1 - x0), (y1 - y0)]
+    return torch.stack(b, dim=-1)
 
 def get_contrastive_denoising_training_group(targets,
                                              num_classes,
@@ -23,7 +26,7 @@ def get_contrastive_denoising_training_group(targets,
                                              box_noise_scale=1.0):
     if num_denoising <= 0:
         return None, None, None, None
-    num_gts = [len(t) for t in targets["labels"]]
+    num_gts = [len(t["labels"]) for t in targets]
     max_gt_num = max(num_gts)
     if max_gt_num == 0:
         return None, None, None, None
@@ -32,20 +35,22 @@ def get_contrastive_denoising_training_group(targets,
     num_group = 1 if num_group == 0 else num_group
 
     # pad gt to max_num of a batch
-    bs = len(targets["labels"])
+    bs = len(targets)
+    # [bs, max_gt_num]
     input_query_class = torch.full([bs, max_gt_num], num_classes).long()
+    # [bs, max_gt_num, 4]
     input_query_bbox = torch.zeros([bs, max_gt_num, 4])
     pad_gt_mask = torch.zeros([bs, max_gt_num])
     for i in range(bs):
         num_gt = num_gts[i]
         if num_gt > 0:
-            input_query_class[i, :num_gt] = targets["labels"][i].squeeze(-1)
-            input_query_bbox[i, :num_gt] = targets["boxes"][i]
+            input_query_class[i, :num_gt] = targets[i]["labels"].squeeze(-1)
+            input_query_bbox[i, :num_gt] = targets[i]["boxes"]
             pad_gt_mask[i, :num_gt] = 1
 
     # each group has positive and negative queries.
-    input_query_class = input_query_class.repeat(1, 2 * num_group)
-    input_query_bbox = input_query_bbox.repeat(1, 2 * num_group, 1)
+    input_query_class = input_query_class.repeat(1, 2 * num_group)  # [bs, 2*num_denoising], num_denoising = 2 * num_group * max_gt_num
+    input_query_bbox = input_query_bbox.repeat(1, 2 * num_group, 1) # [bs, 2*num_denoising, 4]
     pad_gt_mask = pad_gt_mask.repeat(1, 2 * num_group)
 
     # positive and negative mask
@@ -60,10 +65,10 @@ def get_contrastive_denoising_training_group(targets,
     dn_positive_idx = torch.split(dn_positive_idx, [n * num_group for n in num_gts])
     
     # total denoising queries
-    num_denoising = int(max_gt_num * 2 * num_group)
+    num_denoising = int(max_gt_num * 2 * num_group)  # num_denoising *= 2
 
     if label_noise_ratio > 0:
-        input_query_class = input_query_class.flatten()
+        input_query_class = input_query_class.flatten()  # [bs * num_denoising]
         pad_gt_mask = pad_gt_mask.flatten()
         # half of bbox prob
         mask = torch.rand(input_query_class.shape) < (label_noise_ratio * 0.5)
@@ -71,7 +76,10 @@ def get_contrastive_denoising_training_group(targets,
         # randomly put a new one here
         new_label = torch.randint_like(
             chosen_idx, 0, num_classes, dtype=input_query_class.dtype)
-        input_query_class.scatter_(chosen_idx, new_label)
+        # [bs * num_denoising]
+        input_query_class = torch.scatter(input_query_class, 0, chosen_idx, new_label)
+        # input_query_class.scatter_(chosen_idx, new_label)
+        # [bs * num_denoising] -> # [bs, num_denoising]
         input_query_class = input_query_class.reshape(bs, num_denoising)
         pad_gt_mask = pad_gt_mask.reshape(bs, num_denoising)
 
@@ -86,12 +94,17 @@ def get_contrastive_denoising_training_group(targets,
             1 - negative_gt_mask)
         rand_part *= rand_sign
         known_bbox += rand_part * diff
-        known_bbox.clip_(min=0.0, max=1.0)
+        known_bbox.clamp_(min=0.0, max=1.0)
         input_query_bbox = bbox_xyxy_to_cxcywh(known_bbox)
         input_query_bbox = inverse_sigmoid(input_query_bbox)
 
+    # [num_classes + 1, hidden_dim]
     class_embed = torch.cat([class_embed, torch.zeros([1, class_embed.shape[-1]])])
-    input_query_class = torch.gather(class_embed, 1, input_query_class.flatten())
+    # input_query_class = paddle.gather(class_embed, input_query_class.flatten(), axis=0)
+
+    # input_query_class: [bs, num_denoising] -> [bs*num_denoising, hidden_dim]
+    input_query_class = torch.torch.index_select(class_embed, 0, input_query_class.flatten())
+    # [bs*num_denoising, hidden_dim] -> [bs, num_denoising, hidden_dim]
     input_query_class = input_query_class.reshape(bs, num_denoising, -1)
     
     tgt_size = num_denoising + num_queries

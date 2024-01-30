@@ -4,9 +4,11 @@ import torch.nn.functional as F
 from typing import List
 
 try:
-    from .basic import get_clones, BasicConv, RTCBlock, TransformerEncoder
+    from .basic import BasicConv, RTCBlock
+    from .transformer import TransformerEncoder
 except:
-    from  basic import get_clones, BasicConv, RTCBlock, TransformerEncoder
+    from  basic import BasicConv, RTCBlock
+    from  transformer import TransformerEncoder
 
 
 # Build PaFPN
@@ -34,7 +36,7 @@ def build_fpn(cfg, in_dims, out_dim):
 ## Hybrid Encoder (Transformer encoder + Convolutional PaFPN)
 class HybridEncoder(nn.Module):
     def __init__(self, 
-                 in_dims     :List  = [256, 512, 512],
+                 in_dims     :List  = [256, 512, 1024],
                  out_dim     :int   = 256,
                  width       :float = 1.0,
                  depth       :float = 1.0,
@@ -55,6 +57,7 @@ class HybridEncoder(nn.Module):
         # ---------------- Basic parameters ----------------
         self.in_dims = in_dims
         self.out_dim = round(out_dim * width)
+        self.out_dims = [self.out_dim] * len(in_dims)
         self.width = width
         self.depth = depth
         self.num_heads = num_heads

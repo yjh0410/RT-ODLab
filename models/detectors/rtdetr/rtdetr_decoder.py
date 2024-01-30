@@ -6,11 +6,36 @@ from torch.nn.init import constant_, xavier_uniform_, uniform_
 from typing import List
 
 try:
-    from .basic_modules.basic import BasicConv, MLP, DeformableTransformerDecoder
+    from .basic_modules.basic import BasicConv, MLP
+    from .basic_modules.transformer import DeformableTransformerDecoder
     from .basic_modules.dn_compoments import get_contrastive_denoising_training_group
 except:
-    from  basic_modules.basic import BasicConv, MLP, DeformableTransformerDecoder
+    from  basic_modules.basic import BasicConv, MLP
+    from  basic_modules.transformer import DeformableTransformerDecoder
     from  basic_modules.dn_compoments import get_contrastive_denoising_training_group
+
+
+def build_transformer(cfg, in_dims, num_classes, return_intermediate=False):
+    if cfg['transformer'] == 'rtdetr_transformer':
+        return RTDETRTransformer(in_dims             = in_dims,
+                                 hidden_dim          = cfg['hidden_dim'],
+                                 strides             = cfg['out_stride'],
+                                 num_classes         = num_classes,
+                                 num_queries         = cfg['num_queries'],
+                                 pos_embed_type      = 'sine',
+                                 num_heads           = cfg['de_num_heads'],
+                                 num_layers          = cfg['de_num_layers'],
+                                 num_levels          = len(cfg['out_stride']),
+                                 num_points          = cfg['de_num_points'],
+                                 mlp_ratio           = cfg['de_mlp_ratio'],
+                                 dropout             = cfg['de_dropout'],
+                                 act_type            = cfg['de_act'],
+                                 return_intermediate = return_intermediate,
+                                 num_denoising       = cfg['dn_num_denoising'],
+                                 label_noise_ratio   = cfg['dn_label_noise_ratio'],
+                                 box_noise_scale     = cfg['dn_box_noise_scale'],
+                                 learnt_init_query   = cfg['learnt_init_query'],
+                                 )
 
 
 # ----------------- Dencoder for Detection task -----------------
@@ -24,14 +49,12 @@ class RTDETRTransformer(nn.Module):
                  num_classes    :int  = 80,
                  num_queries    :int  = 300,
                  pos_embed_type :str  = 'sine',
-                 trainable      :bool = False,
                  # transformer parameters
                  num_heads      :int   = 8,
                  num_layers     :int   = 1,
                  num_levels     :int   = 3,
                  num_points     :int   = 4,
                  mlp_ratio      :float = 4.0,
-                 pe_temperature :float = 10000.,
                  dropout        :float = 0.1,
                  act_type       :str   = "relu",
                  return_intermediate :bool = False,
@@ -46,7 +69,6 @@ class RTDETRTransformer(nn.Module):
         ## Basic parameters
         self.in_dims = in_dims
         self.strides = strides
-        self.trainable = trainable
         self.num_queries = num_queries
         self.pos_embed_type = pos_embed_type
         self.num_classes = num_classes
@@ -59,7 +81,6 @@ class RTDETRTransformer(nn.Module):
         self.mlp_ratio  = mlp_ratio
         self.dropout    = dropout
         self.act_type   = act_type
-        self.pe_temperature = pe_temperature
         self.return_intermediate = return_intermediate
         ## Denoising parameters
         self.num_denoising = num_denoising
@@ -82,9 +103,8 @@ class RTDETRTransformer(nn.Module):
             num_levels = num_levels,
             num_points = num_points,
             mlp_ratio  = mlp_ratio,
-            pe_temperature = pe_temperature,
-            dropout        = dropout,
-            act_type       = act_type,
+            dropout    = dropout,
+            act_type   = act_type,
             return_intermediate = return_intermediate
             )
         
@@ -142,8 +162,8 @@ class RTDETRTransformer(nn.Module):
             xavier_uniform_(self.tgt_embed.weight)
         xavier_uniform_(self.query_pos_head.layers[0].weight)
         xavier_uniform_(self.query_pos_head.layers[1].weight)
-        for l in self.input_proj:
-            xavier_uniform_(l[0].weight)
+        for l in self.input_proj_layers:
+            xavier_uniform_(l.conv.weight)
 
     def generate_anchors(self, spatial_shapes, grid_size=0.05):
         anchors = []
@@ -197,26 +217,27 @@ class RTDETRTransformer(nn.Module):
         memory = torch.where(valid_mask, memory, torch.as_tensor(0.))
         output_memory = self.enc_output(memory)
 
+        # [bs, num_quries, c]
         enc_outputs_class = self.enc_class_head(output_memory)
         enc_outputs_coord_unact = self.enc_bbox_head(output_memory) + anchors
 
         topk = self.num_queries
-        topk_ind = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
-        reference_points_unact = torch.gather(enc_outputs_coord_unact, 1, topk_ind.unsqueeze(-1).repeat(1, 1, 4))
+        topk_ind = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]  # [bs, topk]
+        reference_points_unact = torch.gather(enc_outputs_coord_unact, 1, topk_ind.unsqueeze(-1).repeat(1, 1, 4)) # [bs, topk, 4]
         enc_topk_bboxes = F.sigmoid(reference_points_unact)
 
         if denoising_bbox_unact is not None:
             reference_points_unact = torch.cat(
                 [denoising_bbox_unact, reference_points_unact], 1)
-        if self.trainable:
+        if self.training:
             reference_points_unact = reference_points_unact.detach()
-        enc_topk_logits = torch.gather(enc_outputs_class, 1, topk_ind.unsqueeze(-1).repeat(1, 1, self.num_classes))
+        enc_topk_logits = torch.gather(enc_outputs_class, 1, topk_ind.unsqueeze(-1).repeat(1, 1, self.num_classes))  # [bs, topk, nc]
 
         # extract region features
         if self.learnt_init_query:
             target = self.tgt_embed.weight.unsqueeze(0).repeat(bs, 1, 1)
         else:
-            target = torch.gather(output_memory, 1, topk_ind.unsqueeze(-1).repeat(1, 1, output_memory.shape[1]))
+            target = torch.gather(output_memory, 1, topk_ind.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1]))
             if self.training:
                 target = target.detach()
         if denoising_class is not None:
@@ -255,8 +276,7 @@ class RTDETRTransformer(nn.Module):
                                                           self.query_pos_head,
                                                           attn_mask)
         
-        return (out_bboxes, out_logits, enc_topk_bboxes, enc_topk_logits,
-                dn_meta)
+        return out_bboxes, out_logits, enc_topk_bboxes, enc_topk_logits, dn_meta
 
 
 # ----------------- Dencoder for Segmentation task -----------------
@@ -279,3 +299,55 @@ class PosTransformerDecoder(nn.Module):
 
     def forward(self, x):
         return
+
+
+if __name__ == '__main__':
+    import time
+    from thop import profile
+    cfg = {
+        'out_stride': [8, 16, 32],
+        # Transformer Decoder
+        'transformer': 'rtdetr_transformer',
+        'hidden_dim': 256,
+        'de_num_heads': 8,
+        'de_num_layers': 6,
+        'de_mlp_ratio': 4.0,
+        'de_dropout': 0.1,
+        'de_act': 'gelu',
+        'de_num_points': 4,
+        'num_queries': 300,
+        'learnt_init_query': False,
+        'pe_temperature': 10000.,
+        'dn_num_denoising': 100,
+        'dn_label_noise_ratio': 0.5,
+        'dn_box_noise_scale': 1,
+    }
+    bs = 1
+    hidden_dim = cfg['hidden_dim']
+    in_dims = [hidden_dim] * 3
+    targets = [{
+        'labels': torch.tensor([2, 4, 5, 8]).long(),
+        'boxes':  torch.tensor([[0, 0, 10, 10], [12, 23, 56, 70], [0, 10, 20, 30], [50, 60, 55, 150]]).float()
+    }] * bs
+    pyramid_feats = [torch.randn(bs, hidden_dim, 80, 80),
+                     torch.randn(bs, hidden_dim, 40, 40),
+                     torch.randn(bs, hidden_dim, 20, 20)]
+    model = build_transformer(cfg, in_dims, 80, True)
+    model.train()
+
+    t0 = time.time()
+    outputs = model(pyramid_feats, targets)
+    out_bboxes, out_logits, enc_topk_bboxes, enc_topk_logits, dn_meta = outputs
+    t1 = time.time()
+    print('Time: ', t1 - t0)
+    print(out_bboxes.shape)
+    print(out_logits.shape)
+    print(enc_topk_bboxes.shape)
+    print(enc_topk_logits.shape)
+
+    print('==============================')
+    model.eval()
+    flops, params = profile(model, inputs=(pyramid_feats, ), verbose=False)
+    print('==============================')
+    print('GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
+    print('Params : {:.2f} M'.format(params / 1e6))

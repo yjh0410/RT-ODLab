@@ -20,9 +20,19 @@ conda activate rtcdet
 ```
 
 - Requirements:
+1. Install necessary libraies
 ```Shell
 pip install -r requirements.txt 
 ```
+
+2. (optional) Compile MSDeformableAttention ops for DETR series
+
+```bash
+cd ./ppdet/modeling/transformers/ext_op/
+
+python setup_ms_deformable_attn_op.py install
+```
+See [details](./models/detectors/rtdetr/basic_modules/ext_op/)
 
 My environment:
 - PyTorch = 1.9.1
