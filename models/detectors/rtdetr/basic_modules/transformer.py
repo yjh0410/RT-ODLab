@@ -309,7 +309,7 @@ class TransformerEncoder(nn.Module):
         self.encoder_layers = get_clones(
             TransformerEncoderLayer(d_model, num_heads, mlp_ratio, dropout, act_type), num_layers)
 
-    def build_2d_sincos_position_embedding(self, w, h, embed_dim=256, temperature=10000.):
+    def build_2d_sincos_position_embedding(self, device, w, h, embed_dim=256, temperature=10000.):
         assert embed_dim % 4 == 0, \
             'Embed dimension must be divisible by 4 for 2D sin-cos position embedding'
         
@@ -331,7 +331,8 @@ class TransformerEncoder(nn.Module):
         out_h = grid_h.flatten()[..., None] @ omega[None] # shape: [N, C]
 
         # shape: [1, N, C]
-        pos_embed = torch.concat([torch.sin(out_w), torch.cos(out_w), torch.sin(out_h),torch.cos(out_h)], axis=1)[None, :, :]
+        pos_embed = torch.cat([torch.sin(out_w), torch.cos(out_w), torch.sin(out_h),torch.cos(out_h)], dim=1)[None, :, :]
+        pos_embed = pos_embed.to(device)
         self.pos_embed = pos_embed
 
         return pos_embed
@@ -348,7 +349,7 @@ class TransformerEncoder(nn.Module):
             channels, fmp_h, fmp_w = src.shape[1:]
             # [B, C, H, W] -> [B, N, C], N=HxW
             src_flatten = src.flatten(2).permute(0, 2, 1)
-            pos_embed = self.build_2d_sincos_position_embedding(
+            pos_embed = self.build_2d_sincos_position_embedding(src.device,
                     fmp_w, fmp_h, channels, self.pe_temperature)
             memory = encoder(src_flatten, pos_embed=pos_embed)
             # [B, N, C] -> [B, C, N] -> [B, C, H, W]

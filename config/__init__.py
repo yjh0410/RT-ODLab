@@ -32,6 +32,10 @@ from .data_config.transform_config import (
     yolox_x_trans_config,
     # SSD-Style
     ssd_trans_config,
+    # RT-DETR style
+    rtdetr_base_trans_config,
+    rtdetr_l_trans_config,
+    rtdetr_x_trans_config
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -70,6 +74,14 @@ def build_trans_config(trans_config='ssd'):
     elif trans_config == 'yolox_x':
         cfg = yolox_x_trans_config
 
+    # RT-DETR style
+    elif trans_config == 'rtdetr_base':
+        cfg = rtdetr_base_trans_config
+    elif trans_config == 'rtdetr_l':
+        cfg = rtdetr_l_trans_config
+    elif trans_config == 'rtdetr_x':
+        cfg = rtdetr_x_trans_config
+
     print('Transform Config: {} \n'.format(cfg))
 
     return cfg
@@ -87,6 +99,7 @@ from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config import yolox_cfg, yolox_adamw_cfg
 ## My RTCDet series
 from .model_config.rtcdet_config import rtcdet_cfg, rtcdet_seg_cfg, rtcdet_pos_cfg, rtcdet_seg_pos_cfg
+from .model_config.rtdetr_config import rtdetr_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -124,6 +137,9 @@ def build_model_config(args):
     # RTCDet
     elif args.model in ['rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
         cfg = rtcdet_cfg[args.model]
+    # RT-DETR
+    elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:
+        cfg = rtdetr_cfg[args.model]
 
     return cfg
 

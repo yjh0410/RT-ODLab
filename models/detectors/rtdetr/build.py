@@ -20,7 +20,7 @@ def build_rtdetr(args, cfg, num_classes=80, trainable=False, deploy=False):
     model = RT_DETR(cfg             = cfg,
                     num_classes     = num_classes,
                     conf_thresh     = args.conf_thresh,
-                    topk            = args.topk,
+                    topk            = 100,
                     deploy          = deploy,
                     no_multi_labels = args.no_multi_labels,
                     )

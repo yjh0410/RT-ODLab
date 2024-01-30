@@ -59,7 +59,7 @@ rtdetr_cfg = {
         'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'rtdetr_base',
         # ---------------- Train config ----------------
-        'trainer_type': 'rtrdet',
+        'trainer_type': 'rtdetr',
     },
 
 }

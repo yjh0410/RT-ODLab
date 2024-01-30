@@ -90,11 +90,11 @@ class RT_DETR(nn.Module):
 
         # ----------- Transformer -----------
         transformer_outputs = self.detect_decoder(pyramid_feats, targets)
-        pred_boxes, pred_logits, enc_topk_bboxes, enc_topk_logits, dn_meta = transformer_outputs
 
         if self.training:
             return transformer_outputs
         else:
+            pred_boxes, pred_logits = transformer_outputs[0], transformer_outputs[1]
             box_preds = pred_boxes[-1]
             cls_preds = pred_logits[-1]
             

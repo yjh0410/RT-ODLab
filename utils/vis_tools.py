@@ -35,7 +35,7 @@ def visualize(image, bboxes, scores, labels, class_colors, class_names, class_in
     return image
         
 ## Visualize the input data during the training stage
-def vis_data(images, targets, num_classes=80):
+def vis_data(images, targets, num_classes=80, normalized_bbox=False, pixel_mean=None, pixel_std=None):
     """
         images: (tensor) [B, 3, H, W]
         targets: (list) a list of targets
@@ -47,17 +47,30 @@ def vis_data(images, targets, num_classes=80):
                      np.random.randint(255)) for _ in range(num_classes)]
 
     for bi in range(batch_size):
+        tgt_boxes = target['boxes']
+        tgt_labels = target['labels']
         # to numpy
         image = images[bi].permute(1, 2, 0).cpu().numpy()
         target = targets[bi]
         image = image.astype(np.uint8)
         image = image.copy()
+        img_h, img_w = image.shape[:2]
 
-        tgt_boxes = target['boxes']
-        tgt_labels = target['labels']
+        # denormalize image
+        if pixel_mean is not None and pixel_std is not None:
+            image = image * pixel_std + pixel_mean
+            image = image[..., (2, 1, 0)] # RGB to BGR
+
+        # denormalize bbox
+        if normalized_bbox:
+            tgt_boxes[:, [0, 2]] *= img_w
+            tgt_boxes[:, [1, 3]] *= img_h
+
+        # visualize target
         for box, label in zip(tgt_boxes, tgt_labels):
             x1, y1, x2, y2 = box
             cls_id = int(label)
+
             x1, y1 = int(x1), int(y1)
             x2, y2 = int(x2), int(y2)
             color = class_colors[cls_id]

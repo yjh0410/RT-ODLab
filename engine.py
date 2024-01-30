@@ -1133,13 +1133,17 @@ class RTRTrainer(object):
         self.world_size = world_size
         self.grad_accumulate = args.grad_accumulate
         self.clip_grad = 0.1
+        self.heavy_eval = False
+        # weak augmentatino stage
+        self.second_stage = False
+        self.second_stage_epoch = args.no_aug_epoch
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1, 'warmup_iters': 2000}
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -1149,9 +1153,9 @@ class RTRTrainer(object):
 
         # ---------------------------- Build Transform ----------------------------
         self.train_transform, self.trans_cfg = build_transform(
-            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['out_stride'][-1], is_train=True)
         self.val_transform, _ = build_transform(
-            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
+            args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['out_stride'][-1], is_train=False)
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
         self.dataset, self.dataset_info = build_dataset(args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
@@ -1185,14 +1189,36 @@ class RTRTrainer(object):
             if self.args.distributed:
                 self.train_loader.batch_sampler.sampler.set_epoch(epoch)
 
+            # check second stage
+            if epoch >= (self.args.max_epoch - self.second_stage_epoch - 1) and not self.second_stage:
+                self.check_second_stage()
+                # save model of the last mosaic epoch
+                weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
+                checkpoint_path = os.path.join(self.path_to_save, weight_name)
+                print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch))
+                torch.save({'model': model.state_dict(),
+                            'mAP': round(self.evaluator.map*100, 1),
+                            'optimizer': self.optimizer.state_dict(),
+                            'epoch': self.epoch,
+                            'args': self.args}, 
+                            checkpoint_path)
+
             # train one epoch
             self.epoch = epoch
             self.train_one_epoch(model)
 
             # eval one epoch
-            if (epoch % self.args.eval_epoch) == 0 or (epoch == self.args.max_epoch - 1):
+            if self.heavy_eval:
                 model_eval = model.module if self.args.distributed else model
                 self.eval(model_eval)
+            else:
+                model_eval = model.module if self.args.distributed else model
+                if (epoch % self.args.eval_epoch) == 0 or (epoch == self.args.max_epoch - 1):
+                    self.eval(model_eval)
+
+            if self.args.debug:
+                print("For debug mode, we only train 1 epoch")
+                break
 
     def eval(self, model):
         # chech model
@@ -1214,7 +1240,6 @@ class RTRTrainer(object):
             else:
                 print('eval ...')
                 # set eval mode
-                model_eval.trainable = False
                 model_eval.eval()
 
                 # evaluate
@@ -1238,7 +1263,6 @@ class RTRTrainer(object):
                                 checkpoint_path)                      
 
                 # set train mode.
-                model_eval.trainable = True
                 model_eval.train()
 
         if self.args.distributed:
@@ -1246,14 +1270,20 @@ class RTRTrainer(object):
             dist.barrier()
 
     def train_one_epoch(self, model):
+        metric_logger = MetricLogger(delimiter="  ")
+        metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
+        metric_logger.add_meter('size', SmoothedValue(window_size=1, fmt='{value:d}'))
+        header = 'Epoch: [{} / {}]'.format(self.epoch, self.args.max_epoch)
+        epoch_size = len(self.train_loader)
+        print_freq = 10
+
         # basic parameters
         epoch_size = len(self.train_loader)
         img_size = self.args.img_size
-        t0 = time.time()
-        nw = epoch_size * self.args.wp_epoch
+        nw = self.lr_schedule_dict['warmup_iters']
 
         # Train one epoch
-        for iter_i, (images, targets) in enumerate(self.train_loader):
+        for iter_i, (images, targets) in enumerate(metric_logger.log_every(self.train_loader, print_freq, header)):
             ni = iter_i + self.epoch * epoch_size
             # Warmup
             if ni <= nw:
@@ -1267,24 +1297,21 @@ class RTRTrainer(object):
             # Multi scale
             if self.args.multi_scale:
                 images, targets, img_size = self.rescale_image_targets(
-                    images, targets, self.model_cfg['max_stride'], self.args.min_box_size, self.model_cfg['multi_scale'])
+                    images, targets, self.model_cfg['out_stride'][-1], self.args.min_box_size, self.model_cfg['multi_scale'])
             else:
-                targets = self.refine_targets(targets, self.args.min_box_size)
-
-            # Normalize bbox
-            targets = self.normalize_bbox(targets, img_size)
+                targets = self.refine_targets(img_size, targets, self.args.min_box_size)
                 
             # Visualize train targets
             if self.args.vis_tgt:
-                targets = self.denormalize_bbox(targets, img_size)
-                vis_data(images*255, targets)
+                vis_data(images, targets, normalized_bbox=True,
+                         pixel_mean=self.trans_cfg['pixel_mean'], pixel_std=self.trans_cfg['pixel_std'])
 
             # Inference
             with torch.cuda.amp.autocast(enabled=self.args.fp16):
-                outputs = model(images)
+                outputs = model(images, targets)
                 # Compute loss
-                loss_dict = self.criterion(outputs=outputs, targets=targets, epoch=self.epoch)
-                losses = loss_dict['losses']
+                loss_dict = self.criterion(*outputs, targets)
+                losses = sum(loss_dict.values())
                 # Grad Accumulate
                 if self.grad_accumulate > 1:
                     losses /= self.grad_accumulate
@@ -1310,35 +1337,21 @@ class RTRTrainer(object):
                 if self.model_ema is not None:
                     self.model_ema.update(model)
 
-            # Logs
-            if distributed_utils.is_main_process() and iter_i % 10 == 0:
-                t1 = time.time()
-                cur_lr = [param_group['lr']  for param_group in self.optimizer.param_groups]
-                # basic infor
-                log =  '[Epoch: {}/{}]'.format(self.epoch, self.args.max_epoch)
-                log += '[Iter: {}/{}]'.format(iter_i, epoch_size)
-                log += '[lr: {:.6f}]'.format(cur_lr[0])
-                # loss infor
-                for k in loss_dict_reduced.keys():
-                    loss_val = loss_dict_reduced[k]
-                    if k == 'losses':
-                        loss_val *= self.grad_accumulate
-                    log += '[{}: {:.2f}]'.format(k, loss_val)
-                # other infor
-                log += '[grad_norm: {:.2f}]'.format(grad_norm)
-                log += '[time: {:.2f}]'.format(t1 - t0)
-                log += '[size: {}]'.format(img_size)
+            # Update log
+            metric_logger.update(**loss_dict_reduced)
+            metric_logger.update(lr=self.optimizer.param_groups[2]["lr"])
+            metric_logger.update(grad_norm=grad_norm)
+            metric_logger.update(size=img_size)
 
-                # print log infor
-                print(log, flush=True)
-                
-                t0 = time.time()
-        
+            if self.args.debug:
+                print("For debug mode, we only train 1 iteration")
+                break
+
         # LR Schedule
         if not self.second_stage:
             self.lr_scheduler.step()
         
-    def refine_targets(self, targets, min_box_size):
+    def refine_targets(self, img_size, targets, min_box_size):
         # rescale targets
         for tgt in targets:
             boxes = tgt["boxes"].clone()
@@ -1347,23 +1360,12 @@ class RTRTrainer(object):
             tgt_boxes_wh = boxes[..., 2:] - boxes[..., :2]
             min_tgt_size = torch.min(tgt_boxes_wh, dim=-1)[0]
             keep = (min_tgt_size >= min_box_size)
+            # normalize box
+            boxes[:, [0, 2]] = boxes[:, [0, 2]] / img_size
+            boxes[:, [1, 3]] = boxes[:, [1, 3]] / img_size
 
             tgt["boxes"] = boxes[keep]
             tgt["labels"] = labels[keep]
-        
-        return targets
-
-    def normalize_bbox(self, targets, img_size):
-        # normalize targets
-        for tgt in targets:
-            tgt["boxes"] /= img_size
-        
-        return targets
-
-    def denormalize_bbox(self, targets, img_size):
-        # normalize targets
-        for tgt in targets:
-            tgt["boxes"] *= img_size
         
         return targets
 
@@ -1399,12 +1401,49 @@ class RTRTrainer(object):
             tgt_boxes_wh = boxes[..., 2:] - boxes[..., :2]
             min_tgt_size = torch.min(tgt_boxes_wh, dim=-1)[0]
             keep = (min_tgt_size >= min_box_size)
+            # normalize box
+            boxes[:, [0, 2]] = boxes[:, [0, 2]] / new_img_size
+            boxes[:, [1, 3]] = boxes[:, [1, 3]] / new_img_size
 
             tgt["boxes"] = boxes[keep]
             tgt["labels"] = labels[keep]
 
         return images, targets, new_img_size
 
+    def check_second_stage(self):
+        # set second stage
+        print('============== Second stage of Training ==============')
+        self.second_stage = True
+
+        # close mosaic augmentation
+        if self.train_loader.dataset.mosaic_prob > 0.:
+            print(' - Close < Mosaic Augmentation > ...')
+            self.train_loader.dataset.mosaic_prob = 0.
+            self.heavy_eval = True
+
+        # close mixup augmentation
+        if self.train_loader.dataset.mixup_prob > 0.:
+            print(' - Close < Mixup Augmentation > ...')
+            self.train_loader.dataset.mixup_prob = 0.
+            self.heavy_eval = True
+
+        # close rotation augmentation
+        if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
+            print(' - Close < degress of rotation > ...')
+            self.trans_cfg['degrees'] = 0.0
+        if 'shear' in self.trans_cfg.keys() and self.trans_cfg['shear'] > 0.0:
+            print(' - Close < shear of rotation >...')
+            self.trans_cfg['shear'] = 0.0
+        if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
+            print(' - Close < perspective of rotation > ...')
+            self.trans_cfg['perspective'] = 0.0
+
+        # build a new transform for second stage
+        print(' - Rebuild transforms ...')
+        self.train_transform, self.trans_cfg = build_transform(
+            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['out_stride'][-1], is_train=True)
+        self.train_loader.dataset.transform = self.train_transform
+        
 
 # ----------------------- Det + Seg trainers -----------------------
 ## RTCDet Trainer for Det + Seg

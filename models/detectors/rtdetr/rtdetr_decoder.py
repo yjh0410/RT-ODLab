@@ -97,16 +97,16 @@ class RTDETRTransformer(nn.Module):
 
         ## Deformable transformer decoder
         self.transformer_decoder = DeformableTransformerDecoder(
-            d_model    = hidden_dim,
-            num_heads  = num_heads,
-            num_layers = num_layers,
-            num_levels = num_levels,
-            num_points = num_points,
-            mlp_ratio  = mlp_ratio,
-            dropout    = dropout,
-            act_type   = act_type,
-            return_intermediate = return_intermediate
-            )
+                                    d_model    = hidden_dim,
+                                    num_heads  = num_heads,
+                                    num_layers = num_layers,
+                                    num_levels = num_levels,
+                                    num_points = num_points,
+                                    mlp_ratio  = mlp_ratio,
+                                    dropout    = dropout,
+                                    act_type   = act_type,
+                                    return_intermediate = return_intermediate
+                                    )
         
         ## Detection head for Encoder
         self.enc_output = nn.Sequential(
