@@ -245,14 +245,14 @@ class RTDETRTransformer(nn.Module):
 
         return target, reference_points_unact, enc_topk_bboxes, enc_topk_logits
     
-    def forward(self, feats, gt_meta=None):
+    def forward(self, feats, targets=None):
         # input projection and embedding
         memory, spatial_shapes, _ = self.get_encoder_input(feats)
 
         # prepare denoising training
         if self.training:
             denoising_class, denoising_bbox_unact, attn_mask, dn_meta = \
-                get_contrastive_denoising_training_group(gt_meta,
+                get_contrastive_denoising_training_group(targets,
                                                          self.num_classes,
                                                          self.num_queries,
                                                          self.denoising_class_embed.weight,

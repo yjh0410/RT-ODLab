@@ -98,22 +98,11 @@ class RT_DETR(nn.Module):
             box_preds = pred_boxes[-1]
             cls_preds = pred_logits[-1]
             
-            # TODO: post-process
+            # post-process
             bboxes, scores, labels = self.post_process(box_preds, cls_preds)
 
             return bboxes, scores, labels
         
-        # ----------- Head -----------
-        outputs = self.detect_head(pred_boxes, pred_logits, enc_topk_bboxes, enc_topk_logits, dn_meta, targets)
-
-        if self.training:
-            outputs_dict = outputs
-        else:
-            pred_boxes, pred_logits = outputs[0], outputs[1]
-            return pred_boxes, pred_logits
-            
-        return outputs_dict
-
 
 if __name__ == '__main__':
     import time
