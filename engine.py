@@ -930,6 +930,7 @@ class RTCTrainer(object):
         metric_logger = MetricLogger(delimiter="  ")
         metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
         metric_logger.add_meter('size', SmoothedValue(window_size=1, fmt='{value:d}'))
+        metric_logger.add_meter('grad_norm', SmoothedValue(window_size=1, fmt='{value:.1f}'))
         header = 'Epoch: [{} / {}]'.format(self.epoch, self.args.max_epoch)
         epoch_size = len(self.train_loader)
         print_freq = 10
