@@ -214,6 +214,8 @@ class RTDETRTransformer(nn.Module):
         bs, _, _ = memory.shape
         # prepare input for decoder
         anchors, valid_mask = self.generate_anchors(spatial_shapes)
+        anchors = anchors.to(memory.device)
+        valid_mask = valid_mask.to(memory.device)
         memory = torch.where(valid_mask, memory, torch.as_tensor(0.))
         output_memory = self.enc_output(memory)
 

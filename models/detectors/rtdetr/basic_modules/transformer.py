@@ -405,8 +405,8 @@ class DeformableTransformerDecoderLayer(nn.Module):
         if attn_mask is not None:
             attn_mask = torch.where(
                 attn_mask.bool(),
-                torch.zeros(attn_mask.shape, dtype=tgt.dtype),
-                torch.full(attn_mask.shape, float("-inf"), dtype=tgt.dtype))
+                torch.zeros(attn_mask.shape, dtype=tgt.dtype, device=attn_mask.device),
+                torch.full(attn_mask.shape, float("-inf"), dtype=tgt.dtype, device=attn_mask.device))
         tgt2 = self.self_attn(q, k, value=tgt)[0]
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)

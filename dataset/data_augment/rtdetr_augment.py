@@ -364,7 +364,7 @@ class RTDetrBaseTransform(object):
         ])
 
 
-    def __call__(self, image, target, mosaic=False):
+    def __call__(self, image, target=None, mosaic=False):
         orig_h, orig_w = image.shape[:2]
         ratio = [self.img_size / orig_w, self.img_size / orig_h]
 

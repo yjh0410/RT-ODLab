@@ -37,8 +37,8 @@ class Criterion(object):
     def __call__(self, dec_out_bboxes, dec_out_logits, enc_topk_bboxes, enc_topk_logits, dn_meta, targets=None):
         assert targets is not None
 
-        gt_labels = [t['labels'] for t in targets]  # (List[torch.Tensor]) -> List[[N,]]
-        gt_boxes  = [t['boxes']  for t in targets]  # (List[torch.Tensor]) -> List[[N, 4]]
+        gt_labels = [t['labels'].to(dec_out_bboxes.device) for t in targets]  # (List[torch.Tensor]) -> List[[N,]]
+        gt_boxes  = [t['boxes'].to(dec_out_bboxes.device)  for t in targets]  # (List[torch.Tensor]) -> List[[N, 4]]
 
         if dn_meta is not None:
             if isinstance(dn_meta, list):
@@ -147,7 +147,7 @@ class DETRLoss(nn.Module):
         # logits: [b, query, num_classes], gt_class: list[[n, 1]]
         name_class = "loss_class" + postfix
 
-        target_label = torch.full(logits.shape[:2], bg_index).long()
+        target_label = torch.full(logits.shape[:2], bg_index, device=logits.device).long()
         bs, num_query_objects = target_label.shape
         num_gt = sum(len(a) for a in gt_class)
         if num_gt > 0:
@@ -161,7 +161,7 @@ class DETRLoss(nn.Module):
         # one-hot label
         target_label = F.one_hot(target_label, self.num_classes + 1)[..., :-1].float()
         if iou_score is not None and self.use_vfl:
-            target_score = torch.zeros([bs, num_query_objects])
+            target_score = torch.zeros([bs, num_query_objects], device=logits.device)
             if num_gt > 0:
                 target_score = target_score.reshape(-1, 1)
                 target_score[index] = iou_score.float()
@@ -260,16 +260,16 @@ class DETRLoss(nn.Module):
         src_idx = torch.cat([src for (src, _) in match_indices])
         src_idx += (batch_idx * num_query_objects)
         target_assign = torch.cat([
-            torch.gather(t, 0, dst) for t, (_, dst) in zip(target, match_indices)
+            torch.gather(t, 0, dst.to(t.device)) for t, (_, dst) in zip(target, match_indices)
         ])
         return src_idx, target_assign
 
     def _get_src_target_assign(self, src, target, match_indices):
-        src_assign = torch.cat([t[I] if len(I) > 0 else torch.zeros([0, t.shape[-1]])
+        src_assign = torch.cat([t[I] if len(I) > 0 else torch.zeros([0, t.shape[-1]], device=src.device)
             for t, (I, _) in zip(src, match_indices)
         ])
 
-        target_assign = torch.cat([t[J] if len(J) > 0 else torch.zeros([0, t.shape[-1]])
+        target_assign = torch.cat([t[J] if len(J) > 0 else torch.zeros([0, t.shape[-1]], device=src.device)
             for t, (_, J) in zip(target, match_indices)
         ])
 

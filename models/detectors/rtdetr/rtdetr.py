@@ -101,7 +101,13 @@ class RT_DETR(nn.Module):
             # post-process
             bboxes, scores, labels = self.post_process(box_preds, cls_preds)
 
-            return bboxes, scores, labels
+            outputs = {
+                "scores": scores.cpu().numpy(),
+                "labels": labels.cpu().numpy(),
+                "bboxes": bboxes.cpu().numpy(),
+            }
+
+            return outputs
         
 
 if __name__ == '__main__':
