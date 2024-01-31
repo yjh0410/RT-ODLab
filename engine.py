@@ -216,7 +216,7 @@ class Yolov8Trainer(object):
                         x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
             # to device
-            images = images.to(self.device, non_blocking=True).float() / 255.
+            images = images.to(self.device, non_blocking=True).float()
 
             # Multi scale
             if self.args.multi_scale:
@@ -584,7 +584,7 @@ class YoloxTrainer(object):
                         x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
             # To device
-            images = images.to(self.device, non_blocking=True).float() / 255.
+            images = images.to(self.device, non_blocking=True).float()
 
             # Multi scale
             if self.args.multi_scale and ni % 10 == 0:
@@ -954,7 +954,7 @@ class RTCTrainer(object):
                         x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
             # To device
-            images = images.to(self.device, non_blocking=True).float() / 255.
+            images = images.to(self.device, non_blocking=True).float()
 
             # Multi scale
             if self.args.multi_scale:
@@ -1677,7 +1677,7 @@ class RTCTrainerDS(object):
                         x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
             # To device
-            images = images.to(self.device, non_blocking=True).float() / 255.
+            images = images.to(self.device, non_blocking=True).float()
 
             # Multi scale
             if self.args.multi_scale:
@@ -2020,7 +2020,7 @@ class RTCTrainerDSP(object):
                         x['momentum'] = np.interp(ni, xi, [self.warmup_dict['warmup_momentum'], self.optimizer_dict['momentum']])
                                 
             # To device
-            images = images.to(self.device, non_blocking=True).float() / 255.
+            images = images.to(self.device, non_blocking=True).float()
 
             # Multi scale
             if self.args.multi_scale:

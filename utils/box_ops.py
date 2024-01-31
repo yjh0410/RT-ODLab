@@ -25,6 +25,8 @@ def rescale_bboxes(bboxes, origin_size, ratio):
     elif isinstance(ratio, List):
         bboxes[..., [0, 2]] /= ratio[0]
         bboxes[..., [1, 3]] /= ratio[1]
+    else:
+        raise NotImplementedError("ratio should be a int or List[int, int] type.")
 
     # clip bboxes
     bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], a_min=0., a_max=origin_size[0])

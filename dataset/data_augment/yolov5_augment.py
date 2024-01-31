@@ -337,7 +337,7 @@ class YOLOv5Augmentation(object):
         # Basic parameters
         self.img_size = img_size
         self.pixel_mean = [0., 0., 0.]
-        self.pixel_std  = [1., 1., 1.]
+        self.pixel_std  = [255., 255., 255.]
         self.color_format = 'bgr'
         self.trans_config = trans_config
         # Albumentations
@@ -413,6 +413,9 @@ class YOLOv5Augmentation(object):
         dh = self.img_size - img_h0
         dw = self.img_size - img_w0
 
+        # normalize image
+        pad_image /= 255.
+
         return pad_image, target, ratio #[dw, dh]
 
 ## YOLOv5-style Transform for Eval
@@ -421,7 +424,7 @@ class YOLOv5BaseTransform(object):
         self.img_size = img_size
         self.max_stride = max_stride
         self.pixel_mean = [0., 0., 0.]
-        self.pixel_std  = [1., 1., 1.]
+        self.pixel_std  = [255., 255., 255.]
         self.color_format = 'bgr'
 
     def __call__(self, image, target=None, mosaic=False):
@@ -460,5 +463,8 @@ class YOLOv5BaseTransform(object):
         pad_img_w = img_w0 + dw
         pad_image = torch.ones([img_tensor.size(0), pad_img_h, pad_img_w]).float() * 114.
         pad_image[:, :img_h0, :img_w0] = img_tensor
+
+        # normalize image
+        pad_image /= 255.
 
         return pad_image, target, ratio #[dw, dh]

@@ -346,7 +346,7 @@ class SSDAugmentation(object):
     def __init__(self, img_size=640):
         self.img_size = img_size
         self.pixel_mean = [0., 0., 0.]
-        self.pixel_std  = [1., 1., 1.]
+        self.pixel_std  = [255., 255., 255.]
         self.color_format = 'bgr'
         self.augment = Compose([
             ConvertFromInts(),                         # 将int类型转换为float32类型
@@ -370,7 +370,9 @@ class SSDAugmentation(object):
         img_tensor = torch.from_numpy(image).permute(2, 0, 1).contiguous().float()
         target['boxes'] = torch.from_numpy(boxes).float()
         target['labels'] = torch.from_numpy(labels).float()
-        
+
+        # normalize image
+        img_tensor /= 255.
 
         return img_tensor, target, ratio
     
@@ -380,7 +382,7 @@ class SSDBaseTransform(object):
     def __init__(self, img_size):
         self.img_size = img_size
         self.pixel_mean = [0., 0., 0.]
-        self.pixel_std  = [1., 1., 1.]
+        self.pixel_std  = [255., 255., 255.]
         self.color_format = 'bgr'
 
     def __call__(self, image, target=None, mosaic=False):
@@ -404,4 +406,7 @@ class SSDBaseTransform(object):
             target['boxes'] = torch.from_numpy(boxes).float()
             target['labels'] = torch.from_numpy(labels).float()
             
+        # normalize image
+        img_tensor /= 255.
+
         return img_tensor, target, ratio

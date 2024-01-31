@@ -76,7 +76,7 @@ class CrowdHumanEvaluator():
 
             # preprocess
             x, _, ratio = self.transform(img)
-            x = x.unsqueeze(0).to(self.device) / 255.
+            x = x.unsqueeze(0).to(self.device)
             
             # inference
             outputs = model(x)

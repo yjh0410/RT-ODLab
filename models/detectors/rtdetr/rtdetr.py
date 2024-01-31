@@ -64,7 +64,6 @@ class RT_DETR(nn.Module):
             topk_labels = labels[topk_idxs]
             topk_bboxes = box_pred[topk_idxs]
 
-            return topk_bboxes, topk_scores, topk_labels
         else:
             # Top-k select
             cls_pred = cls_pred.flatten().sigmoid_()
@@ -101,12 +100,17 @@ class RT_DETR(nn.Module):
         if self.training:
             return transformer_outputs
         else:
+            img_h, img_w = x.shape[2:]
             pred_boxes, pred_logits = transformer_outputs[0], transformer_outputs[1]
-            box_preds = pred_boxes[-1]
-            cls_preds = pred_logits[-1]
+            box_pred = pred_boxes[-1]
+            cls_pred = pred_logits[-1]
+
+            # rescale bbox
+            box_pred[..., [0, 2]] *= img_h
+            box_pred[..., [1, 3]] *= img_w
             
             # post-process
-            bboxes, scores, labels = self.post_process(box_preds, cls_preds)
+            bboxes, scores, labels = self.post_process(box_pred, cls_pred)
 
             outputs = {
                 "scores": scores.cpu().numpy(),
