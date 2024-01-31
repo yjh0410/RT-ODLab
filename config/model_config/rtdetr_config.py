@@ -27,7 +27,7 @@ rtdetr_cfg = {
         'en_num_heads': 8,
         'en_num_layers': 1,
         'en_mlp_ratio': 4.0,
-        'en_dropout': 0.1,
+        'en_dropout': 0.0,
         'pe_temperature': 10000.,
         'en_act': 'gelu',
         # Transformer Decoder
