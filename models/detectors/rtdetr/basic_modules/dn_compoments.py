@@ -40,18 +40,19 @@ def get_contrastive_denoising_training_group(targets,
     input_query_class = torch.full([bs, max_gt_num], num_classes, device=class_embed.device).long()
     # [bs, max_gt_num, 4]
     input_query_bbox = torch.zeros([bs, max_gt_num, 4], device=class_embed.device)
+    # [bs, max_gt_num]
     pad_gt_mask = torch.zeros([bs, max_gt_num], device=class_embed.device)
     for i in range(bs):
         num_gt = num_gts[i]
         if num_gt > 0:
-            input_query_class[i, :num_gt] = targets[i]["labels"].squeeze(-1)
+            input_query_class[i, :num_gt] = targets[i]["labels"]
             input_query_bbox[i, :num_gt] = targets[i]["boxes"]
             pad_gt_mask[i, :num_gt] = 1
 
     # each group has positive and negative queries.
     input_query_class = input_query_class.repeat(1, 2 * num_group)  # [bs, 2*num_denoising], num_denoising = 2 * num_group * max_gt_num
     input_query_bbox = input_query_bbox.repeat(1, 2 * num_group, 1) # [bs, 2*num_denoising, 4]
-    pad_gt_mask = pad_gt_mask.repeat(1, 2 * num_group)
+    pad_gt_mask = pad_gt_mask.repeat(1, 2 * num_group)              # [bs, 2*num_denoising]
 
     # positive and negative mask
     negative_gt_mask = torch.zeros([bs, max_gt_num * 2, 1], device=class_embed.device)
@@ -75,7 +76,7 @@ def get_contrastive_denoising_training_group(targets,
         chosen_idx = torch.nonzero(mask * pad_gt_mask).squeeze(-1)
         # randomly put a new one here
         new_label = torch.randint_like(
-            chosen_idx, 0, num_classes, dtype=input_query_class.dtype, device=class_embed.device)
+            chosen_idx, 0, num_classes, dtype=input_query_class.dtype, device=class_embed.device) # [b * num_denoising]
         # [bs * num_denoising]
         input_query_class = torch.scatter(input_query_class, 0, chosen_idx, new_label)
         # input_query_class.scatter_(chosen_idx, new_label)

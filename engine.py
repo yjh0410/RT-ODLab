@@ -1137,7 +1137,7 @@ class RTRTrainer(object):
         self.heavy_eval = False
         # weak augmentatino stage
         self.second_stage = False
-        self.second_stage_epoch = args.no_aug_epoch
+        self.second_stage_epoch = -1
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -1157,6 +1157,8 @@ class RTRTrainer(object):
             args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['out_stride'][-1], is_train=True)
         self.val_transform, _ = build_transform(
             args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['out_stride'][-1], is_train=False)
+        if self.trans_cfg["mosaic_prob"] > 0.5:
+            self.second_stage_epoch = 5
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
         self.dataset, self.dataset_info = build_dataset(args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)
@@ -1169,7 +1171,7 @@ class RTRTrainer(object):
         self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
-        self.optimizer_dict['lr0'] *= self.args.batch_size / 16.
+        self.optimizer_dict['lr0'] *= self.args.batch_size / 16.  # auto lr scaling
         self.optimizer, self.start_epoch = build_detr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------

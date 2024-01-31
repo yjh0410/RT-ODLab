@@ -2,15 +2,15 @@ import torch
 import torch.nn as nn
 
 try:
-    from .rtdetr_encoder import build_image_encoder
-    from .rtdetr_decoder import build_transformer
+    from .rtpdetr_encoder import build_image_encoder
+    from .rtpdetr_decoder import build_transformer
 except:
-    from  rtdetr_encoder import build_image_encoder
-    from  rtdetr_decoder import build_transformer
+    from  rtpdetr_encoder import build_image_encoder
+    from  rtpdetr_decoder import build_transformer
 
 
-# Real-time Transformer-based Object Detector
-class RT_DETR(nn.Module):
+# Real-time Plain Transformer-based Object Detector
+class RT_PDETR(nn.Module):
     def __init__(self,
                  cfg,
                  num_classes = 80,
@@ -30,10 +30,10 @@ class RT_DETR(nn.Module):
         # ----------- Network setting -----------
         ## Image encoder
         self.image_encoder = build_image_encoder(cfg)
-        self.fpn_dims = self.image_encoder.fpn_dims
+        self.feat_dim = self.image_encoder.fpn_dims[-1]
 
         ## Detect decoder
-        self.detect_decoder = build_transformer(cfg, self.fpn_dims, num_classes, return_intermediate=self.training)
+        self.detect_decoder = build_transformer(cfg, self.feat_dim, num_classes, return_intermediate=self.training)
 
     def post_process(self, box_pred, cls_pred):
         if self.no_multi_labels:

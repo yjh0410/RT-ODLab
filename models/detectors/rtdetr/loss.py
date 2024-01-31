@@ -28,11 +28,11 @@ class Criterion(object):
                                         cfg['matcher_hpy']['cost_giou'],
                                         alpha=0.25,
                                         gamma=2.0)
-        self.loss = DINOLoss(num_classes = num_classes,
-                                matcher     = self.matcher,
-                                aux_loss    = True,
-                                use_vfl     = cfg['use_vfl'],
-                                loss_coeff  = cfg['loss_coeff'])
+        self.loss = DINOLoss(num_classes   = num_classes,
+                                matcher    = self.matcher,
+                                aux_loss   = True,
+                                use_vfl    = cfg['use_vfl'],
+                                loss_coeff = cfg['loss_coeff'])
 
     def __call__(self, dec_out_bboxes, dec_out_logits, enc_topk_bboxes, enc_topk_logits, dn_meta, targets=None):
         assert targets is not None
@@ -43,13 +43,13 @@ class Criterion(object):
         if dn_meta is not None:
             if isinstance(dn_meta, list):
                 dual_groups = len(dn_meta) - 1
-                dec_out_bboxes = torch.split(
+                dec_out_bboxes = torch.chunk(
                     dec_out_bboxes, dual_groups + 1, dim=2)
-                dec_out_logits = torch.split(
+                dec_out_logits = torch.chunk(
                     dec_out_logits, dual_groups + 1, dim=2)
-                enc_topk_bboxes = torch.split(
+                enc_topk_bboxes = torch.chunk(
                     enc_topk_bboxes, dual_groups + 1, dim=1)
-                enc_topk_logits = torch.split(
+                enc_topk_logits = torch.splchunkt(
                     enc_topk_logits, dual_groups + 1, dim=1)
 
                 loss = {}
@@ -86,7 +86,7 @@ class Criterion(object):
                     # sum loss
                     for key, value in loss_gid.items():
                         loss.update({
-                            key: loss.get(key, torch.zeros([1])) + value
+                            key: loss.get(key, torch.zeros([1], device=out_bboxes_gid.device)) + value
                         })
 
                 # average across (dual_groups + 1)
@@ -124,9 +124,8 @@ class DETRLoss(nn.Module):
                  aux_loss=True,
                  use_vfl=False,
                  loss_coeff={'class': 1,
-                             'bbox': 5,
-                             'giou': 2,
-                             'no_object': 0.1,},
+                             'bbox':  5,
+                             'giou':  2,},
                  ):
         super(DETRLoss, self).__init__()
         self.num_classes = num_classes
@@ -186,20 +185,21 @@ class DETRLoss(nn.Module):
 
         loss = dict()
         if sum(len(a) for a in gt_bbox) == 0:
-            loss[name_bbox] = torch.as_tensor([0.])
-            loss[name_giou] = torch.as_tensor([0.])
+            loss[name_bbox] = torch.as_tensor([0.], device=boxes.device)
+            loss[name_giou] = torch.as_tensor([0.], device=boxes.device)
             return loss
 
         # prepare positive samples
         src_bbox, target_bbox = self._get_src_target_assign(boxes, gt_bbox, match_indices)
 
         # Compute L1 loss
-        loss[name_bbox] = self.loss_coeff['bbox'] * F.l1_loss(
-            src_bbox, target_bbox, reduction='sum') / num_gts
+        loss[name_bbox] = F.l1_loss(src_bbox, target_bbox, reduction='none')
+        loss[name_bbox] = loss[name_bbox].sum() / num_gts
+        loss[name_bbox] = self.loss_coeff['bbox'] * loss[name_bbox]
         
         # Compute GIoU loss
-        loss[name_giou] = self.giou_loss(
-            box_cxcywh_to_xyxy(src_bbox), box_cxcywh_to_xyxy(target_bbox))
+        loss[name_giou] = self.giou_loss(box_cxcywh_to_xyxy(src_bbox),
+                                         box_cxcywh_to_xyxy(target_bbox))
         loss[name_giou] = loss[name_giou].sum() / num_gts
         loss[name_giou] = self.loss_coeff['giou'] * loss[name_giou]
 

@@ -10,7 +10,7 @@ rtdetr_cfg = {
         'depth': 1.0,
         ## Image Encoder - Backbone
         'backbone': 'resnet18',
-        'backbone_norm': 'BN',
+        'backbone_norm': 'FrozeBN',
         'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
@@ -34,7 +34,7 @@ rtdetr_cfg = {
         'de_num_layers': 3,
         'de_mlp_ratio': 4.0,
         'de_dropout': 0.0,
-        'de_act': 'gelu',
+        'de_act': 'relu',
         'de_num_points': 4,
         'num_queries': 300,
         'learnt_init_query': False,
