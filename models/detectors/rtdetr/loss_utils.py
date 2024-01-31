@@ -32,7 +32,7 @@ def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: f
         alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
         loss = alpha_t * loss
 
-    return loss.sum() / num_boxes
+    return loss.mean(1).sum() / num_boxes
 
 ## Variable FocalLoss
 def varifocal_loss_with_logits(pred_logits,
@@ -44,9 +44,9 @@ def varifocal_loss_with_logits(pred_logits,
     pred_score = F.sigmoid(pred_logits)
     weight = alpha * pred_score.pow(gamma) * (1 - label) + gt_score * label
     loss = F.binary_cross_entropy_with_logits(pred_logits, gt_score, reduction='none')
-    loss *= weight
+    loss = loss * weight
 
-    return loss.sum() / normalizer
+    return loss.mean(1).sum() / normalizer
 
 ## InverseSigmoid
 def inverse_sigmoid(x, eps=1e-5):

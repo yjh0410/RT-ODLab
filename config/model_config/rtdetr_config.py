@@ -52,8 +52,7 @@ rtdetr_cfg = {
         'use_vfl': True,
         'loss_coeff': {'class': 1,
                        'bbox': 5,
-                       'giou': 2,
-                       'no_object': 0.1,},
+                       'giou': 2,},
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800

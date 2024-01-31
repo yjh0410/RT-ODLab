@@ -169,7 +169,7 @@ class DETRLoss(nn.Module):
             loss_cls = varifocal_loss_with_logits(logits,
                                                   target_score,
                                                   target_label,
-                                                  num_gts)
+                                                  num_gts / num_query_objects)
         else:
             loss_cls = sigmoid_focal_loss(logits,
                                           target_label,
