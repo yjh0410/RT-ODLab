@@ -75,7 +75,7 @@ class RandomPhotometricDistort(object):
         Returns:
             ndarray: the distorted image(s).
         """
-        if random.random() < 0.5:
+        if random.random() < 0.8:
             dhue = np.random.uniform(low=-self.hue, high=self.hue)
             dsat = self._rand_scale(self.saturation)
             dexp = self._rand_scale(self.exposure)
