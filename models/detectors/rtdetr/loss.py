@@ -419,6 +419,6 @@ class DINOLoss(DETRLoss):
                 assert len(dn_positive_idx[i]) == len(gt_idx)
                 dn_match_indices.append((dn_positive_idx[i], gt_idx))
             else:
-                dn_match_indices.append((torch.zeros([0], dtype="int64"),
-                                         torch.zeros([0], dtype="int64")))
+                dn_match_indices.append((torch.zeros([0], device=labels[i].device, dtype="int64"),
+                                         torch.zeros([0], device=labels[i].device, dtype="int64")))
         return dn_match_indices
