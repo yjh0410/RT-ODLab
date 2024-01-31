@@ -36,9 +36,9 @@ class HungarianMatcher(nn.Module):
 
         # -------------------- Regression cost --------------------
         ## L1 cost: [Nq, M]
-        cost_bbox = torch.cdist(out_bbox, box_xyxy_to_cxcywh(tgt_bbox).to(out_bbox.device), p=1)
+        cost_bbox = torch.cdist(out_bbox, tgt_bbox.to(out_bbox.device), p=1)
         ## GIoU cost: Nq, M]
-        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), tgt_bbox.to(out_bbox.device))
+        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox).to(out_bbox.device))
 
         # Final cost: [B, Nq, M]
         C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou

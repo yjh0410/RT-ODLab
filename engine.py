@@ -1303,6 +1303,10 @@ class RTRTrainer(object):
                     images, targets, self.model_cfg['out_stride'][-1], self.args.min_box_size, self.model_cfg['multi_scale'])
             else:
                 targets = self.refine_targets(img_size, targets, self.args.min_box_size)
+
+            # xyxy -> cxcybwbh
+            targets = self.box_xyxy_to_cxcywh(targets)
+            print(targets)
                 
             # Visualize train targets
             if self.args.vis_tgt:
@@ -1412,6 +1416,32 @@ class RTRTrainer(object):
             tgt["labels"] = labels[keep]
 
         return images, targets, new_img_size
+
+    def box_xyxy_to_cxcywh(self, targets):
+        # rescale targets
+        for tgt in targets:
+            boxes_xyxy = tgt["boxes"].clone()
+            # rescale box
+            cxcy = (boxes_xyxy[..., :2] + boxes_xyxy[..., 2:]) * 0.5
+            bwbh = boxes_xyxy[..., 2:] - boxes_xyxy[..., :2]
+            boxes_bwbh = torch.cat([cxcy, bwbh], dim=-1)
+
+            tgt["boxes"] = boxes_bwbh
+
+        return targets
+
+    def box_cxcywh_to_xyxy(self, targets):
+        # rescale targets
+        for tgt in targets:
+            boxes_cxcywh = tgt["boxes"].clone()
+            # rescale box
+            x1y1 = (boxes_cxcywh[..., :2] + boxes_cxcywh[..., 2:]) * 0.5
+            bwbh = boxes_cxcywh[..., 2:] - boxes_cxcywh[..., :2]
+            boxes_bwbh = torch.cat([boxes_cxcywh, bwbh], dim=-1)
+
+            tgt["boxes"] = boxes_bwbh
+
+        return targets
 
     def check_second_stage(self):
         # set second stage
