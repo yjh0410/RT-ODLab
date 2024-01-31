@@ -1306,7 +1306,6 @@ class RTRTrainer(object):
 
             # xyxy -> cxcybwbh
             targets = self.box_xyxy_to_cxcywh(targets)
-            print(targets)
                 
             # Visualize train targets
             if self.args.vis_tgt:
