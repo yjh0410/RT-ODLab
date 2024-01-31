@@ -9,6 +9,7 @@ RESUME=$7
 
 # MODEL setting
 IMAGE_SIZE=640
+FIND_UNUSED_PARAMS=False
 if [[ $MODEL == *"rtcdet"* ]]; then
     # Epoch setting
     MAX_EPOCH=500
@@ -21,6 +22,7 @@ elif [[ $MODEL == *"rtdetr"* ]]; then
     WP_EPOCH=-1
     EVAL_EPOCH=4
     NO_AUG_EPOCH=-1
+    FIND_UNUSED_PARAMS=True
 elif [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     MAX_EPOCH=500
@@ -81,6 +83,7 @@ if [ $WORLD_SIZE == 1 ]; then
             --resume ${RESUME} \
             --ema \
             --fp16 \
+            --find_unused_parameters ${FIND_UNUSED_PARAMS} \
             --multi_scale
 elif [[ $WORLD_SIZE -gt 1 && $WORLD_SIZE -le 8 ]]; then
     python -m torch.distributed.run --nproc_per_node=${WORLD_SIZE} --master_port ${MASTER_PORT} train.py \
@@ -98,6 +101,7 @@ elif [[ $WORLD_SIZE -gt 1 && $WORLD_SIZE -le 8 ]]; then
             --resume ${RESUME} \
             --ema \
             --fp16 \
+            --find_unused_parameters ${FIND_UNUSED_PARAMS} \
             --multi_scale \
             --sybn
 else

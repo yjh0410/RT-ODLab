@@ -14,6 +14,7 @@ rtdetr_cfg = {
         'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
+        'freeze_stem_only': True,
         'out_stride': [8, 16, 32],
         ## Image Encoder - FPN
         'fpn': 'hybrid_encoder',
