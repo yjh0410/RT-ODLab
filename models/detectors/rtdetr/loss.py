@@ -173,7 +173,7 @@ class DETRLoss(nn.Module):
         else:
             loss_cls = sigmoid_focal_loss(logits,
                                           target_label,
-                                          num_gts)
+                                          num_gts / num_query_objects)
 
         return {name_class: loss_cls * self.loss_coeff['class']}
 
