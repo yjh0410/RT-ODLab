@@ -1135,6 +1135,8 @@ class RTRTrainer(object):
         self.grad_accumulate = args.grad_accumulate
         self.clip_grad = 0.1
         self.heavy_eval = False
+        # close AMP for RT-DETR
+        self.args.fp16 = False
         # weak augmentatino stage
         self.second_stage = False
         self.second_stage_epoch = -1
@@ -1144,7 +1146,7 @@ class RTRTrainer(object):
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 1e-4, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1, 'warmup_iters': 2000}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 2000} # no lr decay
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
