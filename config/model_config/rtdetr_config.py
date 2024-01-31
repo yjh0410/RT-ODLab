@@ -10,12 +10,12 @@ rtdetr_cfg = {
         'depth': 1.0,
         ## Image Encoder - Backbone
         'backbone': 'resnet18',
-        'backbone_norm': 'BN',
+        'backbone_norm': 'FrozeBN',
         'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
-        'freeze_at': -1,
-        'freeze_stem_only': True,
+        'freeze_at': 0,
+        'freeze_stem_only': False,
         'out_stride': [8, 16, 32],
         'max_stride': 32,
         ## Image Encoder - FPN

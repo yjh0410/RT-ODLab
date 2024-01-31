@@ -75,7 +75,7 @@ class RandomPhotometricDistort(object):
         Returns:
             ndarray: the distorted image(s).
         """
-        if random.random() < 0.8:
+        if random.random() < 0.5:
             dhue = np.random.uniform(low=-self.hue, high=self.hue)
             dsat = self._rand_scale(self.saturation)
             dexp = self._rand_scale(self.exposure)
@@ -124,8 +124,6 @@ class RandomSampleCrop(object):
             (0.3, None),
             (0.7, None),
             (0.9, None),
-            # randomly sample a patch
-            (None, None),
         )
 
     def intersect(self, box_a, box_b):
