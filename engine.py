@@ -1276,6 +1276,7 @@ class RTRTrainer(object):
         metric_logger = MetricLogger(delimiter="  ")
         metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
         metric_logger.add_meter('size', SmoothedValue(window_size=1, fmt='{value:d}'))
+        metric_logger.add_meter('grad_norm', SmoothedValue(window_size=1, fmt='{value:.1f}'))
         header = 'Epoch: [{} / {}]'.format(self.epoch, self.args.max_epoch)
         epoch_size = len(self.train_loader)
         print_freq = 10
@@ -1309,8 +1310,10 @@ class RTRTrainer(object):
                 
             # Visualize train targets
             if self.args.vis_tgt:
+                targets = self.box_cxcywh_to_xyxy(targets)
                 vis_data(images, targets, normalized_bbox=True,
                          pixel_mean=self.trans_cfg['pixel_mean'], pixel_std=self.trans_cfg['pixel_std'])
+                targets = self.box_xyxy_to_cxcywh(targets)
 
             # Inference
             with torch.cuda.amp.autocast(enabled=self.args.fp16):
@@ -1434,9 +1437,9 @@ class RTRTrainer(object):
         for tgt in targets:
             boxes_cxcywh = tgt["boxes"].clone()
             # rescale box
-            x1y1 = (boxes_cxcywh[..., :2] + boxes_cxcywh[..., 2:]) * 0.5
-            bwbh = boxes_cxcywh[..., 2:] - boxes_cxcywh[..., :2]
-            boxes_bwbh = torch.cat([boxes_cxcywh, bwbh], dim=-1)
+            x1y1 = boxes_cxcywh[..., :2] - boxes_cxcywh[..., 2:] * 0.5
+            x2y2 = boxes_cxcywh[..., :2] + boxes_cxcywh[..., 2:] * 0.5
+            boxes_bwbh = torch.cat([x1y1, x2y2], dim=-1)
 
             tgt["boxes"] = boxes_bwbh
 

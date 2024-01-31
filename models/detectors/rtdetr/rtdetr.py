@@ -36,6 +36,11 @@ class RT_DETR(nn.Module):
         self.detect_decoder = build_transformer(cfg, self.fpn_dims, num_classes, return_intermediate=self.training)
 
     def post_process(self, box_pred, cls_pred):
+        # xyxy -> bwbh
+        box_preds_x1y1 = box_pred[..., :2] - 0.5 * box_pred[..., 2:]
+        box_preds_x2y2 = box_pred[..., :2] + 0.5 * box_pred[..., 2:]
+        box_pred = torch.cat([box_preds_x1y1, box_preds_x2y2], dim=-1)
+        
         if self.no_multi_labels:
             # [M,]
             scores, labels = torch.max(cls_pred.sigmoid(), dim=1)

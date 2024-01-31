@@ -47,19 +47,19 @@ def vis_data(images, targets, num_classes=80, normalized_bbox=False, pixel_mean=
                      np.random.randint(255)) for _ in range(num_classes)]
 
     for bi in range(batch_size):
-        tgt_boxes = target['boxes']
-        tgt_labels = target['labels']
+        tgt_boxes = targets[bi]['boxes']
+        tgt_labels = targets[bi]['labels']
         # to numpy
         image = images[bi].permute(1, 2, 0).cpu().numpy()
-        target = targets[bi]
-        image = image.astype(np.uint8)
-        image = image.copy()
-        img_h, img_w = image.shape[:2]
 
         # denormalize image
         if pixel_mean is not None and pixel_std is not None:
             image = image * pixel_std + pixel_mean
             image = image[..., (2, 1, 0)] # RGB to BGR
+            
+        image = image.astype(np.uint8)
+        image = image.copy()
+        img_h, img_w = image.shape[:2]
 
         # denormalize bbox
         if normalized_bbox:
