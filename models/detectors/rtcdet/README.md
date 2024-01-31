@@ -7,7 +7,7 @@
 For the small model:
 |   Model  | Pretrained | Scale | Epoch | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 |
 |----------|------------|-------|-------|------------------------|-------------------|
-| RTCDet-N | -          |  640  |  500  |          36.8          |        52.9       |
+| RTCDet-N | -          |  640  |  500  |          37.0          |        52.9       |
 | RTCDet-N | IN1K       |  640  |  500  |                        |                   |
 | RTCDet-L | -          |  640  |  500  |          50.2          |        68.0       |
 | RTCDet-L | IN1K       |  640  |  500  |                        |                   |
@@ -15,11 +15,11 @@ For the small model:
 ## Results on the COCO-val
 |   Model  | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RTCDet-N | 8xb16 |  640  |                        |                   |                   |                    |  |
+| RTCDet-N | 8xb16 |  640  |          37.0          |        52.9       |        8.8        |         3.2        |  |
 | RTCDet-S | 8xb16 |  640  |                        |                   |                   |                    |  |
 | RTCDet-M | 8xb16 |  640  |                        |                   |                   |                    |  |
 | RTCDet-L | 8xb16 |  640  |                        |                   |                   |                    |  |
-| RTCDet-X | 8xb16 |  640  |                        |                   |                   |                    |  |
+| RTCDet-X | 8xb16 |  640  |          50.7          |        68.3       |       165.7       |         43.7       |  |
 
 - For the backbone, we use the ImageNet-1K pretrained weight.
 - For training, we train RTCDet series with 300 epochs on COCO.
