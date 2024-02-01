@@ -113,6 +113,34 @@ class RandomPhotometricDistort(object):
             return scale
         return 1 / scale
 
+## Random scaling
+class RandomExpand(object):
+    def __init__(self, fill_value) -> None:
+        self.fill_value = fill_value
+
+    def __call__(self, image, target=None):
+        if random.randint(2):
+            return image, target
+
+        height, width, channels = image.shape
+        ratio = random.uniform(1, 4)
+        left = random.uniform(0, width*ratio - width)
+        top = random.uniform(0, height*ratio - height)
+
+        expand_image = np.ones(
+            (int(height*ratio), int(width*ratio), channels),
+            dtype=image.dtype) * self.fill_value
+        expand_image[int(top):int(top + height),
+                     int(left):int(left + width)] = image
+        image = expand_image
+
+        boxes = target['boxes'].copy()
+        boxes[:, :2] += (int(left), int(top))
+        boxes[:, 2:] += (int(left), int(top))
+        target['boxes'] = boxes
+
+        return image, target
+
 ## Random IoU based Sample Crop
 class RandomSampleCrop(object):
     def __init__(self):
@@ -321,9 +349,10 @@ class RTDetrAugmentation(object):
                 ToTensor()
             ])
         else:
-            # For no-mosaic setting, we use RandomSampleCrop processor.
+            # For no-mosaic setting, we use RandomExpand & RandomSampleCrop processor.
             self.augment = Compose([
                 RandomPhotometricDistort(hue=0.5, saturation=1.5, exposure=1.5),
+                RandomExpand(self.pixel_mean[::-1]),
                 RandomSampleCrop(),
                 RandomHorizontalFlip(p=0.5),
                 Resize(img_size=self.img_size),
@@ -331,6 +360,15 @@ class RTDetrAugmentation(object):
                 Normalize(self.pixel_mean, self.pixel_std),
                 ToTensor()
             ])
+
+    def set_weak_augment(self):
+        self.augment = Compose([
+            RandomHorizontalFlip(p=0.5),
+            Resize(img_size=self.img_size),
+            ConvertColorFormat(self.color_format),
+            Normalize(self.pixel_mean, self.pixel_std),
+            ToTensor()
+        ])
 
     def __call__(self, image, target, mosaic=False):
         orig_h, orig_w = image.shape[:2]

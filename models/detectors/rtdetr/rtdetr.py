@@ -26,6 +26,8 @@ class RT_DETR(nn.Module):
         self.conf_thresh = conf_thresh
         self.no_multi_labels = no_multi_labels
         self.deploy = deploy
+        # scale hidden channels by width_factor
+        cfg['hidden_dim'] = round(cfg['hidden_dim'] * cfg['width'])
 
         # ----------- Network setting -----------
         ## Image encoder
@@ -137,6 +139,10 @@ if __name__ == '__main__':
         'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
+        'freeze_at': 0,
+        'freeze_stem_only': False,
+        'out_stride': [8, 16, 32],
+        'max_stride': 32,
         # Image Encoder - FPN
         'fpn': 'hybrid_encoder',
         'fpn_act': 'silu',
@@ -146,14 +152,14 @@ if __name__ == '__main__':
         'en_num_heads': 8,
         'en_num_layers': 1,
         'en_mlp_ratio': 4.0,
-        'en_dropout': 0.1,
+        'en_dropout': 0.0,
         'pe_temperature': 10000.,
         'en_act': 'gelu',
         # Transformer Decoder
         'transformer': 'rtdetr_transformer',
         'hidden_dim': 256,
         'de_num_heads': 8,
-        'de_num_layers': 6,
+        'de_num_layers': 3,
         'de_mlp_ratio': 4.0,
         'de_dropout': 0.0,
         'de_act': 'gelu',
@@ -186,11 +192,11 @@ if __name__ == '__main__':
     }] * bs
 
     # Create model
-    model = RT_DETR(cfg, num_classes=80)
+    model = RT_DETR(cfg, num_classes=20)
     model.train()
 
     # Create criterion
-    criterion = build_criterion(cfg, num_classes=80)
+    criterion = build_criterion(cfg, num_classes=20)
 
     # Model inference
     t0 = time.time()

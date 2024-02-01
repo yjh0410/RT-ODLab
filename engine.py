@@ -1479,6 +1479,8 @@ class RTRTrainer(object):
         print(' - Rebuild transforms ...')
         self.train_transform, self.trans_cfg = build_transform(
             args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
+        
+        self.train_transform.set_weak_augment()
         self.train_loader.dataset.transform = self.train_transform
         
 
