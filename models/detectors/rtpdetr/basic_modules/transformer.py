@@ -153,7 +153,7 @@ class TransformerEncoder(nn.Module):
         return src
 
 ## Transformer Decoder layer
-class TransformerDecoderLayer(nn.Module):
+class PlainTransformerDecoderLayer(nn.Module):
     def __init__(self,
                  d_model     :int   = 256,
                  num_heads   :int   = 8,
@@ -221,7 +221,7 @@ class TransformerDecoderLayer(nn.Module):
         return tgt
 
 ## Transformer Decoder
-class TransformerDecoder(nn.Module):
+class PlainTransformerDecoder(nn.Module):
     def __init__(self,
                  d_model        :int   = 256,
                  num_heads      :int   = 8,

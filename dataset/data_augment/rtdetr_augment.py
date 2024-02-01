@@ -263,6 +263,78 @@ class RandomSampleCrop(object):
 
                 return current_image, target
 
+## Random JitterCrop
+class RandomJitterCrop(object):
+    """Jitter and crop the image and box."""
+    def __init__(self, fill_value, p=0.5, jitter_ratio=0.3):
+        super().__init__()
+        self.p = p
+        self.jitter_ratio = jitter_ratio
+        self.fill_value = fill_value
+
+    def crop(self, image, pleft, pright, ptop, pbot, output_size):
+        oh, ow = image.shape[:2]
+
+        swidth, sheight = output_size
+
+        src_rect = [pleft, ptop, swidth + pleft,
+                    sheight + ptop]  # x1,y1,x2,y2
+        img_rect = [0, 0, ow, oh]
+        # rect intersection
+        new_src_rect = [max(src_rect[0], img_rect[0]),
+                        max(src_rect[1], img_rect[1]),
+                        min(src_rect[2], img_rect[2]),
+                        min(src_rect[3], img_rect[3])]
+        dst_rect = [max(0, -pleft),
+                    max(0, -ptop),
+                    max(0, -pleft) + new_src_rect[2] - new_src_rect[0],
+                    max(0, -ptop) + new_src_rect[3] - new_src_rect[1]]
+
+        # crop the image
+        cropped = np.ones([sheight, swidth, 3], dtype=image.dtype) * self.fill_value
+        # cropped[:, :, ] = np.mean(image, axis=(0, 1))
+        cropped[dst_rect[1]:dst_rect[3], dst_rect[0]:dst_rect[2]] = \
+            image[new_src_rect[1]:new_src_rect[3],
+            new_src_rect[0]:new_src_rect[2]]
+
+        return cropped
+
+    def __call__(self, image, target=None):
+        if random.random() > self.p:
+            return image, target
+        else:
+            oh, ow = image.shape[:2]
+            dw = int(ow * self.jitter_ratio)
+            dh = int(oh * self.jitter_ratio)
+            pleft = np.random.randint(-dw, dw)
+            pright = np.random.randint(-dw, dw)
+            ptop = np.random.randint(-dh, dh)
+            pbot = np.random.randint(-dh, dh)
+
+            swidth = ow - pleft - pright
+            sheight = oh - ptop - pbot
+            output_size = (swidth, sheight)
+            # crop image
+            cropped_image = self.crop(image=image,
+                                    pleft=pleft, 
+                                    pright=pright, 
+                                    ptop=ptop, 
+                                    pbot=pbot,
+                                    output_size=output_size)
+            # crop bbox
+            if target is not None:
+                bboxes = target['boxes'].copy()
+                coords_offset = np.array([pleft, ptop], dtype=np.float32)
+                bboxes[..., [0, 2]] = bboxes[..., [0, 2]] - coords_offset[0]
+                bboxes[..., [1, 3]] = bboxes[..., [1, 3]] - coords_offset[1]
+                swidth, sheight = output_size
+
+                bboxes[..., [0, 2]] = np.clip(bboxes[..., [0, 2]], 0, swidth - 1)
+                bboxes[..., [1, 3]] = np.clip(bboxes[..., [1, 3]], 0, sheight - 1)
+                target['boxes'] = bboxes
+
+            return cropped_image, target
+    
 ## Random HFlip
 class RandomHorizontalFlip(object):
     def __init__(self, p=0.5):
@@ -355,8 +427,7 @@ class RTDetrAugmentation(object):
             # For no-mosaic setting, we use RandomExpand & RandomSampleCrop processor.
             self.augment = Compose([
                 RandomPhotometricDistort(hue=0.5, saturation=1.5, exposure=1.5),
-                RandomExpand(self.pixel_mean[::-1]),
-                RandomSampleCrop(),
+                RandomJitterCrop(p=0.8, jitter_ratio=0.3, fill_value=self.pixel_mean[::-1]),
                 RandomHorizontalFlip(p=0.5),
                 Resize(img_size=self.img_size),
                 ConvertColorFormat(self.color_format),

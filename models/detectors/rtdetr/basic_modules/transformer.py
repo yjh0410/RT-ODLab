@@ -4,7 +4,7 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.init import constant_, xavier_uniform_
+from torch.nn.init import constant_, xavier_uniform_, uniform_
 
 try:
     from .basic import get_activation
@@ -260,9 +260,19 @@ class TransformerEncoderLayer(nn.Module):
         # Feedforwaed Network
         self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
 
+        self._reset_parameters()
+
     def with_pos_embed(self, tensor, pos):
         return tensor if pos is None else tensor + pos
 
+    def _reset_parameters(self):
+        def linear_init_(module):
+            bound = 1 / math.sqrt(module.weight.shape[0])
+            uniform_(module.weight, -bound, bound)
+            if hasattr(module, "bias") and module.bias is not None:
+                uniform_(module.bias, -bound, bound)
+        linear_init_(self.ffn.linear1)
+        linear_init_(self.ffn.linear2)
 
     def forward(self, src, pos_embed):
         """
@@ -395,8 +405,21 @@ class DeformableTransformerDecoderLayer(nn.Module):
         ## FFN
         self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
 
+        self._reset_parameters()
+
     def with_pos_embed(self, tensor, pos):
         return tensor if pos is None else tensor + pos
+
+    def _reset_parameters(self):
+        def linear_init_(module):
+            bound = 1 / math.sqrt(module.weight.shape[0])
+            uniform_(module.weight, -bound, bound)
+            if hasattr(module, "bias") and module.bias is not None:
+                uniform_(module.bias, -bound, bound)
+        linear_init_(self.ffn.linear1)
+        linear_init_(self.ffn.linear2)
+        xavier_uniform_(self.ffn.linear1.weight)
+        xavier_uniform_(self.ffn.linear2.weight)
 
     def forward(self,
                 tgt,
