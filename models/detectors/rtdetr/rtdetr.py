@@ -2,9 +2,11 @@ import torch
 import torch.nn as nn
 
 try:
+    from .basic_modules.basic import multiclass_nms
     from .rtdetr_encoder import build_image_encoder
     from .rtdetr_decoder import build_transformer
 except:
+    from .basic_modules.basic import multiclass_nms
     from  rtdetr_encoder import build_image_encoder
     from  rtdetr_decoder import build_transformer
 
@@ -15,9 +17,12 @@ class RT_DETR(nn.Module):
                  cfg,
                  num_classes = 80,
                  conf_thresh = 0.1,
+                 nms_thresh  = 0.5,
                  topk        = 300,
                  deploy      = False,
                  no_multi_labels = False,
+                 use_nms     = False,
+                 nms_class_agnostic = False,
                  ):
         super().__init__()
         # ----------- Basic setting -----------
@@ -28,6 +33,13 @@ class RT_DETR(nn.Module):
         self.deploy = deploy
         # scale hidden channels by width_factor
         cfg['hidden_dim'] = round(cfg['hidden_dim'] * cfg['width'])
+        ## Post-process parameters
+        self.use_nms = use_nms
+        self.nms_thresh = nms_thresh
+        self.conf_thresh = conf_thresh
+        self.topk_candidates = topk
+        self.no_multi_labels = no_multi_labels
+        self.nms_class_agnostic = nms_class_agnostic
 
         # ----------- Network setting -----------
         ## Image encoder
@@ -89,6 +101,15 @@ class RT_DETR(nn.Module):
             topk_labels = topk_idxs % self.num_classes
             topk_bboxes = box_pred[topk_box_idxs]
 
+        topk_scores = topk_scores.cpu().numpy()
+        topk_labels = topk_labels.cpu().numpy()
+        topk_bboxes = topk_bboxes.cpu().numpy()
+
+        # nms
+        if self.use_nms:
+            topk_scores, topk_labels, topk_bboxes = multiclass_nms(
+                topk_scores, topk_labels, topk_bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
+
         return topk_bboxes, topk_scores, topk_labels
     
     def forward(self, x, targets=None):
@@ -114,9 +135,9 @@ class RT_DETR(nn.Module):
             bboxes, scores, labels = self.post_process(box_pred, cls_pred)
 
             outputs = {
-                "scores": scores.cpu().numpy(),
-                "labels": labels.cpu().numpy(),
-                "bboxes": bboxes.cpu().numpy(),
+                "scores": scores,
+                "labels": labels,
+                "bboxes": bboxes,
             }
 
             return outputs

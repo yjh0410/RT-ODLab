@@ -19,10 +19,13 @@ def build_rtdetr(args, cfg, num_classes=80, trainable=False, deploy=False):
     # -------------- Build RT-DETR --------------
     model = RT_DETR(cfg             = cfg,
                     num_classes     = num_classes,
+                    nms_thresh      = args.nms_thresh,
                     conf_thresh     = args.conf_thresh,
                     topk            = 300,
                     deploy          = deploy,
                     no_multi_labels = args.no_multi_labels,
+                    use_nms         = True,
+                    nms_class_agnostic = args.nms_class_agnostic
                     )
             
     # -------------- Build criterion --------------
