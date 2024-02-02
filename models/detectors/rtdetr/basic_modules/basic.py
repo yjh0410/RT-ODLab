@@ -72,6 +72,7 @@ def multiclass_nms(scores, labels, bboxes, nms_thresh, num_classes, class_agnost
     else:
         return multiclass_nms_class_aware(scores, labels, bboxes, nms_thresh, num_classes)
 
+
 # ----------------- MLP modules -----------------
 class MLP(nn.Module):
     def __init__(self, in_dim, hidden_dim, out_dim, num_layers):

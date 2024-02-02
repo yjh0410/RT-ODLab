@@ -24,7 +24,7 @@ def build_rtdetr(args, cfg, num_classes=80, trainable=False, deploy=False):
                     topk            = 300,
                     deploy          = deploy,
                     no_multi_labels = args.no_multi_labels,
-                    use_nms         = True,
+                    use_nms         = True,   # NMS is beneficial 
                     nms_class_agnostic = args.nms_class_agnostic
                     )
             

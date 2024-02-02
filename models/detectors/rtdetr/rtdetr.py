@@ -11,7 +11,7 @@ except:
     from  rtdetr_decoder import build_transformer
 
 
-# Real-time Transformer-based Object Detector
+# Real-time DETR
 class RT_DETR(nn.Module):
     def __init__(self,
                  cfg,
@@ -28,8 +28,6 @@ class RT_DETR(nn.Module):
         # ----------- Basic setting -----------
         self.num_classes = num_classes
         self.num_topk = topk
-        self.conf_thresh = conf_thresh
-        self.no_multi_labels = no_multi_labels
         self.deploy = deploy
         # scale hidden channels by width_factor
         cfg['hidden_dim'] = round(cfg['hidden_dim'] * cfg['width'])
@@ -37,7 +35,6 @@ class RT_DETR(nn.Module):
         self.use_nms = use_nms
         self.nms_thresh = nms_thresh
         self.conf_thresh = conf_thresh
-        self.topk_candidates = topk
         self.no_multi_labels = no_multi_labels
         self.nms_class_agnostic = nms_class_agnostic
 
