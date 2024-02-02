@@ -11,7 +11,6 @@ rtdetr_cfg = {
         ## Image Encoder - Backbone
         'backbone': 'resnet18',
         'backbone_norm': 'FrozeBN',
-        'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
         'freeze_at': 0,
@@ -72,7 +71,6 @@ rtdetr_cfg = {
         ## Image Encoder - Backbone
         'backbone': 'resnet50',
         'backbone_norm': 'FrozeBN',
-        'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
         'freeze_at': 0,
@@ -133,7 +131,6 @@ rtdetr_cfg = {
         ## Image Encoder - Backbone
         'backbone': 'resnet101',
         'backbone_norm': 'FrozeBN',
-        'res5_dilation': False,
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
         'freeze_at': 0,

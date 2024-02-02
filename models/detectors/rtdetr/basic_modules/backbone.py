@@ -46,7 +46,6 @@ class ResNet(nn.Module):
     """ResNet backbone with frozen BatchNorm."""
     def __init__(self,
                  name: str,
-                 res5_dilation: bool,
                  norm_type: str,
                  pretrained_weights: str = "imagenet1k_v1",
                  freeze_at: int = -1,
@@ -71,9 +70,7 @@ class ResNet(nn.Module):
         elif norm_type == 'FrozeBN':
             norm_layer = FrozenBatchNorm2d
         # Backbone
-        backbone = getattr(torchvision.models, name)(
-            replace_stride_with_dilation=[False, False, res5_dilation],
-            norm_layer=norm_layer, weights=pretrained_weights)
+        backbone = getattr(torchvision.models, name)(norm_layer=norm_layer, weights=pretrained_weights)
         return_layers = {"layer2": "0", "layer3": "1", "layer4": "2"}
         self.body = IntermediateLayerGetter(backbone, return_layers=return_layers)
         self.feat_dims = [128, 256, 512] if name in ('resnet18', 'resnet34') else [512, 1024, 2048]
@@ -98,7 +95,6 @@ class ResNet(nn.Module):
 def build_resnet(cfg, pretrained_weight=None):
     # ResNet series
     backbone = ResNet(cfg['backbone'],
-                      cfg['res5_dilation'],
                       cfg['backbone_norm'],
                       pretrained_weight,
                       cfg['freeze_at'],
@@ -120,7 +116,6 @@ if __name__ == '__main__':
     cfg = {
         'backbone':      'resnet18',
         'backbone_norm': 'BN',
-        'res5_dilation': False,
         'pretrained': True,
         'freeze_at': -1,
         'freeze_stem_only': True,
@@ -134,6 +129,6 @@ if __name__ == '__main__':
     for y in output:
         print(y.size())
 
-    for n, p in model.named_parameters():
-        print(n.split(".")[-1])
+    # for n, p in model.named_parameters():
+    #     print(n.split(".")[-1])
 

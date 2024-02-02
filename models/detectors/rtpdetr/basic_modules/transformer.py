@@ -4,12 +4,14 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.init import constant_, xavier_uniform_
+import torch.utils.checkpoint as checkpoint
 
 try:
-    from .basic import get_activation, MLP, FFN
+    from .basic import FFN, GlobalCrossAttention
+    from .basic import trunc_normal_
 except:
-    from  basic import get_activation, MLP, FFN
+    from  basic import FFN, GlobalCrossAttention
+    from  basic import trunc_normal_
 
 
 def get_clones(module, N):
@@ -152,137 +154,294 @@ class TransformerEncoder(nn.Module):
 
         return src
 
-## Transformer Decoder layer
-class PlainTransformerDecoderLayer(nn.Module):
+## PlainDETR's Decoder layer
+class GlobalDecoderLayer(nn.Module):
     def __init__(self,
-                 d_model     :int   = 256,
-                 num_heads   :int   = 8,
-                 num_levels  :int   = 3,
-                 num_points  :int   = 4,
-                 mlp_ratio   :float = 4.0,
-                 dropout     :float = 0.1,
-                 act_type    :str   = "relu",
-                 ):
+                 d_model    :int   = 256,
+                 num_heads  :int   = 8,
+                 mlp_ratio  :float = 4.0,
+                 dropout    :float = 0.1,
+                 act_type   :str   = "relu",
+                 pre_norm   :bool  = False,
+                 rpe_hidden_dim :int = 512,
+                 feature_stride :int = 16,
+                 ) -> None:
         super().__init__()
-        # ----------- Basic parameters -----------
+        # ------------ Basic parameters ------------
         self.d_model = d_model
         self.num_heads = num_heads
-        self.num_levels = num_levels
-        self.num_points = num_points
+        self.rpe_hidden_dim = rpe_hidden_dim
         self.mlp_ratio = mlp_ratio
-        self.dropout = dropout
         self.act_type = act_type
-        # ---------------- Network parameters ----------------
+        self.pre_norm = pre_norm
+
+        # ------------ Network parameters ------------
         ## Multi-head Self-Attn
-        self.self_attn  = nn.MultiheadAttention(d_model, num_heads, dropout=dropout)
+        self.self_attn = nn.MultiheadAttention(d_model, num_heads, dropout=dropout)
         self.dropout1 = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(d_model)
-        ## CrossAttention
-        self.cross_attn = nn.MultiheadAttention(d_model, num_heads, dropout=dropout)
+
+        ## Box-reparam Global Cross-Attn
+        self.cross_attn = GlobalCrossAttention(d_model, num_heads, rpe_hidden_dim=rpe_hidden_dim, feature_stride=feature_stride)
         self.dropout2 = nn.Dropout(dropout)
         self.norm2 = nn.LayerNorm(d_model)
-        ## FFN
-        self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
 
-    def with_pos_embed(self, tensor, pos):
+        ## FFN
+        self.ffn = FFN(d_model, mlp_ratio, dropout, act_type, pre_norm)
+
+    @staticmethod
+    def with_pos_embed(tensor, pos):
         return tensor if pos is None else tensor + pos
 
-    def forward(self,
-                tgt,
-                reference_points,
-                memory,
-                memory_spatial_shapes,
-                attn_mask=None,
-                memory_mask=None,
-                query_pos_embed=None):
-        # ---------------- MSHA for Object Query -----------------
-        q = k = self.with_pos_embed(tgt, query_pos_embed)
-        if attn_mask is not None:
-            attn_mask = torch.where(
-                attn_mask.bool(),
-                torch.zeros(attn_mask.shape, dtype=tgt.dtype, device=attn_mask.device),
-                torch.full(attn_mask.shape, float("-inf"), dtype=tgt.dtype, device=attn_mask.device))
-        tgt2 = self.self_attn(q, k, value=tgt)[0]
-        tgt = tgt + self.dropout1(tgt2)
-        tgt = self.norm1(tgt)
+    def forward_pre_norm(self,
+                         tgt,
+                         query_pos,
+                         reference_points,
+                         src,
+                         src_pos_embed,
+                         src_spatial_shapes,
+                         src_padding_mask=None,
+                         self_attn_mask=None,
+                         ):
+        # ----------- Multi-head self attention -----------
+        tgt1 = self.norm1(tgt)
+        q = k = self.with_pos_embed(tgt1, query_pos)
+        tgt1 = self.self_attn(q.transpose(0, 1),        # [B, N, C] -> [N, B, C], batch_first = False
+                              k.transpose(0, 1),        # [B, N, C] -> [N, B, C], batch_first = False
+                              tgt1.transpose(0, 1),     # [B, N, C] -> [N, B, C], batch_first = False
+                              attn_mask=self_attn_mask,
+                              )[0].transpose(0, 1)      # [N, B, C] -> [B, N, C]
+        tgt = tgt + self.dropout1(tgt1)
 
-        # ---------------- CMHA for Object Query and Image-feature -----------------
-        tgt2 = self.cross_attn(self.with_pos_embed(tgt, query_pos_embed),
+        # ----------- Global corss attention -----------
+        tgt1 = self.norm2(tgt)
+        tgt1 = self.cross_attn(self.with_pos_embed(tgt1, query_pos),
                                reference_points,
-                               memory,
-                               memory_spatial_shapes,
-                               memory_mask)
-        tgt = tgt + self.dropout2(tgt2)
-        tgt = self.norm2(tgt)
+                               self.with_pos_embed(src, src_pos_embed),
+                               src,
+                               src_spatial_shapes,
+                               src_padding_mask,
+                               )
+        tgt = tgt + self.dropout2(tgt1)
 
-        # ---------------- FeedForward Network -----------------
+        # ----------- FeedForward Network -----------
         tgt = self.ffn(tgt)
 
         return tgt
 
-## Transformer Decoder
-class PlainTransformerDecoder(nn.Module):
-    def __init__(self,
-                 d_model        :int   = 256,
-                 num_heads      :int   = 8,
-                 num_layers     :int   = 1,
-                 num_levels     :int   = 3,
-                 num_points     :int   = 4,
-                 mlp_ratio      :float = 4.0,
-                 dropout        :float = 0.1,
-                 act_type       :str   = "relu",
-                 return_intermediate :bool = False,
-                 ):
-        super().__init__()
-        # ----------- Basic parameters -----------
-        self.d_model = d_model
-        self.num_heads = num_heads
-        self.num_layers = num_layers
-        self.mlp_ratio = mlp_ratio
-        self.dropout = dropout
-        self.act_type = act_type
-        self.pos_embed = None
-        # ----------- Network parameters -----------
-        self.decoder_layers = get_clones(
-            TransformerDecoderLayer(d_model, num_heads, num_levels, num_points, mlp_ratio, dropout, act_type), num_layers)
-        self.num_layers = num_layers
-        self.return_intermediate = return_intermediate
+    def forward_post_norm(self,
+                          tgt,
+                          query_pos,
+                          reference_points,
+                          src,
+                          src_pos_embed,
+                          src_spatial_shapes,
+                          src_padding_mask=None,
+                          self_attn_mask=None,
+                          ):
+        # ----------- Multi-head self attention -----------
+        q = k = self.with_pos_embed(tgt, query_pos)
+        tgt1 = self.self_attn(q.transpose(0, 1),        # [B, N, C] -> [N, B, C], batch_first = False
+                              k.transpose(0, 1),        # [B, N, C] -> [N, B, C], batch_first = False
+                              tgt.transpose(0, 1),     # [B, N, C] -> [N, B, C], batch_first = False
+                              attn_mask=self_attn_mask,
+                              )[0].transpose(0, 1)      # [N, B, C] -> [B, N, C]
+        tgt = tgt + self.dropout1(tgt1)
+        tgt = self.norm1(tgt)
+
+        # ----------- Global corss attention -----------
+        tgt1 = self.cross_attn(self.with_pos_embed(tgt, query_pos),
+                               reference_points,
+                               self.with_pos_embed(src, src_pos_embed),
+                               src,
+                               src_spatial_shapes,
+                               src_padding_mask,
+                               )
+        tgt = tgt + self.dropout2(tgt1)
+        tgt = self.norm2(tgt)
+
+        # ----------- FeedForward Network -----------
+        tgt = self.ffn(tgt)
+
+        return tgt
 
     def forward(self,
                 tgt,
-                ref_points_unact,
-                memory,
-                memory_spatial_shapes,
-                bbox_head,
-                score_head,
-                query_pos_head,
-                attn_mask=None,
-                memory_mask=None):
+                query_pos,
+                reference_points,
+                src,
+                src_pos_embed,
+                src_spatial_shapes,
+                src_padding_mask=None,
+                self_attn_mask=None,
+                ):
+        if self.pre_norm:
+            return self.forward_pre_norm(tgt, query_pos, reference_points, src, src_pos_embed, src_spatial_shapes,
+                                         src_padding_mask, self_attn_mask)
+        else:
+            return self.forward_post_norm(tgt, query_pos, reference_points, src, src_pos_embed, src_spatial_shapes,
+                                          src_padding_mask, self_attn_mask)
+
+## PlainDETR's Decoder
+class GlobalDecoder(nn.Module):
+    def __init__(self,
+                 # Decoder layer params
+                 d_model    :int   = 256,
+                 num_heads  :int   = 8,
+                 mlp_ratio  :float = 4.0,
+                 dropout    :float = 0.1,
+                 act_type   :str   = "relu",
+                 pre_norm   :bool  = False,
+                 rpe_hidden_dim :int = 512,
+                 feature_stride :int = 16,
+                 num_layers     :int = 6,
+                 # Decoder params
+                 return_intermediate :bool = False,
+                 use_checkpoint      :bool = False,
+                 ):
+        super().__init__()
+        # ------------ Basic parameters ------------
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.rpe_hidden_dim = rpe_hidden_dim
+        self.mlp_ratio = mlp_ratio
+        self.act_type = act_type
+        self.num_layers = num_layers
+        self.return_intermediate = return_intermediate
+        self.use_checkpoint = use_checkpoint
+
+        # ------------ Network parameters ------------
+        decoder_layer = GlobalDecoderLayer(
+            d_model, num_heads, mlp_ratio, dropout, act_type, pre_norm, rpe_hidden_dim, feature_stride,)
+        self.layers = get_clones(decoder_layer, num_layers)
+        self.bbox_embed = None
+        self.class_embed = None
+
+        if pre_norm:
+            self.final_layer_norm = nn.LayerNorm(d_model)
+        else:
+            self.final_layer_norm = None
+
+    def _reset_parameters(self):            
+        # stolen from Swin Transformer
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                trunc_normal_(m.weight, std=0.02)
+                if isinstance(m, nn.Linear) and m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.LayerNorm):
+                nn.init.constant_(m.bias, 0)
+                nn.init.constant_(m.weight, 1.0)
+
+        self.apply(_init_weights)
+
+    def inverse_sigmoid(self, x, eps=1e-5):
+        x = x.clamp(min=0, max=1)
+        x1 = x.clamp(min=eps)
+        x2 = (1 - x).clamp(min=eps)
+
+        return torch.log(x1 / x2)
+
+    def box_xyxy_to_cxcywh(self, x):
+        x0, y0, x1, y1 = x.unbind(-1)
+        b = [(x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0), (y1 - y0)]
+        
+        return torch.stack(b, dim=-1)
+
+    def delta2bbox(self, proposals,
+                   deltas,
+                   max_shape=None,
+                   wh_ratio_clip=16 / 1000,
+                   clip_border=True,
+                   add_ctr_clamp=False,
+                   ctr_clamp=32):
+
+        dxy = deltas[..., :2]
+        dwh = deltas[..., 2:]
+
+        # Compute width/height of each roi
+        pxy = proposals[..., :2]
+        pwh = proposals[..., 2:]
+
+        dxy_wh = pwh * dxy
+        wh_ratio_clip = torch.as_tensor(wh_ratio_clip)
+        max_ratio = torch.abs(torch.log(wh_ratio_clip)).item()
+        
+        if add_ctr_clamp:
+            dxy_wh = torch.clamp(dxy_wh, max=ctr_clamp, min=-ctr_clamp)
+            dwh = torch.clamp(dwh, max=max_ratio)
+        else:
+            dwh = dwh.clamp(min=-max_ratio, max=max_ratio)
+
+        gxy = pxy + dxy_wh
+        gwh = pwh * dwh.exp()
+        x1y1 = gxy - (gwh * 0.5)
+        x2y2 = gxy + (gwh * 0.5)
+        bboxes = torch.cat([x1y1, x2y2], dim=-1)
+        if clip_border and max_shape is not None:
+            bboxes[..., 0::2].clamp_(min=0).clamp_(max=max_shape[1])
+            bboxes[..., 1::2].clamp_(min=0).clamp_(max=max_shape[0])
+
+        return bboxes
+
+    def forward(self,
+                tgt,
+                reference_points,
+                src,
+                src_pos_embed,
+                src_spatial_shapes,
+                query_pos=None,
+                src_padding_mask=None,
+                self_attn_mask=None,
+                max_shape=None,
+                ):
         output = tgt
-        dec_out_bboxes = []
-        dec_out_logits = []
-        ref_points_detach = F.sigmoid(ref_points_unact)
-        for i, layer in enumerate(self.decoder_layers):
-            ref_points_input = ref_points_detach.unsqueeze(2)
-            query_pos_embed = query_pos_head(ref_points_detach)
 
-            output = layer(output, ref_points_input, memory,
-                           memory_spatial_shapes, attn_mask,
-                           memory_mask, query_pos_embed)
-
-            inter_ref_bbox = F.sigmoid(bbox_head[i](output) + inverse_sigmoid(
-                ref_points_detach))
-
-            dec_out_logits.append(score_head[i](output))
-            if i == 0:
-                dec_out_bboxes.append(inter_ref_bbox)
+        intermediate = []
+        intermediate_reference_points = []
+        for lid, layer in enumerate(self.layers):
+            reference_points_input = reference_points[:, :, None]
+            if self.use_checkpoint:
+                output = checkpoint.checkpoint(
+                    layer,
+                    output,
+                    query_pos,
+                    reference_points_input,
+                    src,
+                    src_pos_embed,
+                    src_spatial_shapes,
+                    src_padding_mask,
+                    self_attn_mask,
+                )
             else:
-                dec_out_bboxes.append(
-                    F.sigmoid(bbox_head[i](output) + inverse_sigmoid(
-                        ref_points)))
+                output = layer(
+                    output,
+                    query_pos,
+                    reference_points_input,
+                    src,
+                    src_pos_embed,
+                    src_spatial_shapes,
+                    src_padding_mask,
+                    self_attn_mask,
+                )
 
-            ref_points = inter_ref_bbox
-            ref_points_detach = inter_ref_bbox.detach()
+            if self.final_layer_norm is not None:
+                output_after_norm = self.final_layer_norm(output)
+            else:
+                output_after_norm = output
 
-        return torch.stack(dec_out_bboxes), torch.stack(dec_out_logits)
+            # hack implementation for iterative bounding box refinement
+            if self.bbox_embed is not None:
+                tmp = self.bbox_embed[lid](output_after_norm)
+                new_reference_points = self.box_xyxy_to_cxcywh(
+                    self.delta2bbox(reference_points, tmp, max_shape)) 
+                reference_points = new_reference_points.detach()
 
+            if self.return_intermediate:
+                intermediate.append(output_after_norm)
+                intermediate_reference_points.append(new_reference_points)
+
+        if self.return_intermediate:
+            return torch.stack(intermediate), torch.stack(intermediate_reference_points)
+
+        return output_after_norm, reference_points
