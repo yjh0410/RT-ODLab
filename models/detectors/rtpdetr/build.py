@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 
 from .loss import build_criterion
-from .rtdetr import RT_PDETR
+from .rtpdetr import RT_PDETR
 
 
 # build object detector
@@ -20,7 +20,7 @@ def build_rtpdetr(args, cfg, num_classes=80, trainable=False, deploy=False):
     model = RT_PDETR(cfg             = cfg,
                      num_classes     = num_classes,
                      conf_thresh     = args.conf_thresh,
-                     topk            = 100,
+                     topk            = 300,
                      deploy          = deploy,
                      no_multi_labels = args.no_multi_labels,
                      )
@@ -29,6 +29,6 @@ def build_rtpdetr(args, cfg, num_classes=80, trainable=False, deploy=False):
     criterion = None
     if trainable:
         # build criterion for training
-        criterion = build_criterion(cfg, num_classes)
+        criterion = build_criterion(cfg, num_classes, aux_loss=True)
         
     return model, criterion

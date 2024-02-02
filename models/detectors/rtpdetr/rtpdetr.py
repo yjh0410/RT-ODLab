@@ -23,6 +23,7 @@ class RT_PDETR(nn.Module):
                  topk        = 300,
                  deploy      = False,
                  no_multi_labels = False,
+                 aux_loss    = False,
                  ):
         super().__init__()
         # ----------- Basic setting -----------
@@ -31,9 +32,12 @@ class RT_PDETR(nn.Module):
         self.num_queries = self.num_queries_one2one + self.num_queries_one2many
         self.num_classes = num_classes
         self.num_topk = topk
+        self.aux_loss = aux_loss
         self.conf_thresh = conf_thresh
         self.no_multi_labels = no_multi_labels
         self.deploy = deploy
+        # scale hidden channels by width_factor
+        cfg['hidden_dim'] = round(cfg['hidden_dim'] * cfg['width'])
 
         # ----------- Network setting -----------
         ## Image encoder
@@ -89,14 +93,18 @@ class RT_PDETR(nn.Module):
         
         return posemb
 
-    def get_posembed(self, d_model, mask, temperature=10000):
+    def get_posembed(self, d_model, mask, temperature=10000, normalize=False):
         not_mask = ~mask
         # [B, H, W]
         y_embed = not_mask.cumsum(1, dtype=torch.float32)
         x_embed = not_mask.cumsum(2, dtype=torch.float32)
 
-        y_embed = (y_embed - 0.5) / (y_embed[:, -1:, :] + 1e-6)
-        x_embed = (x_embed - 0.5) / (x_embed[:, :, -1:] + 1e-6)
+        if normalize:
+            y_embed = (y_embed - 0.5) / (y_embed[:, -1:, :] + 1e-6)
+            x_embed = (x_embed - 0.5) / (x_embed[:, :, -1:] + 1e-6)
+        else:
+            y_embed = y_embed - 0.5
+            x_embed = x_embed - 0.5
     
         # [H, W] -> [B, H, W, 2]
         pos = torch.stack([x_embed, y_embed], dim=-1)
@@ -173,7 +181,7 @@ class RT_PDETR(nn.Module):
 
         # ----------- Prepare inputs for Transformer -----------
         mask = torch.zeros([src.shape[0], src.shape[2], src.shape[3]]).bool().to(src.device)
-        pos_embed = self.get_posembed(src.shape[1], mask)
+        pos_embed = self.get_posembed(src.shape[1], mask, normalize=False)
         self_attn_mask = None
         query_embeds = self.query_embed.weight[:self.num_queries_one2one]
 
@@ -234,16 +242,12 @@ class RT_PDETR(nn.Module):
 
         # ----------- Prepare inputs for Transformer -----------
         mask = torch.zeros([src.shape[0], src.shape[2], src.shape[3]]).bool().to(src.device)
-        pos_embed = self.get_posembed(src.shape[1], mask)
-        if self.training:
-            self_attn_mask = torch.zeros(
-                [self.num_queries, self.num_queries, ]).bool().to(src.device)
-            self_attn_mask[self.num_queries_one2one:, 0: self.num_queries_one2one, ] = True
-            self_attn_mask[0: self.num_queries_one2one, self.num_queries_one2one:, ] = True
-            query_embeds = self.query_embed.weight
-        else:
-            self_attn_mask = None
-            query_embeds = self.query_embed.weight[:self.num_queries_one2one]
+        pos_embed = self.get_posembed(src.shape[1], mask, normalize=False)
+        self_attn_mask = torch.zeros(
+            [self.num_queries, self.num_queries, ]).bool().to(src.device)
+        self_attn_mask[self.num_queries_one2one:, 0: self.num_queries_one2one, ] = True
+        self_attn_mask[0: self.num_queries_one2one, self.num_queries_one2one:, ] = True
+        query_embeds = self.query_embed.weight
 
         # -----------Transformer -----------
         (
@@ -327,7 +331,7 @@ class RT_PDETR(nn.Module):
 if __name__ == '__main__':
     import time
     from thop import profile
-    # from loss import build_criterion
+    from loss import build_criterion
 
     # Model config
     cfg = {
@@ -342,13 +346,18 @@ if __name__ == '__main__':
         'freeze_at': 0,
         'freeze_stem_only': False,
         'hidden_dim': 256,
+        'en_num_heads': 8,
+        'en_num_layers': 1,
+        'en_mlp_ratio': 4.0,
+        'en_dropout': 0.0,
+        'en_act': 'gelu',
         # Transformer Decoder
         'transformer': 'plain_detr_transformer',
         'hidden_dim': 256,
         'de_num_heads': 8,
         'de_num_layers': 6,
         'de_mlp_ratio': 4.0,
-        'de_dropout': 0.1,
+        'de_dropout': 0.0,
         'de_act': 'gelu',
         'de_pre_norm': True,
         'rpe_hidden_dim': 512,
@@ -359,12 +368,14 @@ if __name__ == '__main__':
         'num_queries_one2many': 300,
         # Matcher
         'matcher_hpy': {'cost_class': 2.0,
-                        'cost_bbox': 5.0,
+                        'cost_bbox': 1.0,
                         'cost_giou': 2.0,},
         # Loss
         'use_vfl': True,
-        'loss_coeff': {'class': 1,
-                       'bbox': 5,
+        'k_one2many': 6,
+        'lambda_one2many': 1.0,
+        'loss_coeff': {'class': 2,
+                       'bbox': 1,
                        'giou': 2,
                        'no_object': 0.1,},
         }
@@ -386,13 +397,13 @@ if __name__ == '__main__':
     t1 = time.time()
     print('Infer time: ', t1 - t0)
 
-    # # Create criterion
-    # criterion = build_criterion(cfg, num_classes=80)
+    # Create criterion
+    criterion = build_criterion(cfg, num_classes=80, aux_loss=True)
 
-    # # Compute loss
-    # loss = criterion(*outputs, targets)
-    # for k in loss.keys():
-    #     print("{} : {}".format(k, loss[k].item()))
+    # Compute loss
+    loss = criterion(outputs, targets)
+    for k in loss.keys():
+        print("{} : {}".format(k, loss[k].item()))
 
     print('==============================')
     model.eval()

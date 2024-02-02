@@ -44,20 +44,11 @@ def build_yolo_optimizer(cfg, model, resume=None):
     return optimizer, start_epoch
 
 
-def build_detr_optimizer(cfg, model, resume=None):
+def build_rtdetr_optimizer(cfg, model, resume=None):
     print('==============================')
     print('Optimizer: {}'.format(cfg['optimizer']))
     print('--base lr: {}'.format(cfg['lr0']))
     print('--weight_decay: {}'.format(cfg['weight_decay']))
-
-    # param_dicts = [
-    #     {"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},
-    #     {
-    #         "params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],
-    #         "lr": cfg['lr0'] * cfg['backbone_lr_ratio'],
-    #     },
-    # ]
-
 
     # ------------- Divide model's parameters -------------
     param_dicts = [], [], [], [], [], []

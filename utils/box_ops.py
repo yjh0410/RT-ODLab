@@ -42,6 +42,28 @@ def bbox2dist(anchor_points, bbox, reg_max):
     dist = torch.cat([lt, rb], -1).clamp(0, reg_max - 0.01)
     return dist
 
+def bbox2delta(proposals, gt, means=(0., 0., 0., 0.), stds=(1., 1., 1., 1.)):
+    # hack for matcher
+    if proposals.size() != gt.size():
+        proposals = proposals[:, None]
+        gt = gt[None]
+
+    proposals = proposals.float()
+    gt = gt.float()
+    px, py, pw, ph = proposals.unbind(-1)
+    gx, gy, gw, gh = gt.unbind(-1)
+
+    dx = (gx - px) / (pw + 0.1)
+    dy = (gy - py) / (ph + 0.1)
+    dw = torch.log(gw / (pw + 0.1))
+    dh = torch.log(gh / (ph + 0.1))
+    deltas = torch.stack([dx, dy, dw, dh], dim=-1)
+
+    means = deltas.new_tensor(means).unsqueeze(0)
+    stds = deltas.new_tensor(stds).unsqueeze(0)
+    deltas = deltas.sub_(means).div_(stds)
+
+    return deltas
 
 # ------------------ IoU ops ------------------
 def box_iou(boxes1, boxes2):

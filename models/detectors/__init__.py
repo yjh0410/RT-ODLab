@@ -14,6 +14,7 @@ from .yolox.build import build_yolox
 # My RTCDet series
 from .rtcdet.build import build_rtcdet
 from .rtdetr.build import build_rtdetr
+from .rtpdetr.build import build_rtpdetr
 
 
 # build object detector
@@ -70,6 +71,10 @@ def build_model(args,
     # RT-DETR
     elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:
         model, criterion = build_rtdetr(
+            args, model_cfg, num_classes, trainable, deploy)
+    # RT-PlainDETR
+    elif args.model in ['rtpdetr_r18', 'rtpdetr_r34', 'rtpdetr_r50', 'rtpdetr_r101']:
+        model, criterion = build_rtpdetr(
             args, model_cfg, num_classes, trainable, deploy)
 
     if trainable:

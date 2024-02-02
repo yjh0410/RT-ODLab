@@ -100,6 +100,7 @@ from .model_config.yolox_config import yolox_cfg, yolox_adamw_cfg
 ## My RTCDet series
 from .model_config.rtcdet_config import rtcdet_cfg, rtcdet_seg_cfg, rtcdet_pos_cfg, rtcdet_seg_pos_cfg
 from .model_config.rtdetr_config import rtdetr_cfg
+from .model_config.rtpdetr_config import rtpdetr_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -140,6 +141,9 @@ def build_model_config(args):
     # RT-DETR
     elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:
         cfg = rtdetr_cfg[args.model]
+    # RT-PlainDETR
+    elif args.model in ['rtpdetr_r18', 'rtpdetr_r34', 'rtpdetr_r50', 'rtpdetr_r101']:
+        cfg = rtpdetr_cfg[args.model]
 
     return cfg
 
