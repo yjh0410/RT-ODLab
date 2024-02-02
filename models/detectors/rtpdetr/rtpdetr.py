@@ -154,12 +154,11 @@ class RT_PDETR(nn.Module):
 
             # Filter out the proposals with low confidence score
             keep_idxs = topk_scores > self.conf_thresh
-            scores = topk_scores[keep_idxs]
+            topk_scores = topk_scores[keep_idxs]
             topk_idxs = topk_idxs[keep_idxs]
             topk_box_idxs = torch.div(topk_idxs, self.num_classes, rounding_mode='floor')
 
             ## Top-k results
-            topk_scores = predicted_prob[:self.num_topk]
             topk_labels = topk_idxs % self.num_classes
             topk_bboxes = box_pred[topk_box_idxs]
 
