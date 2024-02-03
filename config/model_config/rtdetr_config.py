@@ -44,8 +44,6 @@ rtdetr_cfg = {
         'dn_num_denoising': 100,
         'dn_label_noise_ratio': 0.5,
         'dn_box_noise_scale': 1,
-        # Head
-        'det_head': 'dino_head',
         # ---------------- Assignment config ----------------
         'matcher_hpy': {'cost_class': 2.0,
                         'cost_bbox': 5.0,

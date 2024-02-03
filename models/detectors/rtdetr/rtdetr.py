@@ -98,14 +98,15 @@ class RT_DETR(nn.Module):
             topk_labels = topk_idxs % self.num_classes
             topk_bboxes = box_pred[topk_box_idxs]
 
-        topk_scores = topk_scores.cpu().numpy()
-        topk_labels = topk_labels.cpu().numpy()
-        topk_bboxes = topk_bboxes.cpu().numpy()
+        if not self.deploy:
+            topk_scores = topk_scores.cpu().numpy()
+            topk_labels = topk_labels.cpu().numpy()
+            topk_bboxes = topk_bboxes.cpu().numpy()
 
-        # nms
-        if self.use_nms:
-            topk_scores, topk_labels, topk_bboxes = multiclass_nms(
-                topk_scores, topk_labels, topk_bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
+            # nms
+            if self.use_nms:
+                topk_scores, topk_labels, topk_bboxes = multiclass_nms(
+                    topk_scores, topk_labels, topk_bboxes, self.nms_thresh, self.num_classes, self.nms_class_agnostic)
 
         return topk_bboxes, topk_scores, topk_labels
     
@@ -184,8 +185,6 @@ if __name__ == '__main__':
         'dn_num_denoising': 100,
         'dn_label_noise_ratio': 0.5,
         'dn_box_noise_scale': 1,
-        # Head
-        'det_head': 'dino_head',
         # Matcher
         'matcher_hpy': {'cost_class': 2.0,
                         'cost_bbox': 5.0,
