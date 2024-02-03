@@ -270,8 +270,8 @@ class PlainDETRTransformer(nn.Module):
 
         # Prepare input for decoder
         memory = src_flatten
-        bs, _, c = memory.shape
-       
+        bs, seq_l, c = memory.shape
+
         # Two stage trick
         if self.training:
             self.two_stage_num_proposals = self.num_queries_one2one + self.num_queries_one2many

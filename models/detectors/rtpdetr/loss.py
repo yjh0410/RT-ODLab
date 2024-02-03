@@ -42,17 +42,6 @@ class Criterion(nn.Module):
         self.weight_dict = {'loss_cls':  cfg['loss_coeff']['class'],
                             'loss_box':  cfg['loss_coeff']['bbox'],
                             'loss_giou': cfg['loss_coeff']['giou']}
-        if aux_loss:
-            aux_weight_dict = {}
-            for i in range(cfg['de_num_layers'] - 1):
-                aux_weight_dict.update({k + f'_{i}': v for k, v in self.weight_dict.items()})
-            self.weight_dict.update(aux_weight_dict)
-        # ------------- One2many loss weight -------------
-        if cfg['num_queries_one2many'] > 0:
-            one2many_loss_weight = {}
-            for k, v in self.weight_dict.items():
-                one2many_loss_weight[k+"_one2many"] = v
-            self.weight_dict.update(one2many_loss_weight)
 
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
@@ -163,9 +152,9 @@ class Criterion(nn.Module):
         losses = {}
         for loss in self.losses:
             kwargs = {}
-            losses.update(
-                self.get_loss(loss, outputs, targets, indices, num_boxes, **kwargs)
-            )
+            l_dict = self.get_loss(loss, outputs, targets, indices, num_boxes, **kwargs)
+            l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
+            losses.update(l_dict)
 
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
@@ -173,9 +162,8 @@ class Criterion(nn.Module):
                 indices = self.matcher(aux_outputs, targets)
                 for loss in self.losses:
                     kwargs = {}
-                    l_dict = self.get_loss(
-                        loss, aux_outputs, targets, indices, num_boxes, **kwargs
-                    )
+                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, **kwargs)
+                    l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
                     l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
 
@@ -187,9 +175,8 @@ class Criterion(nn.Module):
             indices = self.matcher(enc_outputs, bin_targets)
             for loss in self.losses:
                 kwargs = {}
-                l_dict = self.get_loss(
-                    loss, enc_outputs, bin_targets, indices, num_boxes, **kwargs
-                )
+                l_dict = self.get_loss(loss, enc_outputs, bin_targets, indices, num_boxes, **kwargs)
+                l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
                 l_dict = {k + "_enc": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 

@@ -362,7 +362,7 @@ if __name__ == '__main__':
         'freeze_stem_only': False,
         'hidden_dim': 256,
         'en_num_heads': 8,
-        'en_num_layers': 1,
+        'en_num_layers': 6,
         'en_mlp_ratio': 4.0,
         'en_dropout': 0.0,
         'en_act': 'gelu',

@@ -18,7 +18,7 @@ rtpdetr_cfg = {
         'freeze_stem_only': False,
         'hidden_dim': 256,
         'en_num_heads': 8,
-        'en_num_layers': 1,
+        'en_num_layers': 6,
         'en_mlp_ratio': 4.0,
         'en_dropout': 0.0,
         'en_act': 'gelu',
@@ -35,7 +35,7 @@ rtpdetr_cfg = {
         'proposal_feature_levels': 3,
         'proposal_tgt_strides': [8, 16, 32],
         'num_queries_one2one': 300,
-        'num_queries_one2many': 10,
+        'num_queries_one2many': 1500,
         # ---------------- Assignment config ----------------
         'matcher_hpy': {'cost_class': 2.0,
                         'cost_bbox': 1.0,
