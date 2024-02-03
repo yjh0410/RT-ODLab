@@ -6,7 +6,7 @@ try:
     from .rtdetr_encoder import build_image_encoder
     from .rtdetr_decoder import build_transformer
 except:
-    from .basic_modules.basic import multiclass_nms
+    from  basic_modules.basic import multiclass_nms
     from  rtdetr_encoder import build_image_encoder
     from  rtdetr_decoder import build_transformer
 
@@ -114,15 +114,12 @@ class RT_DETR(nn.Module):
         pyramid_feats = self.image_encoder(x)
 
         # ----------- Transformer -----------
-        transformer_outputs = self.detect_decoder(pyramid_feats, targets)
+        outputs = self.detect_decoder(pyramid_feats, targets)
 
-        if self.training:
-            return transformer_outputs
-        else:
+        if not self.training:
             img_h, img_w = x.shape[2:]
-            pred_boxes, pred_logits = transformer_outputs[0], transformer_outputs[1]
-            box_pred = pred_boxes[-1]
-            cls_pred = pred_logits[-1]
+            box_pred = outputs["pred_boxes"]
+            cls_pred = outputs["pred_logits"]
 
             # rescale bbox
             box_pred[..., [0, 2]] *= img_h
@@ -137,7 +134,7 @@ class RT_DETR(nn.Module):
                 "bboxes": bboxes,
             }
 
-            return outputs
+        return outputs
         
 
 if __name__ == '__main__':
@@ -202,15 +199,15 @@ if __name__ == '__main__':
         }
     bs = 1
     # Create a batch of images & targets
-    image = torch.randn(bs, 3, 640, 640)
+    image = torch.randn(bs, 3, 640, 640).cuda()
     targets = [{
-        'labels': torch.tensor([2, 4, 5, 8]).long(),
-        'boxes':  torch.tensor([[0, 0, 10, 10], [12, 23, 56, 70], [0, 10, 20, 30], [50, 60, 55, 150]]).float() / 640.
+        'labels': torch.tensor([2, 4, 5, 8]).long().cuda(),
+        'boxes':  torch.tensor([[0, 0, 10, 10], [12, 23, 56, 70], [0, 10, 20, 30], [50, 60, 55, 150]]).float().cuda() / 640.
     }] * bs
 
     # Create model
     model = RT_DETR(cfg, num_classes=20)
-    model.train()
+    model.train().cuda()
 
     # Create criterion
     criterion = build_criterion(cfg, num_classes=20)
@@ -222,7 +219,7 @@ if __name__ == '__main__':
     print('Infer time: ', t1 - t0)
 
     # Compute loss
-    loss = criterion(*outputs, targets)
+    loss = criterion(outputs, targets)
     for k in loss.keys():
         print("{} : {}".format(k, loss[k].item()))
 

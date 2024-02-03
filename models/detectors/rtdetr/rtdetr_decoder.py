@@ -62,7 +62,8 @@ class RTDETRTransformer(nn.Module):
                  num_denoising       :int  = 100,
                  label_noise_ratio   :float = 0.5,
                  box_noise_scale     :float = 1.0,
-                 learnt_init_query   :bool  = True,
+                 learnt_init_query   :bool  = False,
+                 aux_loss            :bool  = True
                  ):
         super().__init__()
         # --------------- Basic setting ---------------
@@ -73,6 +74,7 @@ class RTDETRTransformer(nn.Module):
         self.pos_embed_type = pos_embed_type
         self.num_classes = num_classes
         self.eps = 1e-2
+        self.aux_loss = aux_loss
         ## Transformer parameters
         self.num_heads  = num_heads
         self.num_layers = num_layers
@@ -132,39 +134,37 @@ class RTDETRTransformer(nn.Module):
         self.query_pos_head = MLP(4, 2 * hidden_dim, hidden_dim, num_layers=2)
 
         ## Denoising part
-        self.denoising_class_embed = nn.Embedding(num_classes, hidden_dim)
+        if num_denoising > 0: 
+            self.denoising_class_embed = nn.Embedding(num_classes+1, hidden_dim, padding_idx=num_classes)
 
         self._reset_parameters()
 
     def _reset_parameters(self):
-        def linear_init_(module):
-            bound = 1 / math.sqrt(module.weight.shape[0])
-            uniform_(module.weight, -bound, bound)
-            if hasattr(module, "bias") and module.bias is not None:
-                uniform_(module.bias, -bound, bound)
-
         # class and bbox head init
         prior_prob = 0.01
         cls_bias_init = float(-math.log((1 - prior_prob) / prior_prob))
-        linear_init_(self.enc_class_head)
-        constant_(self.enc_class_head.bias, cls_bias_init)
-        constant_(self.enc_bbox_head.layers[-1].weight, 0.)
-        constant_(self.enc_bbox_head.layers[-1].bias, 0.)
-        for cls_, reg_ in zip(self.dec_class_head, self.dec_bbox_head):
-            linear_init_(cls_)
-            constant_(cls_.bias, cls_bias_init)
-            constant_(reg_.layers[-1].weight, 0.)
-            constant_(reg_.layers[-1].bias, 0.)
 
-        linear_init_(self.enc_output[0])
-        xavier_uniform_(self.enc_output[0].weight)
+        nn.init.constant_(self.enc_class_head.bias, cls_bias_init)
+        nn.init.constant_(self.enc_bbox_head.layers[-1].weight, 0.)
+        nn.init.constant_(self.enc_bbox_head.layers[-1].bias, 0.)
+        for cls_, reg_ in zip(self.dec_class_head, self.dec_bbox_head):
+            nn.init.constant_(cls_.bias, cls_bias_init)
+            nn.init.constant_(reg_.layers[-1].weight, 0.)
+            nn.init.constant_(reg_.layers[-1].bias, 0.)
+
+        nn.init.xavier_uniform_(self.enc_output[0].weight)
         if self.learnt_init_query:
-            xavier_uniform_(self.tgt_embed.weight)
-        xavier_uniform_(self.query_pos_head.layers[0].weight)
-        xavier_uniform_(self.query_pos_head.layers[1].weight)
-        for l in self.input_proj_layers:
-            xavier_uniform_(l.conv.weight)
-        normal_(self.denoising_class_embed.weight)
+            nn.init.xavier_uniform_(self.tgt_embed.weight)
+        nn.init.xavier_uniform_(self.query_pos_head.layers[0].weight)
+        nn.init.xavier_uniform_(self.query_pos_head.layers[1].weight)
+
+    @torch.jit.unused
+    def _set_aux_loss(self, outputs_class, outputs_coord):
+        # this is a workaround to make torchscript happy, as torchscript
+        # doesn't support dictionary with non-homogeneous values, such
+        # as a dict having both a Tensor and a list.
+        return [{'pred_logits': a, 'pred_boxes': b}
+                for a, b in zip(outputs_class, outputs_coord)]
 
     def generate_anchors(self, spatial_shapes, grid_size=0.05):
         anchors = []
@@ -183,7 +183,7 @@ class RTDETRTransformer(nn.Module):
         valid_mask = ((anchors > self.eps) * (anchors < 1 - self.eps)).all(-1, keepdim=True)
         anchors = torch.log(anchors / (1 - anchors))
         # Equal to operation: anchors = torch.masked_fill(anchors, ~valid_mask, torch.as_tensor(float("inf")))
-        anchors = torch.where(valid_mask, anchors, torch.as_tensor(float("inf")))
+        anchors = torch.where(valid_mask, anchors, torch.inf)
         
         return anchors, valid_mask
     
@@ -239,9 +239,7 @@ class RTDETRTransformer(nn.Module):
 
         if denoising_bbox_unact is not None:
             reference_points_unact = torch.cat(
-                [denoising_bbox_unact, reference_points_unact], 1)
-        if self.training:
-            reference_points_unact = reference_points_unact.detach()
+                [denoising_bbox_unact, reference_points_unact], dim=1)
 
         # Extract region features
         if self.learnt_init_query:
@@ -250,27 +248,27 @@ class RTDETRTransformer(nn.Module):
         else:
             # [num_queries, c] -> [b, num_queries, c]
             target = torch.gather(output_memory, 1, topk_ind.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1]))
-            if self.training:
-                target = target.detach()
+            target = target.detach()
+        
         if denoising_class is not None:
             target = torch.cat([denoising_class, target], dim=1)
 
-        return target, reference_points_unact, enc_topk_bboxes, enc_topk_logits
+        return target, reference_points_unact.detach(), enc_topk_bboxes, enc_topk_logits
     
     def forward(self, feats, targets=None):
         # input projection and embedding
         memory, spatial_shapes, _ = self.get_encoder_input(feats)
 
         # prepare denoising training
-        if self.training:
+        if self.training and self.num_denoising > 0:
             denoising_class, denoising_bbox_unact, attn_mask, dn_meta = \
-                get_contrastive_denoising_training_group(targets,
-                                                         self.num_classes,
-                                                         self.num_queries,
-                                                         self.denoising_class_embed.weight,
-                                                         self.num_denoising,
-                                                         self.label_noise_ratio,
-                                                         self.box_noise_scale)
+                get_contrastive_denoising_training_group(targets, \
+                                                         self.num_classes, 
+                                                         self.num_queries, 
+                                                         self.denoising_class_embed, 
+                                                         num_denoising=self.num_denoising, 
+                                                         label_noise_ratio=self.label_noise_ratio, 
+                                                         box_noise_scale=self.box_noise_scale, )
         else:
             denoising_class, denoising_bbox_unact, attn_mask, dn_meta = None, None, None, None
 
@@ -287,8 +285,22 @@ class RTDETRTransformer(nn.Module):
                                               self.dec_class_head,
                                               self.query_pos_head,
                                               attn_mask)
-        
-        return out_bboxes, out_logits, enc_topk_bboxes, enc_topk_logits, dn_meta
+
+        if self.training and dn_meta is not None:
+            dn_out_bboxes, out_bboxes = torch.split(out_bboxes, dn_meta['dn_num_split'], dim=2)
+            dn_out_logits, out_logits = torch.split(out_logits, dn_meta['dn_num_split'], dim=2)
+
+        out = {'pred_logits': out_logits[-1], 'pred_boxes': out_bboxes[-1]}
+
+        if self.training and self.aux_loss:
+            out['aux_outputs'] = self._set_aux_loss(out_logits[:-1], out_bboxes[:-1])
+            out['aux_outputs'].extend(self._set_aux_loss([enc_topk_logits], [enc_topk_bboxes]))
+            
+            if self.training and dn_meta is not None:
+                out['dn_aux_outputs'] = self._set_aux_loss(dn_out_logits, dn_out_bboxes)
+                out['dn_meta'] = dn_meta
+
+        return out
 
 
 # ----------------- Dencoder for Segmentation task -----------------
@@ -349,13 +361,11 @@ if __name__ == '__main__':
 
     t0 = time.time()
     outputs = model(pyramid_feats, targets)
-    out_bboxes, out_logits, enc_topk_bboxes, enc_topk_logits, dn_meta = outputs
     t1 = time.time()
     print('Time: ', t1 - t0)
-    print(out_bboxes.shape)
-    print(out_logits.shape)
-    print(enc_topk_bboxes.shape)
-    print(enc_topk_logits.shape)
+
+    print(outputs["pred_logits"].shape)
+    print(outputs["pred_boxes"].shape)
 
     print('==============================')
     model.eval()

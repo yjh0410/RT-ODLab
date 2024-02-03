@@ -4,12 +4,11 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.init import constant_, xavier_uniform_, uniform_
 
 try:
-    from .basic import get_activation
+    from .basic import FFN
 except:
-    from  basic import get_activation
+    from  basic import FFN
 
 
 def get_clones(module, N):
@@ -22,38 +21,6 @@ def inverse_sigmoid(x, eps=1e-5):
     x = x.clamp(min=0., max=1.)
     return torch.log(x.clamp(min=eps) / (1 - x).clamp(min=eps))
 
-
-# ----------------- MLP modules -----------------
-class MLP(nn.Module):
-    def __init__(self, in_dim, hidden_dim, out_dim, num_layers):
-        super().__init__()
-        self.num_layers = num_layers
-        h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([in_dim] + h, h + [out_dim]))
-
-    def forward(self, x):
-        for i, layer in enumerate(self.layers):
-            x = nn.functional.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
-        return x
-
-class FFN(nn.Module):
-    def __init__(self, d_model=256, mlp_ratio=4.0, dropout=0., act_type='relu'):
-        super().__init__()
-        self.fpn_dim = round(d_model * mlp_ratio)
-        self.linear1 = nn.Linear(d_model, self.fpn_dim)
-        self.activation = get_activation(act_type)
-        self.dropout2 = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(self.fpn_dim, d_model)
-        self.dropout3 = nn.Dropout(dropout)
-        self.norm = nn.LayerNorm(d_model)
-
-    def forward(self, src):
-        src2 = self.linear2(self.dropout2(self.activation(self.linear1(src))))
-        src = src + self.dropout3(src2)
-        src = self.norm(src)
-        
-        return src
-    
 
 # ----------------- Basic Transformer Ops -----------------
 def multi_scale_deformable_attn_pytorch(
@@ -137,7 +104,7 @@ class MSDeformableAttention(nn.Module):
         """
         Default initialization for Parameters of Module.
         """
-        constant_(self.sampling_offsets.weight.data, 0.0)
+        nn.init.constant_(self.sampling_offsets.weight.data, 0.0)
         thetas = torch.arange(self.num_heads, dtype=torch.float32) * (
             2.0 * math.pi / self.num_heads
         )
@@ -151,12 +118,16 @@ class MSDeformableAttention(nn.Module):
             grid_init[:, :, i, :] *= i + 1
         with torch.no_grad():
             self.sampling_offsets.bias = nn.Parameter(grid_init.view(-1))
-        constant_(self.attention_weights.weight.data, 0.0)
-        constant_(self.attention_weights.bias.data, 0.0)
-        xavier_uniform_(self.value_proj.weight.data)
-        constant_(self.value_proj.bias.data, 0.0)
-        xavier_uniform_(self.output_proj.weight.data)
-        constant_(self.output_proj.bias.data, 0.0)
+
+        # attention weight
+        nn.init.constant_(self.attention_weights.weight, 0.0)
+        nn.init.constant_(self.attention_weights.bias, 0.0)
+
+        # proj
+        nn.init.xavier_uniform_(self.value_proj.weight)
+        nn.init.constant_(self.value_proj.bias, 0.0)
+        nn.init.xavier_uniform_(self.output_proj.weight)
+        nn.init.constant_(self.output_proj.bias, 0.0)
 
     def forward(self,
                 query,
@@ -195,9 +166,8 @@ class MSDeformableAttention(nn.Module):
         # [bs, all_hw, num_head, nun_level*num_sample_point]
         attention_weights = self.attention_weights(query).reshape(
             [bs, num_query, self.num_heads, self.num_levels * self.num_points])
-        attention_weights = attention_weights.softmax(-1)
         # [bs, all_hw, num_head, nun_level, num_sample_point]
-        attention_weights = attention_weights.reshape(
+        attention_weights = attention_weights.softmax(-1).reshape(
             [bs, num_query, self.num_heads, self.num_levels, self.num_points])
 
         # [bs, num_query, num_heads, num_levels, num_points, 2]
@@ -210,7 +180,7 @@ class MSDeformableAttention(nn.Module):
                 [1, 1, 1, self.num_levels, 1, 2])
             sampling_locations = (
                 reference_points[:, :, None, :, None, :]
-                + sampling_offsets / offset_normalizer[None, None, None, :, None, :]
+                + sampling_offsets / offset_normalizer
             )
         elif reference_points.shape[-1] == 4:
             sampling_locations = (
@@ -260,19 +230,8 @@ class TransformerEncoderLayer(nn.Module):
         # Feedforwaed Network
         self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
 
-        self._reset_parameters()
-
     def with_pos_embed(self, tensor, pos):
         return tensor if pos is None else tensor + pos
-
-    def _reset_parameters(self):
-        def linear_init_(module):
-            bound = 1 / math.sqrt(module.weight.shape[0])
-            uniform_(module.weight, -bound, bound)
-            if hasattr(module, "bias") and module.bias is not None:
-                uniform_(module.bias, -bound, bound)
-        linear_init_(self.ffn.linear1)
-        linear_init_(self.ffn.linear2)
 
     def forward(self, src, pos_embed):
         """
@@ -395,7 +354,7 @@ class DeformableTransformerDecoderLayer(nn.Module):
         self.act_type = act_type
         # ---------------- Network parameters ----------------
         ## Multi-head Self-Attn
-        self.self_attn  = nn.MultiheadAttention(d_model, num_heads, dropout=dropout)
+        self.self_attn  = nn.MultiheadAttention(d_model, num_heads, dropout=dropout, batch_first=True)
         self.dropout1 = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(d_model)
         ## CrossAttention
@@ -405,21 +364,8 @@ class DeformableTransformerDecoderLayer(nn.Module):
         ## FFN
         self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
 
-        self._reset_parameters()
-
     def with_pos_embed(self, tensor, pos):
         return tensor if pos is None else tensor + pos
-
-    def _reset_parameters(self):
-        def linear_init_(module):
-            bound = 1 / math.sqrt(module.weight.shape[0])
-            uniform_(module.weight, -bound, bound)
-            if hasattr(module, "bias") and module.bias is not None:
-                uniform_(module.bias, -bound, bound)
-        linear_init_(self.ffn.linear1)
-        linear_init_(self.ffn.linear2)
-        xavier_uniform_(self.ffn.linear1.weight)
-        xavier_uniform_(self.ffn.linear2.weight)
 
     def forward(self,
                 tgt,
@@ -431,12 +377,7 @@ class DeformableTransformerDecoderLayer(nn.Module):
                 query_pos_embed=None):
         # ---------------- MSHA for Object Query -----------------
         q = k = self.with_pos_embed(tgt, query_pos_embed)
-        if attn_mask is not None:
-            attn_mask = torch.where(
-                attn_mask.bool(),
-                torch.zeros(attn_mask.shape, dtype=tgt.dtype, device=attn_mask.device),
-                torch.full(attn_mask.shape, float("-inf"), dtype=tgt.dtype, device=attn_mask.device))
-        tgt2 = self.self_attn(q, k, value=tgt)[0]
+        tgt2 = self.self_attn(q, k, value=tgt, attn_mask=attn_mask)[0]
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 
@@ -504,19 +445,17 @@ class DeformableTransformerDecoder(nn.Module):
                            memory_spatial_shapes, attn_mask,
                            memory_mask, query_pos_embed)
 
-            inter_ref_bbox = F.sigmoid(bbox_head[i](output) + inverse_sigmoid(
-                ref_points_detach))
+            inter_ref_bbox = F.sigmoid(bbox_head[i](output) + inverse_sigmoid(ref_points_detach))
 
             dec_out_logits.append(score_head[i](output))
             if i == 0:
                 dec_out_bboxes.append(inter_ref_bbox)
             else:
                 dec_out_bboxes.append(
-                    F.sigmoid(bbox_head[i](output) + inverse_sigmoid(
-                        ref_points)))
+                    F.sigmoid(bbox_head[i](output) + inverse_sigmoid(ref_points)))
 
             ref_points = inter_ref_bbox
-            ref_points_detach = inter_ref_bbox.detach()
+            ref_points_detach = inter_ref_bbox.detach() if self.training else inter_ref_bbox
 
         return torch.stack(dec_out_bboxes), torch.stack(dec_out_logits)
 

@@ -1145,8 +1145,8 @@ class RTDetrTrainer(object):
         os.makedirs(self.path_to_save, exist_ok=True)
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
-        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.05, 'lr0': 0.0002, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1, 'warmup_iters': 1000} # no lr decay
+        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.0001, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 2000} # no lr decay
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -1299,6 +1299,9 @@ class RTDetrTrainer(object):
                                 
             # To device
             images = images.to(self.device, non_blocking=True).float()
+            for tgt in targets:
+                tgt['boxes'] = tgt['boxes'].to(self.device)
+                tgt['labels'] = tgt['labels'].to(self.device)
 
             # Multi scale
             if self.args.multi_scale:
@@ -1321,7 +1324,7 @@ class RTDetrTrainer(object):
             with torch.cuda.amp.autocast(enabled=self.args.fp16):
                 outputs = model(images, targets)
                 # Compute loss
-                loss_dict = self.criterion(*outputs, targets)
+                loss_dict = self.criterion(outputs, targets)
                 losses = sum(loss_dict.values())
                 # Grad Accumulate
                 if self.grad_accumulate > 1:
@@ -1349,7 +1352,7 @@ class RTDetrTrainer(object):
                     self.model_ema.update(model)
 
             # Update log
-            metric_logger.update(**loss_dict_reduced)
+            metric_logger.update(loss=losses.item(), **loss_dict_reduced)
             metric_logger.update(lr=self.optimizer.param_groups[2]["lr"])
             metric_logger.update(grad_norm=grad_norm)
             metric_logger.update(size=img_size)
