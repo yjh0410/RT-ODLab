@@ -1500,12 +1500,12 @@ class RTPDetrTrainer(RTDetrTrainer):
         self.normalize_bbox = False
 
         # ---------------------------- Build Optimizer ----------------------------
-        print("- Re-build oprimizer")
+        print("- Re-build oprimizer -")
         self.optimizer_dict['lr0'] *= self.args.batch_size / 16.  # auto lr scaling
         self.optimizer, self.start_epoch = build_rtdetr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        print("- Re-build lr scheduler")
+        print("- Re-build lr scheduler -")
         self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
