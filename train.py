@@ -101,7 +101,7 @@ def parse_args():
                         help='Multi scale')
     parser.add_argument('--ema', action='store_true', default=False,
                         help='Model EMA')
-    parser.add_argument('--min_box_size', default=1.0, type=float,
+    parser.add_argument('--min_box_size', default=8.0, type=float,
                         help='min size of target bounding box.')
     parser.add_argument('--mosaic', default=None, type=float,
                         help='mosaic augmentation.')
