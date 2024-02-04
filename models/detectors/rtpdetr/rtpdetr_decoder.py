@@ -270,7 +270,7 @@ class PlainDETRTransformer(nn.Module):
 
         # Prepare input for decoder
         memory = src_flatten
-        bs, seq_l, c = memory.shape
+        bs, _, c = memory.shape
 
         # Two stage trick
         if self.training:

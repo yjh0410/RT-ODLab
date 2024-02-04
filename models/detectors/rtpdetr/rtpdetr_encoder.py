@@ -35,19 +35,19 @@ class ImageEncoder(nn.Module):
         self.input_proj = BasicConv(fpn_feat_dims[-1], cfg['hidden_dim'], kernel_size=1, act_type=None, norm_type='BN')
 
         # ---------------- Transformer Encoder ----------------
-        self.transformer_encoder = TransformerEncoder(d_model        = cfg['hidden_dim'],
-                                                      num_heads      = cfg['en_num_heads'],
-                                                      num_layers     = cfg['en_num_layers'],
-                                                      mlp_ratio      = cfg['en_mlp_ratio'],
-                                                      dropout        = cfg['en_dropout'],
-                                                      act_type       = cfg['en_act']
+        self.transformer_encoder = TransformerEncoder(d_model     = cfg['hidden_dim'],
+                                                      num_heads   = cfg['en_num_heads'],
+                                                      num_layers  = cfg['en_num_layers'],
+                                                      mlp_ratio   = cfg['en_mlp_ratio'],
+                                                      dropout     = cfg['en_dropout'],
+                                                      act_type    = cfg['en_act']
                                                       )
 
         ## Upsample layer
         self.upsample = UpSampleWrapper(cfg['hidden_dim'], self.upsample_factor)
         
         ## Output projection
-        self.output_proj = BasicConv(cfg['hidden_dim'], cfg['hidden_dim'], kernel_size=1, act_type=None, norm_type='BN')
+        self.output_proj = BasicConv(cfg['hidden_dim'], cfg['hidden_dim'], kernel_size=3, padding=1, act_type='silu', norm_type='BN')
 
 
     def forward(self, x):

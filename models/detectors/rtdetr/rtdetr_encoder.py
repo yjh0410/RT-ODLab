@@ -27,7 +27,7 @@ class ImageEncoder(nn.Module):
         
         # ---------------- Network settings ----------------
         ## Backbone Network
-        self.backbone, fpn_feat_dims = build_backbone(cfg, pretrained=cfg['pretrained']&self.training)
+        self.backbone, fpn_feat_dims = build_backbone(cfg, pretrained=cfg['pretrained'])
 
         ## Feature Pyramid Network
         self.fpn = build_fpn(cfg, fpn_feat_dims, self.hidden_dim)
