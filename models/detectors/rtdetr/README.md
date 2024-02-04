@@ -4,9 +4,9 @@ This model is not yet complete.
 ## Results on the COCO-val
 |     Model    | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| RT-DETR-R18  | 2xb8  |  640  |                        |                   |                   |                    |  |
-| RT-DETR-R50  | 2xb8  |  640  |                        |                   |                   |                    |  |
-| RT-DETR-R101 | 2xb8  |  640  |                        |                   |                   |                    |  |
+| RT-DETR-R18  | 4xb4  |  640  |                        |                   |                   |                    |  |
+| RT-DETR-R50  | 4xb4  |  640  |                        |                   |                   |                    |  |
+| RT-DETR-R101 | 4xb4  |  640  |                        |                   |                   |                    |  |
 
 - For the backbone of the image encoder, we use the IN-1K classification pretrained weight. It might be hard to train RT-DETR from scratch without IN-1K pretrained weight.
 - For training, we train RT-DETR series with 6x (~72 epochs) schedule on COCO.
