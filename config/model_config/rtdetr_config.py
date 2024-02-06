@@ -70,7 +70,7 @@ rtdetr_cfg = {
         'backbone': 'resnet50',
         'backbone_norm': 'FrozeBN',
         'pretrained': True,
-        'pretrained_weight': 'imagenet1k_v1',
+        'pretrained_weight': 'imagenet1k_v2',
         'freeze_at': 0,
         'freeze_stem_only': False,
         'out_stride': [8, 16, 32],
