@@ -149,7 +149,7 @@ if __name__ == '__main__':
         'depth': 1.0,
         'out_stride': [8, 16, 32],
         # Image Encoder - Backbone
-        'backbone': 'resnet18',
+        'backbone': 'resnet50',
         'backbone_norm': 'BN',
         'res5_dilation': False,
         'pretrained': True,
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         'transformer': 'rtdetr_transformer',
         'hidden_dim': 256,
         'de_num_heads': 8,
-        'de_num_layers': 3,
+        'de_num_layers': 6,
         'de_mlp_ratio': 4.0,
         'de_dropout': 0.0,
         'de_act': 'gelu',
