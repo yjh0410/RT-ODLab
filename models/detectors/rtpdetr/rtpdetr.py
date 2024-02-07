@@ -123,6 +123,11 @@ class RT_PDETR(nn.Module):
         return pos_embed
 
     def post_process(self, box_pred, cls_pred):
+        # xywh -> xyxy
+        box_preds_x1y1 = box_pred[..., :2] - 0.5 * box_pred[..., 2:]
+        box_preds_x2y2 = box_pred[..., :2] + 0.5 * box_pred[..., 2:]
+        box_pred = torch.cat([box_preds_x1y1, box_preds_x2y2], dim=-1)
+
         cls_pred = cls_pred[0]
         box_pred = box_pred[0]
         if self.no_multi_labels:

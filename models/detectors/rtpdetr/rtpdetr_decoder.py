@@ -10,6 +10,7 @@ except:
     from  basic_modules.basic import LayerNorm2D
     from  basic_modules.transformer import GlobalDecoder
 
+
 def build_transformer(cfg, return_intermediate=False):
     if cfg['transformer'] == 'plain_detr_transformer':
         return PlainDETRTransformer(d_model             = cfg['hidden_dim'],
