@@ -38,7 +38,7 @@ class ImageEncoder(nn.Module):
         self.transformer_encoder = TransformerEncoder(d_model     = cfg['hidden_dim'],
                                                       num_heads   = cfg['en_num_heads'],
                                                       num_layers  = cfg['en_num_layers'],
-                                                      mlp_ratio   = cfg['en_mlp_ratio'],
+                                                      ffn_dim     = cfg['en_ffn_dim'],
                                                       dropout     = cfg['en_dropout'],
                                                       act_type    = cfg['en_act']
                                                       )
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         'hidden_dim': 256,
         'en_num_heads': 8,
         'en_num_layers': 1,
-        'en_mlp_ratio': 4.0,
+        'en_ffn_dim': 1024,
         'en_dropout': 0.0,
         'en_act': 'gelu',
     }

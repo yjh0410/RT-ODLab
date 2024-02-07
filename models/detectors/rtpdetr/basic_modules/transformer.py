@@ -31,7 +31,7 @@ class TransformerEncoderLayer(nn.Module):
     def __init__(self,
                  d_model         :int   = 256,
                  num_heads       :int   = 8,
-                 mlp_ratio       :float = 4.0,
+                 ffn_dim         :int = 1024,
                  dropout         :float = 0.1,
                  act_type        :str   = "relu",
                  ):
@@ -39,7 +39,7 @@ class TransformerEncoderLayer(nn.Module):
         # ----------- Basic parameters -----------
         self.d_model = d_model
         self.num_heads = num_heads
-        self.mlp_ratio = mlp_ratio
+        self.ffn_dim = ffn_dim
         self.dropout = dropout
         self.act_type = act_type
         # ----------- Basic parameters -----------
@@ -49,7 +49,7 @@ class TransformerEncoderLayer(nn.Module):
         self.norm = nn.LayerNorm(d_model)
 
         # Feedforwaed Network
-        self.ffn = FFN(d_model, mlp_ratio, dropout, act_type)
+        self.ffn = FFN(d_model, ffn_dim, dropout, act_type)
 
     def with_pos_embed(self, tensor, pos):
         return tensor if pos is None else tensor + pos
@@ -81,7 +81,7 @@ class TransformerEncoder(nn.Module):
                  d_model        :int   = 256,
                  num_heads      :int   = 8,
                  num_layers     :int   = 1,
-                 mlp_ratio      :float = 4.0,
+                 ffn_dim        :int = 1024,
                  pe_temperature : float = 10000.,
                  dropout        :float = 0.1,
                  act_type       :str   = "relu",
@@ -91,14 +91,14 @@ class TransformerEncoder(nn.Module):
         self.d_model = d_model
         self.num_heads = num_heads
         self.num_layers = num_layers
-        self.mlp_ratio = mlp_ratio
+        self.ffn_dim = ffn_dim
         self.dropout = dropout
         self.act_type = act_type
         self.pe_temperature = pe_temperature
         self.pos_embed = None
         # ----------- Basic parameters -----------
         self.encoder_layers = get_clones(
-            TransformerEncoderLayer(d_model, num_heads, mlp_ratio, dropout, act_type), num_layers)
+            TransformerEncoderLayer(d_model, num_heads, ffn_dim, dropout, act_type), num_layers)
 
     def build_2d_sincos_position_embedding(self, device, w, h, embed_dim=256, temperature=10000.):
         assert embed_dim % 4 == 0, \
@@ -159,7 +159,7 @@ class GlobalDecoderLayer(nn.Module):
     def __init__(self,
                  d_model    :int   = 256,
                  num_heads  :int   = 8,
-                 mlp_ratio  :float = 4.0,
+                 ffn_dim    :int = 1024,
                  dropout    :float = 0.1,
                  act_type   :str   = "relu",
                  pre_norm   :bool  = False,
@@ -171,7 +171,7 @@ class GlobalDecoderLayer(nn.Module):
         self.d_model = d_model
         self.num_heads = num_heads
         self.rpe_hidden_dim = rpe_hidden_dim
-        self.mlp_ratio = mlp_ratio
+        self.ffn_dim = ffn_dim
         self.act_type = act_type
         self.pre_norm = pre_norm
 
@@ -187,7 +187,7 @@ class GlobalDecoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(d_model)
 
         ## FFN
-        self.ffn = FFN(d_model, mlp_ratio, dropout, act_type, pre_norm)
+        self.ffn = FFN(d_model, ffn_dim, dropout, act_type, pre_norm)
 
     @staticmethod
     def with_pos_embed(tensor, pos):
@@ -288,7 +288,7 @@ class GlobalDecoder(nn.Module):
                  # Decoder layer params
                  d_model    :int   = 256,
                  num_heads  :int   = 8,
-                 mlp_ratio  :float = 4.0,
+                 ffn_dim    :int = 1024,
                  dropout    :float = 0.1,
                  act_type   :str   = "relu",
                  pre_norm   :bool  = False,
@@ -304,7 +304,7 @@ class GlobalDecoder(nn.Module):
         self.d_model = d_model
         self.num_heads = num_heads
         self.rpe_hidden_dim = rpe_hidden_dim
-        self.mlp_ratio = mlp_ratio
+        self.ffn_dim = ffn_dim
         self.act_type = act_type
         self.num_layers = num_layers
         self.return_intermediate = return_intermediate
@@ -312,7 +312,7 @@ class GlobalDecoder(nn.Module):
 
         # ------------ Network parameters ------------
         decoder_layer = GlobalDecoderLayer(
-            d_model, num_heads, mlp_ratio, dropout, act_type, pre_norm, rpe_hidden_dim, feature_stride,)
+            d_model, num_heads, ffn_dim, dropout, act_type, pre_norm, rpe_hidden_dim, feature_stride,)
         self.layers = get_clones(decoder_layer, num_layers)
         self.bbox_embed = None
         self.class_embed = None

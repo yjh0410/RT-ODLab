@@ -15,7 +15,7 @@ def build_transformer(cfg, return_intermediate=False):
     if cfg['transformer'] == 'plain_detr_transformer':
         return PlainDETRTransformer(d_model             = cfg['hidden_dim'],
                                     num_heads           = cfg['de_num_heads'],
-                                    mlp_ratio           = cfg['de_mlp_ratio'],
+                                    ffn_dim             = cfg['de_ffn_dim'],
                                     dropout             = cfg['de_dropout'],
                                     act_type            = cfg['de_act'],
                                     pre_norm            = cfg['de_pre_norm'],
@@ -39,7 +39,7 @@ class PlainDETRTransformer(nn.Module):
                  # Decoder layer params
                  d_model        :int   = 256,
                  num_heads      :int   = 8,
-                 mlp_ratio      :float = 4.0,
+                 ffn_dim        :int = 1024,
                  dropout        :float = 0.1,
                  act_type       :str   = "relu",
                  pre_norm       :bool  = False,
@@ -61,7 +61,7 @@ class PlainDETRTransformer(nn.Module):
         self.d_model = d_model
         self.num_heads = num_heads
         self.rpe_hidden_dim = rpe_hidden_dim
-        self.mlp_ratio = mlp_ratio
+        self.ffn_dim = ffn_dim
         self.act_type = act_type
         self.num_layers = num_layers
         self.return_intermediate = return_intermediate
@@ -76,7 +76,7 @@ class PlainDETRTransformer(nn.Module):
 
         # --------------- Network setting ---------------
         ## Global Decoder
-        self.decoder = GlobalDecoder(d_model, num_heads, mlp_ratio, dropout, act_type, pre_norm,
+        self.decoder = GlobalDecoder(d_model, num_heads, ffn_dim, dropout, act_type, pre_norm,
                                      rpe_hidden_dim, feature_stride, num_layers, return_intermediate,
                                      use_checkpoint,)
         
@@ -348,7 +348,7 @@ if __name__ == '__main__':
         'transformer': 'plain_detr_transformer',
         'de_num_heads': 8,
         'de_num_layers': 6,
-        'de_mlp_ratio': 4.0,
+        'de_ffn_dim': 1024,
         'de_dropout': 0.0,
         'de_act': 'gelu',
         'de_pre_norm': True,

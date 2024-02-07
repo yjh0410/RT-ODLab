@@ -284,16 +284,16 @@ class MLP(nn.Module):
         return x
 
 class FFN(nn.Module):
-    def __init__(self, d_model=256, mlp_ratio=4.0, dropout=0., act_type='relu', pre_norm=False):
+    def __init__(self, d_model=256, ffn_dim=1024, dropout=0., act_type='relu', pre_norm=False):
         super().__init__()
         # ----------- Basic parameters -----------
         self.pre_norm = pre_norm
-        self.fpn_dim = round(d_model * mlp_ratio)
+        self.ffn_dim = ffn_dim
         # ----------- Network parameters -----------
-        self.linear1 = nn.Linear(d_model, self.fpn_dim)
+        self.linear1 = nn.Linear(d_model, self.ffn_dim)
         self.activation = get_activation(act_type)
         self.dropout2 = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(self.fpn_dim, d_model)
+        self.linear2 = nn.Linear(self.ffn_dim, d_model)
         self.dropout3 = nn.Dropout(dropout)
         self.norm = nn.LayerNorm(d_model)
 
