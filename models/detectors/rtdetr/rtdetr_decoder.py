@@ -27,7 +27,7 @@ def build_transformer(cfg, in_dims, num_classes, return_intermediate=False):
                                  num_layers          = cfg['de_num_layers'],
                                  num_levels          = len(cfg['out_stride']),
                                  num_points          = cfg['de_num_points'],
-                                 mlp_ratio           = cfg['de_mlp_ratio'],
+                                 ffn_dim           = cfg['de_ffn_dim'],
                                  dropout             = cfg['de_dropout'],
                                  act_type            = cfg['de_act'],
                                  return_intermediate = return_intermediate,
@@ -54,7 +54,7 @@ class RTDETRTransformer(nn.Module):
                  num_layers     :int   = 1,
                  num_levels     :int   = 3,
                  num_points     :int   = 4,
-                 mlp_ratio      :float = 4.0,
+                 ffn_dim        :int   = 1024,
                  dropout        :float = 0.1,
                  act_type       :str   = "relu",
                  return_intermediate :bool = False,
@@ -80,7 +80,7 @@ class RTDETRTransformer(nn.Module):
         self.num_layers = num_layers
         self.num_levels = num_levels
         self.num_points = num_points
-        self.mlp_ratio  = mlp_ratio
+        self.ffn_dim  = ffn_dim
         self.dropout    = dropout
         self.act_type   = act_type
         self.return_intermediate = return_intermediate
@@ -104,7 +104,7 @@ class RTDETRTransformer(nn.Module):
                                     num_layers = num_layers,
                                     num_levels = num_levels,
                                     num_points = num_points,
-                                    mlp_ratio  = mlp_ratio,
+                                    ffn_dim  = ffn_dim,
                                     dropout    = dropout,
                                     act_type   = act_type,
                                     return_intermediate = return_intermediate
@@ -335,7 +335,7 @@ if __name__ == '__main__':
         'hidden_dim': 256,
         'de_num_heads': 8,
         'de_num_layers': 6,
-        'de_mlp_ratio': 4.0,
+        'de_ffn_dim': 1024,
         'de_dropout': 0.1,
         'de_act': 'gelu',
         'de_num_points': 4,

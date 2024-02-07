@@ -29,8 +29,6 @@ class RT_DETR(nn.Module):
         self.num_classes = num_classes
         self.num_topk = topk
         self.deploy = deploy
-        # scale hidden channels by width_factor
-        cfg['hidden_dim'] = round(cfg['hidden_dim'] * cfg['width'])
         ## Post-process parameters
         self.use_nms = use_nms
         self.nms_thresh = nms_thresh
@@ -145,14 +143,11 @@ if __name__ == '__main__':
 
     # Model config
     cfg = {
-        'width': 1.0,
-        'depth': 1.0,
-        'out_stride': [8, 16, 32],
         # Image Encoder - Backbone
-        'backbone': 'resnet50',
+        'backbone': 'resnet101',
         'backbone_norm': 'BN',
         'res5_dilation': False,
-        'pretrained': True,
+        'pretrained': False,
         'pretrained_weight': 'imagenet1k_v1',
         'freeze_at': 0,
         'freeze_stem_only': False,
@@ -160,22 +155,22 @@ if __name__ == '__main__':
         'max_stride': 32,
         # Image Encoder - FPN
         'fpn': 'hybrid_encoder',
+        'fpn_num_blocks': 4,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
-        'hidden_dim': 256,
+        'hidden_dim': 384,
         'en_num_heads': 8,
         'en_num_layers': 1,
-        'en_mlp_ratio': 4.0,
+        'en_ffn_dim': 2048,
         'en_dropout': 0.0,
         'pe_temperature': 10000.,
         'en_act': 'gelu',
         # Transformer Decoder
         'transformer': 'rtdetr_transformer',
-        'hidden_dim': 256,
         'de_num_heads': 8,
         'de_num_layers': 6,
-        'de_mlp_ratio': 4.0,
+        'de_ffn_dim': 2048,
         'de_dropout': 0.0,
         'de_act': 'gelu',
         'de_num_points': 4,

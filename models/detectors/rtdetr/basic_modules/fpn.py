@@ -4,10 +4,10 @@ import torch.nn.functional as F
 from typing import List
 
 try:
-    from .basic import BasicConv, RTCBlock, CSPRepLayer
+    from .basic import BasicConv, RTCBlock
     from .transformer import TransformerEncoder
 except:
-    from  basic import BasicConv, RTCBlock, CSPRepLayer
+    from  basic import BasicConv, RTCBlock
     from  transformer import TransformerEncoder
 
 
@@ -16,13 +16,13 @@ def build_fpn(cfg, in_dims, out_dim):
     if cfg['fpn'] == 'hybrid_encoder':
         return HybridEncoder(in_dims     = in_dims,
                              out_dim     = out_dim,
-                             depth       = cfg['depth'],
+                             num_blocks  = cfg['fpn_num_blocks'],
                              act_type    = cfg['fpn_act'],
                              norm_type   = cfg['fpn_norm'],
                              depthwise   = cfg['fpn_depthwise'],
                              num_heads   = cfg['en_num_heads'],
                              num_layers  = cfg['en_num_layers'],
-                             mlp_ratio   = cfg['en_mlp_ratio'],
+                             ffn_dim   = cfg['en_ffn_dim'],
                              dropout     = cfg['en_dropout'],
                              pe_temperature = cfg['pe_temperature'],
                              en_act_type    = cfg['en_act'],
@@ -37,14 +37,14 @@ class HybridEncoder(nn.Module):
     def __init__(self, 
                  in_dims     :List  = [256, 512, 1024],
                  out_dim     :int   = 256,
-                 depth       :float = 1.0,
+                 num_blocks  :int   = 3,
                  act_type    :str   = 'silu',
                  norm_type   :str   = 'BN',
                  depthwise   :bool  = False,
                  # Transformer's parameters
                  num_heads      :int   = 8,
                  num_layers     :int   = 1,
-                 mlp_ratio      :float = 4.0,
+                 ffn_dim        :int   = 1024,
                  dropout        :float = 0.1,
                  pe_temperature :float = 10000.,
                  en_act_type    :str   = 'gelu'
@@ -56,10 +56,9 @@ class HybridEncoder(nn.Module):
         self.in_dims = in_dims
         self.out_dim = out_dim
         self.out_dims = [self.out_dim] * len(in_dims)
-        self.depth = depth
         self.num_heads = num_heads
         self.num_layers = num_layers
-        self.mlp_ratio = mlp_ratio
+        self.ffn_dim = ffn_dim
         c3, c4, c5 = in_dims
 
         # ---------------- Input projs ----------------
@@ -75,7 +74,7 @@ class HybridEncoder(nn.Module):
         self.transformer_encoder = TransformerEncoder(d_model        = self.out_dim,
                                                       num_heads      = num_heads,
                                                       num_layers     = num_layers,
-                                                      mlp_ratio      = mlp_ratio,
+                                                      ffn_dim      = ffn_dim,
                                                       pe_temperature = pe_temperature,
                                                       dropout        = dropout,
                                                       act_type       = en_act_type
@@ -85,7 +84,7 @@ class HybridEncoder(nn.Module):
         ## P5 -> P4
         self.top_down_layer_1 = RTCBlock(in_dim       = self.out_dim * 2,
                                          out_dim      = self.out_dim,
-                                         num_blocks   = round(3*depth),
+                                         num_blocks   = num_blocks,
                                          shortcut     = False,
                                          act_type     = act_type,
                                          norm_type    = norm_type,
@@ -94,7 +93,7 @@ class HybridEncoder(nn.Module):
         ## P4 -> P3
         self.top_down_layer_2 = RTCBlock(in_dim       = self.out_dim * 2,
                                          out_dim      = self.out_dim,
-                                         num_blocks   = round(3*depth),
+                                         num_blocks   = num_blocks,
                                          shortcut     = False,
                                          act_type     = act_type,
                                          norm_type    = norm_type,
@@ -105,7 +104,7 @@ class HybridEncoder(nn.Module):
         ## P3 -> P4
         self.bottom_up_layer_1 = RTCBlock(in_dim       = self.out_dim * 2,
                                           out_dim      = self.out_dim,
-                                          num_blocks   = round(3*depth),
+                                          num_blocks   = num_blocks,
                                           shortcut     = False,
                                           act_type     = act_type,
                                           norm_type    = norm_type,
@@ -114,7 +113,7 @@ class HybridEncoder(nn.Module):
         ## P4 -> P5
         self.bottom_up_layer_2 = RTCBlock(in_dim       = self.out_dim * 2,
                                           out_dim      = self.out_dim,
-                                          num_blocks   = round(3*depth),
+                                          num_blocks   = num_blocks,
                                           shortcut     = False,
                                           act_type     = act_type,
                                           norm_type    = norm_type,
@@ -165,16 +164,14 @@ if __name__ == '__main__':
     import time
     from thop import profile
     cfg = {
-        'width': 1.0,
-        'depth': 1.0,
         'fpn': 'hybrid_encoder',
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
-        'expansion': 1.0,
+        'fpn_num_blocks': 3,
         'en_num_heads': 8,
         'en_num_layers': 1,
-        'en_mlp_ratio': 4.0,
+        'en_ffn_dim': 1024,
         'en_dropout': 0.0,
         'pe_temperature': 10000.,
         'en_act': 'gelu',
