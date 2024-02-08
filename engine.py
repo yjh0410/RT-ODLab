@@ -806,7 +806,7 @@ class RTCTrainer(object):
         self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
         self.optimizer_dict['lr0'] *= args.batch_size * self.grad_accumulate / 64
@@ -1171,7 +1171,7 @@ class RTDetrTrainer(object):
         self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
         self.optimizer_dict['lr0'] *= self.args.batch_size / 16.  # auto lr scaling
@@ -1647,7 +1647,7 @@ class RTCTrainerDS(object):
         self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
         self.optimizer_dict['lr0'] *= args.batch_size * self.grad_accumulate / 64
@@ -1990,7 +1990,7 @@ class RTCTrainerDSP(object):
         self.evaluator = build_evluator(args, self.data_cfg, self.val_transform, self.device)
 
         # ---------------------------- Build Grad. Scaler ----------------------------
-        self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
+        self.scaler = torch.cuda.amp.GradScaler(enabled=self.args.fp16)
 
         # ---------------------------- Build Optimizer ----------------------------
         self.optimizer_dict['lr0'] *= args.batch_size * self.grad_accumulate / 64
