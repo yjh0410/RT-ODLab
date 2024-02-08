@@ -1147,7 +1147,7 @@ class RTDetrTrainer(object):
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.0001, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 2000} # no lr decay
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 2000} # no lr decay (because lrf is set 1.0)
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -1496,7 +1496,7 @@ class RTPDetrTrainer(RTDetrTrainer):
         # ------------------- Basic parameters -------------------
         ## Reset optimzier hyper-parameters
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.05, 'lr0': 0.0002, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 1000} # no lr decay
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1, 'warmup_iters': 1000}
         self.normalize_bbox = False
 
         # ---------------------------- Build Optimizer ----------------------------
