@@ -1297,7 +1297,6 @@ class RTDetrTrainer(object):
                 xi = [0, nw]  # x interp
                 for x in self.optimizer.param_groups:
                     x['lr'] = np.interp(ni, xi, [0.0, x['initial_lr'] * self.lf(self.epoch)])
-                exit()
                                 
             # To device
             images = images.to(self.device, non_blocking=True).float()
