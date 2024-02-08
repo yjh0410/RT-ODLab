@@ -1147,7 +1147,7 @@ class RTDetrTrainer(object):
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.0001, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 2000} # no lr decay (because lrf is set 1.0)
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1, 'warmup_iters': 2000} # no lr decay (because lrf is set 1.0)
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -1297,6 +1297,7 @@ class RTDetrTrainer(object):
                 xi = [0, nw]  # x interp
                 for x in self.optimizer.param_groups:
                     x['lr'] = np.interp(ni, xi, [0.0, x['initial_lr'] * self.lf(self.epoch)])
+                exit()
                                 
             # To device
             images = images.to(self.device, non_blocking=True).float()
@@ -1354,7 +1355,7 @@ class RTDetrTrainer(object):
 
             # Update log
             metric_logger.update(loss=losses.item(), **loss_dict_reduced)
-            metric_logger.update(lr=self.optimizer.param_groups[2]["lr"])
+            metric_logger.update(lr=self.optimizer.param_groups[0]["lr"])
             metric_logger.update(grad_norm=grad_norm)
             metric_logger.update(size=img_size)
 
