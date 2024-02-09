@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -279,24 +280,27 @@ class RepRTCBlock(nn.Module):
                  ) -> None:
         super(RepRTCBlock, self).__init__()
         self.inter_dim = round(out_dim * expansion)
+        # ------------ Input & Output projection ------------
         self.conv1 = BasicConv(in_dim, self.inter_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
         self.conv2 = BasicConv(in_dim, self.inter_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
-        self.module = nn.ModuleList([RepVggBlock(self.inter_dim, self.inter_dim, act_type, norm_type)
-                                     for _ in range(num_blocks)])
-        self.conv3 = BasicConv(self.inter_dim, out_dim, kernel_size=3, padding=1, act_type=act_type, norm_type=norm_type)
-
+        self.conv3 = BasicConv(self.inter_dim * (2 + num_blocks), out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        # ------------ Core modules ------------
+        module = nn.Sequential(RepVggBlock(self.inter_dim, self.inter_dim, act_type, norm_type),
+                               RepVggBlock(self.inter_dim, self.inter_dim, act_type, norm_type),)
+        self.module = nn.ModuleList([copy.deepcopy(module) for _ in range(num_blocks)])
+        
     def forward(self, x):
         # Input proj
         x1 = self.conv1(x)
         x2 = self.conv2(x)
 
         # Core module
-        out = [x1]
+        out = [x1, x2]
         for m in self.module:
             x2 = m(x2)
             out.append(x2)
 
         # Output proj
-        out = self.conv3(sum(out))
+        out = self.conv3(torch.cat(out, dim=1))
 
         return out

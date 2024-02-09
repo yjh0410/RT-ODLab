@@ -19,7 +19,7 @@ class RT_DETR(nn.Module):
                  conf_thresh = 0.1,
                  nms_thresh  = 0.5,
                  topk        = 300,
-                 deploy      = False,
+                 onnx_deploy = False,
                  no_multi_labels = False,
                  use_nms     = False,
                  nms_class_agnostic = False,
@@ -28,7 +28,7 @@ class RT_DETR(nn.Module):
         # ----------- Basic setting -----------
         self.num_classes = num_classes
         self.num_topk = topk
-        self.deploy = deploy
+        self.onnx_deploy = onnx_deploy
         ## Post-process parameters
         self.use_nms = use_nms
         self.nms_thresh = nms_thresh
@@ -43,6 +43,13 @@ class RT_DETR(nn.Module):
 
         ## Detect decoder
         self.detect_decoder = build_transformer(cfg, self.fpn_dims, num_classes, return_intermediate=self.training)
+
+    def deploy(self):
+        assert not self.training
+        for m in self.modules():
+            if hasattr(m, 'convert_to_deploy'):
+                m.convert_to_deploy()
+        return self 
 
     def post_process(self, box_pred, cls_pred):
         # xywh -> xyxy
@@ -96,7 +103,7 @@ class RT_DETR(nn.Module):
             topk_labels = topk_idxs % self.num_classes
             topk_bboxes = box_pred[topk_box_idxs]
 
-        if not self.deploy:
+        if not self.onnx_deploy:
             topk_scores = topk_scores.cpu().numpy()
             topk_labels = topk_labels.cpu().numpy()
             topk_bboxes = topk_bboxes.cpu().numpy()
@@ -155,7 +162,8 @@ if __name__ == '__main__':
         'max_stride': 32,
         # Image Encoder - FPN
         'fpn': 'hybrid_encoder',
-        'fpn_num_blocks': 4,
+        'fpn_num_blocks': 3,
+        'fpn_expansion': 0.5,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -217,6 +225,7 @@ if __name__ == '__main__':
     # Inference
     with torch.no_grad():
         model.eval()
+        model.deploy()
         t0 = time.time()
         outputs = model(image)
         t1 = time.time()

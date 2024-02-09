@@ -1140,7 +1140,7 @@ class RTDetrTrainer(object):
         self.args.fp16 = False
         # weak augmentatino stage
         self.second_stage = False
-        self.second_stage_epoch = 5
+        self.second_stage_epoch = -1
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -1160,6 +1160,8 @@ class RTDetrTrainer(object):
             args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
         self.val_transform, _ = build_transform(
             args=args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=False)
+        if self.trans_cfg["mosaic_prob"] > 0:
+            self.second_stage_epoch = 5
 
         # ---------------------------- Build Dataset & Dataloader ----------------------------
         self.dataset, self.dataset_info = build_dataset(args, self.data_cfg, self.trans_cfg, self.train_transform, is_train=True)

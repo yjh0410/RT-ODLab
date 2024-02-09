@@ -314,7 +314,7 @@ rtdetr_s_trans_config = {
     },
     # Mosaic & Mixup
     'mosaic_keep_ratio': False,
-    'mosaic_prob': 1.0,
+    'mosaic_prob': 0.0,
     'mixup_prob':  0.0,
     'mosaic_type': 'yolov5',
     'mixup_type':  'yolov5',
@@ -339,8 +339,8 @@ rtdetr_l_trans_config = {
     },
     # Mosaic & Mixup
     'mosaic_keep_ratio': False,
-    'mosaic_prob': 1.0,
-    'mixup_prob':  0.15,
+    'mosaic_prob': 0.0,
+    'mixup_prob':  0.0,
     'mosaic_type': 'yolov5',
     'mixup_type':  'yolov5',
     'mixup_scale': [0.5, 1.5]   # "mixup_scale" is not used for YOLOv5MixUp, just for YOLOXMixup

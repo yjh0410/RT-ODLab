@@ -10,8 +10,8 @@ rtdetr_cfg = {
         'backbone_norm': 'BN',
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
-        'freeze_at': -1,
-        'freeze_stem_only': True,
+        'freeze_at': 0,
+        'freeze_stem_only': False,
         'out_stride': [8, 16, 32],
         'max_stride': 32,
         ## Image Encoder - FPN
