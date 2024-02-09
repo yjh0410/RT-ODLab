@@ -326,4 +326,3 @@ class RepRTCBlock(nn.Module):
         out = self.conv3(sum(out))
 
         return out
-
