@@ -151,20 +151,20 @@ class HybridEncoder(nn.Module):
         ## P5 -> P4
         p5_in = self.reduce_layer_1(p5)
         p5_up = F.interpolate(p5_in, scale_factor=2.0)
-        p4 = self.top_down_layer_1(torch.cat([p4, p5_up], dim=1))
+        p4    = self.top_down_layer_1(torch.cat([p4, p5_up], dim=1))
 
         ## P4 -> P3
         p4_in = self.reduce_layer_2(p4)
         p4_up = F.interpolate(p4_in, scale_factor=2.0)
-        p3 = self.top_down_layer_2(torch.cat([p3, p4_up], dim=1))
+        p3    = self.top_down_layer_2(torch.cat([p3, p4_up], dim=1))
 
         # -------- Bottom up PAN --------
         ## P3 -> P4
         p3_ds = self.dowmsample_layer_1(p3)
-        p4 = self.bottom_up_layer_1(torch.cat([p4_in, p3_ds], dim=1))
+        p4    = self.bottom_up_layer_1(torch.cat([p4_in, p3_ds], dim=1))
 
         p4_ds = self.dowmsample_layer_2(p4)
-        p5 = self.bottom_up_layer_2(torch.cat([p5_in, p4_ds], dim=1))
+        p5    = self.bottom_up_layer_2(torch.cat([p5_in, p4_ds], dim=1))
 
         out_feats = [p3, p4, p5]
         
