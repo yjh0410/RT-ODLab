@@ -201,7 +201,7 @@ class RTDETRTransformer(nn.Module):
             # [l], start index of each level
             level_start_index.append(h * w + level_start_index[-1])
             # [B, C, H, W] -> [B, N, C], N=HxW
-            feat_flatten.append(feat.flatten(2).permute(0, 2, 1))
+            feat_flatten.append(feat.flatten(2).permute(0, 2, 1).contiguous())
 
         # [B, N, C], N = N_0 + N_1 + ...
         feat_flatten = torch.cat(feat_flatten, dim=1)

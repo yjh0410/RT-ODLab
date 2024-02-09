@@ -111,23 +111,24 @@ def build_transform(args, trans_config, max_stride=32, is_train=False):
     ## SSD style transform
     if trans_config['aug_type'] == 'ssd':
         if is_train:
-            transform = SSDAugmentation(img_size=args.img_size,)
+            transform = SSDAugmentation(args.img_size)
         else:
-            transform = SSDBaseTransform(img_size=args.img_size,)
+            transform = SSDBaseTransform(args.img_size)
     ## YOLO style transform
     elif trans_config['aug_type'] == 'yolov5':
         if is_train:
-            transform = YOLOv5Augmentation(img_size=args.img_size, trans_config=trans_config, use_ablu=trans_config['use_ablu'])
+            transform = YOLOv5Augmentation(args.img_size, trans_config['affine_params'], trans_config['use_ablu'])
         else:
-            transform = YOLOv5BaseTransform(img_size=args.img_size,max_stride=max_stride)
+            transform = YOLOv5BaseTransform(args.img_size, max_stride)
     ## RT-DETR style transform
     elif trans_config['aug_type'] == 'rtdetr':
         if is_train:
-            use_mosaic = False if trans_config['mosaic_prob'] < 0.2 else True
             transform = RTDetrAugmentation(
-                img_size=args.img_size, pixel_mean=trans_config['pixel_mean'], pixel_std=trans_config['pixel_std'], use_mosaic=use_mosaic)
+                args.img_size, trans_config['pixel_mean'], trans_config['pixel_std'])
+            if trans_config["mosaic_prob"] > 0:
+                transform.reset_weak_augment()
         else:
             transform = RTDetrBaseTransform(
-                img_size=args.img_size, pixel_mean=trans_config['pixel_mean'], pixel_std=trans_config['pixel_std'])
+                args.img_size, trans_config['pixel_mean'], trans_config['pixel_std'])
 
     return transform, trans_config

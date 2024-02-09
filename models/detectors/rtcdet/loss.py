@@ -82,7 +82,7 @@ class Criterion(object):
                                  'labels': [...], 
                                  'orig_size': ...}, ...]
         """
-        bs, num_anchors = outputs['pred_cls'][0].shape[:2]
+        bs = outputs['pred_cls'][0].shape[0]
         device = outputs['pred_cls'][0].device
         anchors = outputs['anchors']
         fpn_strides = outputs['strides']

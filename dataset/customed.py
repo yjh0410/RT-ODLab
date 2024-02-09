@@ -4,7 +4,6 @@ import time
 import random
 import numpy as np
 
-import torch
 from torch.utils.data import Dataset
 
 try:
@@ -13,9 +12,9 @@ except:
     print("It seems that the COCOAPI is not installed.")
 
 try:
-    from .data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
+    from .data_augment.strong_augment import MosaicAugment, MixupAugment
 except:
-    from data_augment.yolov5_augment import yolov5_mosaic_augment, yolov5_mixup_augment, yolox_mixup_augment
+    from  data_augment.strong_augment import MosaicAugment, MixupAugment
 
 
 class CustomedDataset(Dataset):
@@ -41,14 +40,19 @@ class CustomedDataset(Dataset):
         self.class_ids = sorted(self.coco.getCatIds())
         self.dataset_size = len(self.ids)
         # ----------- Transform parameters -----------
-        self.transform = transform
-        self.mosaic_prob = 0
-        self.mixup_prob = 0
         self.trans_config = trans_config
-        if trans_config is not None:
-            self.mosaic_prob = trans_config['mosaic_prob']
-            self.mixup_prob = trans_config['mixup_prob']
-
+        self.transform = transform
+        # ----------- Strong augmentation -----------
+        if is_train:
+            self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
+            self.mixup_prob  = trans_config['mixup_prob']  if trans_config else 0.0
+            self.mosaic_augment = MosaicAugment(img_size, trans_config, is_train)
+            self.mixup_augment  = MixupAugment(img_size, trans_config)
+        else:
+            self.mosaic_prob = 0.0
+            self.mixup_prob  = 0.0
+            self.mosaic_augment = None
+            self.mixup_augment  = None
         print('==============================')
         print('Image Set: {}'.format(image_set))
         print('Json file: {}'.format(self.json_file))
@@ -103,13 +107,14 @@ class CustomedDataset(Dataset):
 
     # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
-        # load 4x mosaic image
+        # ------------ Prepare 4 indexes of images ------------
+        ## Load 4x mosaic image
         index_list = np.arange(index).tolist() + np.arange(index+1, len(self.ids)).tolist()
         id1 = index
         id2, id3, id4 = random.sample(index_list, 3)
         indexs = [id1, id2, id3, id4]
 
-        # load images and targets
+        ## Load images and targets
         image_list = []
         target_list = []
         for index in indexs:
@@ -117,26 +122,22 @@ class CustomedDataset(Dataset):
             image_list.append(img_i)
             target_list.append(target_i)
 
-        # Mosaic
-        if self.trans_config['mosaic_type'] == 'yolov5_mosaic':
-            image, target = yolov5_mosaic_augment(
-                image_list, target_list, self.img_size, self.trans_config, self.trans_config['mosaic_keep_ratio'], self.is_train)
+        # ------------ Mosaic augmentation ------------
+        image, target = self.mosaic_augment(image_list, target_list)
 
         return image, target
 
     def load_mixup(self, origin_image, origin_target):
-        # YOLOv5 type Mixup
-        if self.trans_config['mixup_type'] == 'yolov5_mixup':
+        # ------------ Load a new image & target ------------
+        if self.mixup_augment.mixup_type == 'yolov5':
             new_index = np.random.randint(0, len(self.ids))
             new_image, new_target = self.load_mosaic(new_index)
-            image, target = yolov5_mixup_augment(
-                origin_image, origin_target, new_image, new_target)
-        # YOLOX type Mixup
-        elif self.trans_config['mixup_type'] == 'yolox_mixup':
+        elif self.mixup_augment.mixup_type == 'yolox':
             new_index = np.random.randint(0, len(self.ids))
             new_image, new_target = self.load_image_target(new_index)
-            image, target = yolox_mixup_augment(
-                origin_image, origin_target, new_image, new_target, self.img_size, self.trans_config['mixup_scale'])
+            
+        # ------------ Mixup augmentation ------------
+        image, target = self.mixup_augment(origin_image, origin_target, new_image, new_target)
 
         return image, target
     

@@ -316,7 +316,7 @@ class TransformerEncoder(nn.Module):
         # -------- Transformer encoder --------
         channels, fmp_h, fmp_w = src.shape[1:]
         # [B, C, H, W] -> [B, N, C], N=HxW
-        src_flatten = src.flatten(2).permute(0, 2, 1)
+        src_flatten = src.flatten(2).permute(0, 2, 1).contiguous()
         memory = src_flatten
 
         # PosEmbed: [1, N, C]
@@ -328,7 +328,8 @@ class TransformerEncoder(nn.Module):
             memory = encoder(memory, pos_embed=pos_embed)
 
         # Output: [B, N, C] -> [B, C, N] -> [B, C, H, W]
-        src = memory.permute(0, 2, 1).reshape([-1, channels, fmp_h, fmp_w])
+        src = memory.permute(0, 2, 1).contiguous()
+        src = src.view([-1, channels, fmp_h, fmp_w])
 
         return src
 

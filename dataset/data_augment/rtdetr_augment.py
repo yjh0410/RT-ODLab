@@ -401,10 +401,9 @@ class ToTensor(object):
 # ------------------------- Preprocessers -------------------------
 ## Transform for Train
 class RTDetrAugmentation(object):
-    def __init__(self, img_size=640, pixel_mean=[123.675, 116.28, 103.53], pixel_std=[58.395, 57.12, 57.375], use_mosaic=False):
+    def __init__(self, img_size=640, pixel_mean=[123.675, 116.28, 103.53], pixel_std=[58.395, 57.12, 57.375]):
         # ----------------- Basic parameters -----------------
         self.img_size = img_size
-        self.use_mosaic = use_mosaic
         self.pixel_mean = pixel_mean  # RGB format
         self.pixel_std = pixel_std    # RGB format
         self.color_format = 'rgb'
@@ -413,29 +412,18 @@ class RTDetrAugmentation(object):
         print("Pixel std:  {}".format(self.pixel_std))
 
         # ----------------- Transforms -----------------
-        if use_mosaic:
-            # For use-mosaic setting, we do not use RandomSampleCrop processor.
-            self.augment = Compose([
-                RandomPhotometricDistort(hue=0.5, saturation=1.5, exposure=1.5),
-                RandomHorizontalFlip(p=0.5),
-                Resize(img_size=self.img_size),
-                ConvertColorFormat(self.color_format),
-                Normalize(self.pixel_mean, self.pixel_std),
-                ToTensor()
-            ])
-        else:
-            # For no-mosaic setting, we use RandomExpand & RandomSampleCrop processor.
-            self.augment = Compose([
-                RandomPhotometricDistort(hue=0.5, saturation=1.5, exposure=1.5),
-                RandomJitterCrop(p=0.8, jitter_ratio=0.3, fill_value=self.pixel_mean[::-1]),
-                RandomHorizontalFlip(p=0.5),
-                Resize(img_size=self.img_size),
-                ConvertColorFormat(self.color_format),
-                Normalize(self.pixel_mean, self.pixel_std),
-                ToTensor()
-            ])
+        self.augment = Compose([
+            RandomPhotometricDistort(hue=0.5, saturation=1.5, exposure=1.5),
+            RandomJitterCrop(p=0.8, jitter_ratio=0.3, fill_value=self.pixel_mean[::-1]),
+            RandomHorizontalFlip(p=0.5),
+            Resize(img_size=self.img_size),
+            ConvertColorFormat(self.color_format),
+            Normalize(self.pixel_mean, self.pixel_std),
+            ToTensor()
+        ])
 
-    def set_weak_augment(self):
+    def reset_weak_augment(self):
+        print("Reset transform with weak augmentation ...")
         self.augment = Compose([
             RandomHorizontalFlip(p=0.5),
             Resize(img_size=self.img_size),
@@ -444,6 +432,7 @@ class RTDetrAugmentation(object):
             ToTensor()
         ])
 
+
     def __call__(self, image, target, mosaic=False):
         orig_h, orig_w = image.shape[:2]
         ratio = [self.img_size / orig_w, self.img_size / orig_h]
@@ -451,7 +440,6 @@ class RTDetrAugmentation(object):
         image, target = self.augment(image, target)
 
         return image, target, ratio
-
 
 ## Transform for Eval
 class RTDetrBaseTransform(object):

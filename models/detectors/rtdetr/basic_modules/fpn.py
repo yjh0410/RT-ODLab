@@ -66,8 +66,6 @@ class HybridEncoder(nn.Module):
         self.input_proj_2 = BasicConv(c4, self.out_dim, kernel_size=1, act_type=None, norm_type=norm_type)
         self.input_proj_3 = BasicConv(c3, self.out_dim, kernel_size=1, act_type=None, norm_type=norm_type)
 
-        # ---------------- Downsample ----------------
-
         # ---------------- Transformer Encoder ----------------
         self.transformer_encoder = TransformerEncoder(d_model        = self.out_dim,
                                                       num_heads      = num_heads,
