@@ -788,7 +788,7 @@ class RTCTrainer(object):
         self.warmup_dict = {'warmup_momentum': 0.8, 'warmup_bias_lr': 0.1}        
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
-        self.data_cfg = data_cfg
+        self.data_cfg  = data_cfg
         self.model_cfg = model_cfg
         self.trans_cfg = trans_cfg
 
@@ -1493,7 +1493,7 @@ class RTPDetrTrainer(RTDetrTrainer):
         # ------------------- Basic parameters -------------------
         ## Reset optimzier hyper-parameters
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.05, 'lr0': 0.0002, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 0.1, 'warmup_iters': 1000}
+        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 1000}
         self.normalize_bbox = False
 
         # ---------------------------- Build Optimizer ----------------------------
