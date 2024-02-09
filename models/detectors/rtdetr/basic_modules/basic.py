@@ -249,7 +249,7 @@ class RepVggBlock(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.conv1 = BasicConv(in_dim, out_dim, kernel_size=3, padding=1, act_type=None, norm_type=norm_type)
-        self.conv2 = BasicConv(in_dim, out_dim, kernel_size=3, padding=1, act_type=None, norm_type=norm_type)
+        self.conv2 = BasicConv(in_dim, out_dim, kernel_size=1, padding=0, act_type=None, norm_type=norm_type)
         self.act = get_activation(act_type) 
 
     def forward(self, x):
@@ -305,22 +305,25 @@ class RepRTCBlock(nn.Module):
                  ) -> None:
         super(RepRTCBlock, self).__init__()
         self.inter_dim = round(out_dim * expansion)
-        self.input_proj = BasicConv(in_dim, self.inter_dim * 2, kernel_size=1, act_type=act_type, norm_type=norm_type)
-        self.m = nn.Sequential(*(
-            RepVggBlock(self.inter_dim, self.inter_dim, act_type, norm_type)
-            for _ in range(num_blocks)))
-        self.output_proj = BasicConv((2 + num_blocks) * self.inter_dim, out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        self.conv1 = BasicConv(in_dim, self.inter_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        self.conv2 = BasicConv(in_dim, self.inter_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        self.module = nn.ModuleList([RepVggBlock(self.inter_dim, self.inter_dim, act_type, norm_type)
+                                     for _ in range(num_blocks)])
+        self.conv3 = BasicConv(self.inter_dim, out_dim, kernel_size=3, padding=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
         # Input proj
-        x1, x2 = torch.chunk(self.input_proj(x), 2, dim=1)
-        out = list([x1, x2])
+        x1 = self.conv1(x)
+        x2 = self.conv2(x)
 
-        # Bottlenecl
-        out.extend(m(out[-1]) for m in self.m)
+        # Core module
+        out = [x1]
+        for m in self.module:
+            x2 = m(x2)
+            out.append(x2)
 
         # Output proj
-        out = self.output_proj(torch.cat(out, dim=1))
+        out = self.conv3(sum(out))
 
         return out
 
