@@ -4,10 +4,10 @@ import torch.nn.functional as F
 from typing import List
 
 try:
-    from .basic import BasicConv, RepRTCBlock
+    from .basic import BasicConv, RTCBlock
     from .transformer import TransformerEncoder
 except:
-    from  basic import BasicConv, RepRTCBlock
+    from  basic import BasicConv, RTCBlock
     from  transformer import TransformerEncoder
 
 
@@ -17,9 +17,9 @@ def build_fpn(cfg, in_dims, out_dim):
         return HybridEncoder(in_dims     = in_dims,
                              out_dim     = out_dim,
                              num_blocks  = cfg['fpn_num_blocks'],
-                             expansion   = cfg['fpn_expansion'],
                              act_type    = cfg['fpn_act'],
                              norm_type   = cfg['fpn_norm'],
+                             depthwise   = cfg['fpn_depthwise'],
                              num_heads   = cfg['en_num_heads'],
                              num_layers  = cfg['en_num_layers'],
                              ffn_dim     = cfg['en_ffn_dim'],
@@ -38,9 +38,9 @@ class HybridEncoder(nn.Module):
                  in_dims        :List  = [256, 512, 1024],
                  out_dim        :int   = 256,
                  num_blocks     :int   = 3,
-                 expansion      :float = 1.0,
                  act_type       :str   = 'silu',
                  norm_type      :str   = 'BN',
+                 depthwise      :bool  = False,
                  # Transformer's parameters
                  num_heads      :int   = 8,
                  num_layers     :int   = 1,
@@ -62,9 +62,17 @@ class HybridEncoder(nn.Module):
         c3, c4, c5 = in_dims
 
         # ---------------- Input projs ----------------
-        self.input_proj_1 = BasicConv(c5, self.out_dim, kernel_size=1, act_type=None, norm_type=norm_type)
-        self.input_proj_2 = BasicConv(c4, self.out_dim, kernel_size=1, act_type=None, norm_type=norm_type)
-        self.input_proj_3 = BasicConv(c3, self.out_dim, kernel_size=1, act_type=None, norm_type=norm_type)
+        self.reduce_layer_1 = BasicConv(c5, self.out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        self.reduce_layer_2 = BasicConv(c4, self.out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        self.reduce_layer_3 = BasicConv(c3, self.out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+
+        # ---------------- Downsample ----------------
+        self.dowmsample_layer_1 = BasicConv(self.out_dim, self.out_dim,
+                                            kernel_size=3, padding=1, stride=2,
+                                            act_type=act_type, norm_type=norm_type, depthwise=depthwise)
+        self.dowmsample_layer_2 = BasicConv(self.out_dim, self.out_dim,
+                                            kernel_size=3, padding=1, stride=2,
+                                            act_type=act_type, norm_type=norm_type, depthwise=depthwise)
 
         # ---------------- Transformer Encoder ----------------
         self.transformer_encoder = TransformerEncoder(d_model        = self.out_dim,
@@ -78,51 +86,43 @@ class HybridEncoder(nn.Module):
 
         # ---------------- Top dwon FPN ----------------
         ## P5 -> P4
-        self.reduce_layer_1 = BasicConv(self.out_dim, self.out_dim,
-                                        kernel_size=1, padding=0, stride=1,
-                                        act_type=act_type, norm_type=norm_type)
-        self.top_down_layer_1 = RepRTCBlock(in_dim     = self.out_dim * 2,
-                                            out_dim    = self.out_dim,
-                                            num_blocks = num_blocks,
-                                            expansion  = expansion,
-                                            act_type   = act_type,
-                                            norm_type  = norm_type,
-                                           )
+        self.top_down_layer_1 = RTCBlock(in_dim      = self.out_dim * 2,
+                                         out_dim     = self.out_dim,
+                                         num_blocks  = num_blocks,
+                                         shortcut    = False,
+                                         act_type    = act_type,
+                                         norm_type   = norm_type,
+                                         depthwise   = depthwise,
+                                         )
         ## P4 -> P3
-        self.reduce_layer_2 = BasicConv(self.out_dim, self.out_dim,
-                                        kernel_size=1, padding=0, stride=1,
-                                        act_type=act_type, norm_type=norm_type)
-        self.top_down_layer_2 = RepRTCBlock(in_dim     = self.out_dim * 2,
-                                            out_dim    = self.out_dim,
-                                            num_blocks = num_blocks,
-                                            expansion  = expansion,
-                                            act_type   = act_type,
-                                            norm_type  = norm_type,
-                                            )
+        self.top_down_layer_2 = RTCBlock(in_dim      = self.out_dim * 2,
+                                         out_dim     = self.out_dim,
+                                         num_blocks  = num_blocks,
+                                         shortcut    = False,
+                                         act_type    = act_type,
+                                         norm_type   = norm_type,
+                                         depthwise   = depthwise,
+                                         )
         
         # ---------------- Bottom up PAN----------------
         ## P3 -> P4
-        self.dowmsample_layer_1 = BasicConv(self.out_dim, self.out_dim,
-                                            kernel_size=3, padding=1, stride=2,
-                                            act_type=act_type, norm_type=norm_type)
-        self.bottom_up_layer_1 = RepRTCBlock(in_dim     = self.out_dim * 2,
-                                             out_dim    = self.out_dim,
-                                             num_blocks = num_blocks,
-                                             expansion  = expansion,
-                                             act_type   = act_type,
-                                             norm_type  = norm_type,
-                                             )
+        self.bottom_up_layer_1 = RTCBlock(in_dim      = self.out_dim * 2,
+                                          out_dim     = self.out_dim,
+                                          num_blocks  = num_blocks,
+                                          shortcut    = False,
+                                          act_type    = act_type,
+                                          norm_type   = norm_type,
+                                          depthwise   = depthwise,
+                                          )
         ## P4 -> P5
-        self.dowmsample_layer_2 = BasicConv(self.out_dim, self.out_dim,
-                                            kernel_size=3, padding=1, stride=2,
-                                            act_type=act_type, norm_type=norm_type)
-        self.bottom_up_layer_2 = RepRTCBlock(in_dim     = self.out_dim * 2,
-                                             out_dim    = self.out_dim,
-                                             num_blocks = num_blocks,
-                                             expansion  = expansion,
-                                             act_type   = act_type,
-                                             norm_type  = norm_type,
-                                             )
+        self.bottom_up_layer_2 = RTCBlock(in_dim      = self.out_dim * 2,
+                                          out_dim     = self.out_dim,
+                                          num_blocks  = num_blocks,
+                                          shortcut    = False,
+                                          act_type    = act_type,
+                                          norm_type   = norm_type,
+                                          depthwise   = depthwise,
+                                          )
 
         self.init_weights()
   
@@ -138,31 +138,26 @@ class HybridEncoder(nn.Module):
         c3, c4, c5 = features
 
         # -------- Input projs --------
-        p5 = self.input_proj_1(c5)
-        p4 = self.input_proj_2(c4)
-        p3 = self.input_proj_3(c3)
+        p5 = self.reduce_layer_1(c5)
+        p4 = self.reduce_layer_2(c4)
+        p3 = self.reduce_layer_3(c3)
 
         # -------- Transformer encoder --------
         p5 = self.transformer_encoder(p5)
 
         # -------- Top down FPN --------
-        ## P5 -> P4
-        p5_in = self.reduce_layer_1(p5)
-        p5_up = F.interpolate(p5_in, scale_factor=2.0)
-        p4    = self.top_down_layer_1(torch.cat([p4, p5_up], dim=1))
+        p5_up = F.interpolate(p5, scale_factor=2.0)
+        p4 = self.top_down_layer_1(torch.cat([p4, p5_up], dim=1))
 
-        ## P4 -> P3
-        p4_in = self.reduce_layer_2(p4)
-        p4_up = F.interpolate(p4_in, scale_factor=2.0)
-        p3    = self.top_down_layer_2(torch.cat([p3, p4_up], dim=1))
+        p4_up = F.interpolate(p4, scale_factor=2.0)
+        p3 = self.top_down_layer_2(torch.cat([p3, p4_up], dim=1))
 
         # -------- Bottom up PAN --------
-        ## P3 -> P4
         p3_ds = self.dowmsample_layer_1(p3)
-        p4    = self.bottom_up_layer_1(torch.cat([p4_in, p3_ds], dim=1))
+        p4 = self.bottom_up_layer_1(torch.cat([p4, p3_ds], dim=1))
 
         p4_ds = self.dowmsample_layer_2(p4)
-        p5    = self.bottom_up_layer_2(torch.cat([p5_in, p4_ds], dim=1))
+        p5 = self.bottom_up_layer_2(torch.cat([p5, p4_ds], dim=1))
 
         out_feats = [p3, p4, p5]
         
@@ -178,7 +173,7 @@ if __name__ == '__main__':
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
         'fpn_num_blocks': 3,
-        'fpn_expansion': 1.0,
+        'fpn_expansion': 0.5,
         'en_num_heads': 8,
         'en_num_layers': 1,
         'en_ffn_dim': 1024,
