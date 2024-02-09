@@ -37,7 +37,7 @@ class YOLOX(nn.Module):
                 
         # ------------------- Network Structure -------------------
         ## 主干网络
-        self.backbone, feats_dim = build_backbone(cfg, pretrained=cfg['bk_pretrained']&trainable)
+        self.backbone, feats_dim = build_backbone(cfg)
         
         ## 特征金字塔
         self.fpn = build_fpn(cfg=cfg, in_dims=feats_dim, out_dim=round(256*cfg['width']))

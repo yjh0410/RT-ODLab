@@ -6,7 +6,6 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -50,7 +49,6 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -94,7 +92,6 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -138,7 +135,6 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -182,7 +178,6 @@ yolox_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -229,7 +224,6 @@ yolox_adamw_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -255,7 +249,7 @@ yolox_adamw_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_n',
+        'trans_type': 'yolov5_n',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -273,7 +267,6 @@ yolox_adamw_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': True,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -299,7 +292,7 @@ yolox_adamw_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_s',
+        'trans_type': 'yolov5_s',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -317,7 +310,6 @@ yolox_adamw_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -343,7 +335,7 @@ yolox_adamw_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_m',
+        'trans_type': 'yolov5_m',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -361,7 +353,6 @@ yolox_adamw_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -387,7 +378,7 @@ yolox_adamw_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_l',
+        'trans_type': 'yolov5_l',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
@@ -405,7 +396,6 @@ yolox_adamw_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'cspdarknet',
-        'bk_pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -431,7 +421,7 @@ yolox_adamw_cfg = {
         # ---------------- Train config ----------------
         ## input
         'multi_scale': [0.5, 1.25],   # 320 -> 800
-        'trans_type': 'yolox_x',
+        'trans_type': 'yolov5_x',
         # ---------------- Assignment config ----------------
         ## matcher
         'matcher': {'center_sampling_radius': 2.5,
