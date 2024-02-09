@@ -18,7 +18,6 @@ class Criterion(object):
         self.num_classes = num_classes
         self.max_epoch = args.max_epoch
         self.no_aug_epoch = args.no_aug_epoch
-        self.aux_bbox_loss = False
         # loss weight
         self.loss_obj_weight = cfg['loss_obj_weight']
         self.loss_cls_weight = cfg['loss_cls_weight']
