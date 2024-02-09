@@ -7,16 +7,17 @@ rtdetr_cfg = {
         # ---------------- Model config ----------------
         ## Image Encoder - Backbone
         'backbone': 'resnet18',
-        'backbone_norm': 'FrozeBN',
+        'backbone_norm': 'BN',
         'pretrained': True,
         'pretrained_weight': 'imagenet1k_v1',
-        'freeze_at': 0,
-        'freeze_stem_only': False,
+        'freeze_at': -1,
+        'freeze_stem_only': True,
         'out_stride': [8, 16, 32],
         'max_stride': 32,
         ## Image Encoder - FPN
         'fpn': 'hybrid_encoder',
         'fpn_num_blocks': 3,
+        'fpn_expansion': 0.5,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
@@ -72,6 +73,7 @@ rtdetr_cfg = {
         ## Image Encoder - FPN
         'fpn': 'hybrid_encoder',
         'fpn_num_blocks': 3,
+        'fpn_expansion': 1.0,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,

@@ -4,10 +4,10 @@ import torch.nn.functional as F
 from typing import List
 
 try:
-    from .basic import BasicConv, RTCBlock
+    from .basic import BasicConv, RepRTCBlock
     from .transformer import TransformerEncoder
 except:
-    from  basic import BasicConv, RTCBlock
+    from  basic import BasicConv, RepRTCBlock
     from  transformer import TransformerEncoder
 
 
@@ -17,9 +17,9 @@ def build_fpn(cfg, in_dims, out_dim):
         return HybridEncoder(in_dims     = in_dims,
                              out_dim     = out_dim,
                              num_blocks  = cfg['fpn_num_blocks'],
+                             expansion   = cfg['fpn_expansion'],
                              act_type    = cfg['fpn_act'],
                              norm_type   = cfg['fpn_norm'],
-                             depthwise   = cfg['fpn_depthwise'],
                              num_heads   = cfg['en_num_heads'],
                              num_layers  = cfg['en_num_layers'],
                              ffn_dim     = cfg['en_ffn_dim'],
@@ -38,9 +38,9 @@ class HybridEncoder(nn.Module):
                  in_dims        :List  = [256, 512, 1024],
                  out_dim        :int   = 256,
                  num_blocks     :int   = 3,
+                 expansion      :float = 1.0,
                  act_type       :str   = 'silu',
                  norm_type      :str   = 'BN',
-                 depthwise      :bool  = False,
                  # Transformer's parameters
                  num_heads      :int   = 8,
                  num_layers     :int   = 1,
@@ -82,43 +82,39 @@ class HybridEncoder(nn.Module):
 
         # ---------------- Top dwon FPN ----------------
         ## P5 -> P4
-        self.top_down_layer_1 = RTCBlock(in_dim       = self.out_dim * 2,
-                                         out_dim      = self.out_dim,
-                                         num_blocks   = num_blocks,
-                                         shortcut     = False,
-                                         act_type     = act_type,
-                                         norm_type    = norm_type,
-                                         depthwise    = depthwise,
-                                         )
+        self.top_down_layer_1 = RepRTCBlock(in_dim     = self.out_dim * 2,
+                                            out_dim     = self.out_dim,
+                                            num_blocks  = num_blocks,
+                                            expansion   = expansion,
+                                            act_type    = act_type,
+                                            norm_type   = norm_type,
+                                           )
         ## P4 -> P3
-        self.top_down_layer_2 = RTCBlock(in_dim       = self.out_dim * 2,
-                                         out_dim      = self.out_dim,
-                                         num_blocks   = num_blocks,
-                                         shortcut     = False,
-                                         act_type     = act_type,
-                                         norm_type    = norm_type,
-                                         depthwise    = depthwise,
-                                         )
+        self.top_down_layer_2 = RepRTCBlock(in_dim     = self.out_dim * 2,
+                                            out_dim     = self.out_dim,
+                                            num_blocks  = num_blocks,
+                                            expansion   = expansion,
+                                            act_type    = act_type,
+                                            norm_type   = norm_type,
+                                            )
         
         # ---------------- Bottom up PAN----------------
         ## P3 -> P4
-        self.bottom_up_layer_1 = RTCBlock(in_dim       = self.out_dim * 2,
-                                          out_dim      = self.out_dim,
-                                          num_blocks   = num_blocks,
-                                          shortcut     = False,
-                                          act_type     = act_type,
-                                          norm_type    = norm_type,
-                                          depthwise    = depthwise,
-                                          )
+        self.bottom_up_layer_1 = RepRTCBlock(in_dim      = self.out_dim * 2,
+                                             out_dim     = self.out_dim,
+                                             num_blocks  = num_blocks,
+                                             expansion   = expansion,
+                                             act_type    = act_type,
+                                             norm_type   = norm_type,
+                                             )
         ## P4 -> P5
-        self.bottom_up_layer_2 = RTCBlock(in_dim       = self.out_dim * 2,
-                                          out_dim      = self.out_dim,
-                                          num_blocks   = num_blocks,
-                                          shortcut     = False,
-                                          act_type     = act_type,
-                                          norm_type    = norm_type,
-                                          depthwise    = depthwise,
-                                          )
+        self.bottom_up_layer_2 = RepRTCBlock(in_dim      = self.out_dim * 2,
+                                             out_dim     = self.out_dim,
+                                             num_blocks  = num_blocks,
+                                             expansion   = expansion,
+                                             act_type    = act_type,
+                                             norm_type   = norm_type,
+                                             )
 
         self.init_weights()
   
@@ -169,6 +165,7 @@ if __name__ == '__main__':
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
         'fpn_num_blocks': 3,
+        'fpn_expansion': 1.0,
         'en_num_heads': 8,
         'en_num_layers': 1,
         'en_ffn_dim': 1024,
