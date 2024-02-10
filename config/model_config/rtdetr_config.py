@@ -52,7 +52,7 @@ rtdetr_cfg = {
                        'giou': 2,},
         # ---------------- Train config ----------------
         ## input
-        'multi_scale': [0.5, 1.5],   # 320 -> 960
+        'multi_scale': [0.5, 1.25],   # 320 -> 800
         'trans_type': 'rtdetr_s',
         # ---------------- Train config ----------------
         'trainer_type': 'rtdetr',
