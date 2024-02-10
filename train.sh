@@ -19,7 +19,7 @@ if [[ $MODEL == *"rtdetr"* ]]; then
     FIND_UNUSED_PARAMS=True
 elif [[ $MODEL == *"rtcdet"* ]]; then
     # Epoch setting
-    MAX_EPOCH=300
+    MAX_EPOCH=400
     WP_EPOCH=3
     EVAL_EPOCH=10
     NO_AUG_EPOCH=20
