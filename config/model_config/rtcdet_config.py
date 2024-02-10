@@ -10,7 +10,6 @@ rtcdet_cfg = {
         'bk_depthwise': False,
         'width': 0.50,
         'depth': 0.34,
-        'ratio': 2.0,
         'stride': [8, 16, 32],  # P3, P4, P5
         'max_stride': 32,
         'reg_max': 16,

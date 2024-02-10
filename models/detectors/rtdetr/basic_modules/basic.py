@@ -214,7 +214,11 @@ class BasicConv(nn.Module):
         if not self.depthwise:
             return self.act(self.norm(self.conv(x)))
         else:
-            return self.act(self.norm2(self.conv2(self.norm1(self.conv1(x)))))
+            # Depthwise conv
+            x = self.norm1(self.conv1(x))
+            # Pointwise conv
+            x = self.norm2(self.conv2(x))
+            return x
 
 
 # ----------------- CNN Modules -----------------

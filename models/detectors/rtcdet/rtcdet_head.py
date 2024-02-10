@@ -136,9 +136,9 @@ if __name__ == '__main__':
         'head_depthwise': False,
         'reg_max': 16,
     }
-    fpn_dims = [256, 512, 512]
+    fpn_dims = [256, 256, 256]
     cls_out_dim = 256
-    reg_out_dim = 64
+    reg_out_dim = 256
     # Head-1
     model = build_head(cfg, fpn_dims, num_levels=3, num_classes=80, reg_max=16)
     print(model)

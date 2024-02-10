@@ -10,11 +10,11 @@ except:
 # ---------------------------- Basic functions ----------------------------
 ## YOLOv8's backbone
 class RTCBackbone(nn.Module):
-    def __init__(self, width=1.0, depth=1.0, ratio=1.0, act_type='silu', norm_type='BN', depthwise=False):
+    def __init__(self, width=1.0, depth=1.0, act_type='silu', norm_type='BN', depthwise=False):
         super(RTCBackbone, self).__init__()
-        self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(512 * width * ratio)]
+        self.feat_dims = [round(64 * width), round(128 * width), round(256 * width), round(512 * width), round(1024 * width)]
         # P1/2
-        self.layer_1 = BasicConv(3, self.feat_dims[0], kernel_size=3, padding=1, stride=2, act_type=act_type, norm_type=norm_type)
+        self.layer_1 = BasicConv(3, self.feat_dims[0], kernel_size=6, padding=2, stride=2, act_type=act_type, norm_type=norm_type)
         # P2/4
         self.layer_2 = nn.Sequential(
             BasicConv(self.feat_dims[0], self.feat_dims[1],
@@ -35,7 +35,7 @@ class RTCBackbone(nn.Module):
                       act_type=act_type, norm_type=norm_type, depthwise=depthwise),
             RTCBlock(in_dim     = self.feat_dims[2],
                      out_dim    = self.feat_dims[2],
-                     num_blocks = round(6*depth),
+                     num_blocks = round(9*depth),
                      shortcut   = True,
                      act_type   = act_type,
                      norm_type  = norm_type,
@@ -48,7 +48,7 @@ class RTCBackbone(nn.Module):
                       act_type=act_type, norm_type=norm_type, depthwise=depthwise),
             RTCBlock(in_dim     = self.feat_dims[3],
                      out_dim    = self.feat_dims[3],
-                     num_blocks = round(6*depth),
+                     num_blocks = round(9*depth),
                      shortcut   = True,
                      act_type   = act_type,
                      norm_type  = norm_type,
@@ -96,7 +96,6 @@ def build_backbone(cfg):
     # model
     backbone = RTCBackbone(width=cfg['width'],
                            depth=cfg['depth'],
-                           ratio=cfg['ratio'],
                            act_type=cfg['bk_act'],
                            norm_type=cfg['bk_norm'],
                            depthwise=cfg['bk_depthwise']
