@@ -17,7 +17,8 @@ from evaluator.build import build_evluator
 
 # ----------------- Optimizer & LrScheduler Components -----------------
 from utils.solver.optimizer import build_yolo_optimizer, build_rtdetr_optimizer
-from utils.solver.lr_scheduler import build_lr_scheduler
+from utils.solver.lr_scheduler import build_lambda_lr_scheduler
+from utils.solver.lr_scheduler import build_wp_lr_scheduler, build_lr_scheduler
 
 # ----------------- Dataset Components -----------------
 from dataset.build import build_dataset, build_transform
@@ -80,7 +81,7 @@ class Yolov8Trainer(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
+        self.lr_scheduler, self.lf = build_lambda_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
@@ -449,7 +450,7 @@ class YoloxTrainer(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch - self.no_aug_epoch)
+        self.lr_scheduler, self.lf = build_lambda_lr_scheduler(self.lr_schedule_dict, self.optimizer, self.args.max_epoch - self.no_aug_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
@@ -813,7 +814,7 @@ class RTCTrainer(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
+        self.lr_scheduler, self.lf = build_lambda_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
@@ -1147,7 +1148,8 @@ class RTDetrTrainer(object):
 
         # ---------------------------- Hyperparameters refer to RTMDet ----------------------------
         self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.0001, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.lr_schedule_dict = {'scheduler': 'cosine', 'lrf': 1.0, 'warmup_iters': 2000} # no lr decay (because lrf is set 1.0)
+        self.warmup_dict = {'warmup': 'linear', 'warmup_iters': 2000, 'warmup_factor': 0.00066667}
+        self.lr_schedule_dict = {'lr_scheduler': 'step', 'lr_epoch': [self.args.max_epoch // 12 * 11]}
         self.ema_dict = {'ema_decay': 0.9999, 'ema_tau': 2000}
 
         # ---------------------------- Build Dataset & Model & Trans. Config ----------------------------
@@ -1178,10 +1180,8 @@ class RTDetrTrainer(object):
         self.optimizer, self.start_epoch = build_rtdetr_optimizer(self.optimizer_dict, model, self.args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
-        self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
-        if self.args.resume and self.args.resume != 'None':
-            self.lr_scheduler.step()
+        self.wp_lr_scheduler = build_wp_lr_scheduler(self.warmup_dict, self.optimizer_dict['lr0'])
+        self.lr_scheduler    = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.resume)
 
         # ---------------------------- Build Model-EMA ----------------------------
         if self.args.ema and distributed_utils.get_rank() in [-1, 0]:
@@ -1287,17 +1287,20 @@ class RTDetrTrainer(object):
         # basic parameters
         epoch_size = len(self.train_loader)
         img_size = self.args.img_size
-        nw = self.lr_schedule_dict['warmup_iters']
+        nw = self.warmup_dict['warmup_iters']
+        lr_warmup_stage = True
 
         # Train one epoch
         for iter_i, (images, targets) in enumerate(metric_logger.log_every(self.train_loader, print_freq, header)):
             ni = iter_i + self.epoch * epoch_size
-            # Warmup
-            if ni <= nw:
-                xi = [0, nw]  # x interp
-                for x in self.optimizer.param_groups:
-                    x['lr'] = np.interp(ni, xi, [0.0, x['initial_lr'] * self.lf(self.epoch)])
-                                
+            # WarmUp
+            if ni < nw and lr_warmup_stage:
+                self.wp_lr_scheduler(ni, self.optimizer)
+            elif ni == nw and lr_warmup_stage:
+                print('Warmup stage is over.')
+                lr_warmup_stage = False
+                self.wp_lr_scheduler.set_lr(self.optimizer, self.optimizer_dict['lr0'], self.optimizer_dict['lr0'])
+                                            
             # To device
             images = images.to(self.device, non_blocking=True).float()
             for tgt in targets:
@@ -1359,10 +1362,9 @@ class RTDetrTrainer(object):
             if self.args.debug:
                 print("For debug mode, we only train 1 iteration")
                 break
-
-        # LR Schedule
-        if not self.second_stage:
-            self.lr_scheduler.step()
+    
+        # LR Scheduler
+        self.lr_scheduler.step()
         
     def refine_targets(self, img_size, targets, min_box_size):
         # rescale targets
@@ -1503,7 +1505,7 @@ class RTPDetrTrainer(RTDetrTrainer):
 
         # ---------------------------- Build LR Scheduler ----------------------------
         print("- Re-build lr scheduler -")
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
+        self.lr_scheduler, self.lf = build_lambda_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
@@ -1651,7 +1653,7 @@ class RTCTrainerDS(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch - args.no_aug_epoch)
+        self.lr_scheduler, self.lf = build_lambda_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch - args.no_aug_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()
@@ -1994,7 +1996,7 @@ class RTCTrainerDSP(object):
         self.optimizer, self.start_epoch = build_yolo_optimizer(self.optimizer_dict, model, args.resume)
 
         # ---------------------------- Build LR Scheduler ----------------------------
-        self.lr_scheduler, self.lf = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch - args.no_aug_epoch)
+        self.lr_scheduler, self.lf = build_lambda_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.max_epoch - args.no_aug_epoch)
         self.lr_scheduler.last_epoch = self.start_epoch - 1  # do not move
         if self.args.resume and self.args.resume != 'None':
             self.lr_scheduler.step()

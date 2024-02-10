@@ -75,7 +75,7 @@ rtdetr_cfg = {
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
-        'hidden_dim': 320,
+        'hidden_dim': 256,
         'en_num_heads': 8,
         'en_num_layers': 1,
         'en_ffn_dim': 1024,
@@ -128,7 +128,7 @@ rtdetr_cfg = {
         'max_stride': 32,
         ## Image Encoder - FPN
         'fpn': 'hybrid_encoder',
-        'fpn_num_blocks': 3,
+        'fpn_num_blocks': 4,
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
