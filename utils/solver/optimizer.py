@@ -79,9 +79,10 @@ def build_rtdetr_optimizer(cfg, model, resume=None):
     optimizer.add_param_group({"params": param_dicts[2], "weight_decay": cfg['weight_decay']})
 
     # Backbone's learnable parameters
-    optimizer.add_param_group({"params": param_dicts[3], "lr": cfg['lr0'] * cfg['backbone_lr_ratio'], "weight_decay": 0.0})
-    optimizer.add_param_group({"params": param_dicts[4], "lr": cfg['lr0'] * cfg['backbone_lr_ratio'], "weight_decay": 0.0})
-    optimizer.add_param_group({"params": param_dicts[5], "lr": cfg['lr0'] * cfg['backbone_lr_ratio'], "weight_decay": cfg['weight_decay']})
+    backbone_lr = cfg['lr0'] * cfg['backbone_lr_ratio']
+    optimizer.add_param_group({"params": param_dicts[3], "lr": backbone_lr, "weight_decay": 0.0})
+    optimizer.add_param_group({"params": param_dicts[4], "lr": backbone_lr, "weight_decay": 0.0})
+    optimizer.add_param_group({"params": param_dicts[5], "lr": backbone_lr, "weight_decay": cfg['weight_decay']})
 
     start_epoch = 0
     if resume and resume != 'None':

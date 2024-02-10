@@ -254,17 +254,21 @@ class RTCBlock(nn.Module):
                  norm_type  = 'BN',
                  depthwise  = False,):
         super(RTCBlock, self).__init__()
-        self.inter_dim = out_dim
+        self.inter_dim = out_dim // 2
         self.conv1 = BasicConv(in_dim, self.inter_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
         self.conv2 = BasicConv(in_dim, self.inter_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
-        self.m = nn.Sequential(*[Bottleneck(self.inter_dim, self.inter_dim,
-                                            1.0, [1, 3], shortcut,
-                                            act_type, norm_type, depthwise)
-                                            for _ in range(num_blocks)])
-        self.conv3 = BasicConv(self.inter_dim, out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
+        self.cmodules = nn.ModuleList([Bottleneck(self.inter_dim, self.inter_dim,
+                                                   1.0, [3, 3], shortcut,
+                                                   act_type, norm_type, depthwise)
+                                                   for _ in range(num_blocks)])
+        self.conv3 = BasicConv(self.inter_dim * (2 + num_blocks), out_dim, kernel_size=1, act_type=act_type, norm_type=norm_type)
 
     def forward(self, x):
-        x1 = self.conv1(x)
-        x2 = self.m(self.conv2(x))
-        return self.conv3(x1 + x2)
+        x1, x2 = self.conv1(x), self.conv2(x)
+        out = [x1, x2]
+        for m in self.cmodules:
+            x2 = m(x2)
+            out.append(x2)
+
+        return self.conv3(torch.cat(out, dim=1))
     
