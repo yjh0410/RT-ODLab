@@ -11,7 +11,6 @@ from .yolov5.build import build_yolov5
 from .yolov7.build import build_yolov7
 from .yolov8.build import build_yolov8
 from .yolox.build import build_yolox
-from .rtcdet.build import build_rtcdet
 # Real-time DETR series
 from .rtdetr.build import build_rtdetr
 from .rtpdetr.build import build_rtpdetr
@@ -63,10 +62,6 @@ def build_model(args,
     # YOLOX-AdamW
     elif args.model in ['yolox_n_adamw', 'yolox_s_adamw', 'yolox_m_adamw', 'yolox_l_adamw', 'yolox_x_adamw']:
         model, criterion = build_yolox(
-            args, model_cfg, device, num_classes, trainable, deploy)
-    # RTCDet
-    elif args.model in ['rtcdet_p', 'rtcdet_n', 'rtcdet_t', 'rtcdet_s', 'rtcdet_m', 'rtcdet_l', 'rtcdet_x']:
-        model, criterion = build_rtcdet(
             args, model_cfg, device, num_classes, trainable, deploy)
     # RT-DETR
     elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:

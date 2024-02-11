@@ -4,10 +4,10 @@ import torch.nn as nn
 
 # --------------- Model components ---------------
 from .yolov8_backbone import build_backbone
-from .yolov8_neck import build_neck
-from .yolov8_pafpn import build_fpn
-from .yolov8_head import build_det_head
-from .yolov8_pred import build_pred_layer
+from .yolov8_neck     import build_neck
+from .yolov8_pafpn    import build_fpn
+from .yolov8_head     import build_det_head
+from .yolov8_pred     import build_pred_layer
 
 # --------------- External components ---------------
 from utils.misc import multiclass_nms
@@ -67,7 +67,6 @@ class YOLOv8(nn.Module):
                                             num_levels  = self.num_levels,
                                             reg_max     = self.reg_max)
 
-    ## post-process
     def post_process(self, cls_preds, box_preds):
         """
         Input:
@@ -146,9 +145,7 @@ class YOLOv8(nn.Module):
 
         return bboxes, scores, labels
     
-    # ---------------------- Main Process for Inference ----------------------
-    @torch.no_grad()
-    def inference_single_image(self, x):
+    def forward(self, x):
         # ---------------- Backbone ----------------
         pyramid_feats = self.backbone(x)
 
@@ -164,45 +161,25 @@ class YOLOv8(nn.Module):
         # ---------------- Preds ----------------
         outputs = self.pred_layers(cls_feats, reg_feats)
 
-        all_cls_preds = outputs['pred_cls']
-        all_box_preds = outputs['pred_box']
+        if not self.training:
+            all_cls_preds = outputs['pred_cls']
+            all_box_preds = outputs['pred_box']
 
-        if self.deploy:
-            cls_preds = torch.cat(all_cls_preds, dim=1)[0]
-            box_preds = torch.cat(all_box_preds, dim=1)[0]
-            scores = cls_preds.sigmoid()
-            bboxes = box_preds
-            # [n_anchors_all, 4 + C]
-            outputs = torch.cat([bboxes, scores], dim=-1)
+            if self.deploy:
+                cls_preds = torch.cat(all_cls_preds, dim=1)[0]
+                box_preds = torch.cat(all_box_preds, dim=1)[0]
+                scores = cls_preds.sigmoid()
+                bboxes = box_preds
+                # [n_anchors_all, 4 + C]
+                outputs = torch.cat([bboxes, scores], dim=-1)
 
-        else:
-            # post process
-            bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
-            outputs = {
-                "scores": scores,
-                "labels": labels,
-                "bboxes": bboxes
-            }
+            else:
+                # post process
+                bboxes, scores, labels = self.post_process(all_cls_preds, all_box_preds)
+                outputs = {
+                    "scores": scores,
+                    "labels": labels,
+                    "bboxes": bboxes
+                }
         
-        return outputs
-
-    def forward(self, x):
-        if not self.trainable:
-            return self.inference_single_image(x)
-        else:
-            # ---------------- Backbone ----------------
-            pyramid_feats = self.backbone(x)
-
-            # ---------------- Neck: SPP ----------------
-            pyramid_feats[-1] = self.neck(pyramid_feats[-1])
-
-            # ---------------- Neck: PaFPN ----------------
-            pyramid_feats = self.fpn(pyramid_feats)
-
-            # ---------------- Heads ----------------
-            cls_feats, reg_feats = self.det_heads(pyramid_feats)
-
-            # ---------------- Preds ----------------
-            outputs = self.pred_layers(cls_feats, reg_feats)
-            
-            return outputs 
+        return outputs 

@@ -17,12 +17,6 @@ if [[ $MODEL == *"rtdetr"* ]]; then
     EVAL_EPOCH=1
     NO_AUG_EPOCH=-1
     FIND_UNUSED_PARAMS=True
-elif [[ $MODEL == *"rtcdet"* ]]; then
-    # Epoch setting
-    MAX_EPOCH=400
-    WP_EPOCH=3
-    EVAL_EPOCH=10
-    NO_AUG_EPOCH=20
 elif [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     MAX_EPOCH=500
