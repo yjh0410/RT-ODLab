@@ -381,16 +381,13 @@ class ModelEMA(object):
         for p in self.ema.parameters():
             p.requires_grad_(False)
 
-
     def is_parallel(self, model):
         # Returns True if model is of type DP or DDP
         return type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
 
-
     def de_parallel(self, model):
         # De-parallelize a model: returns single-GPU model if model is of type DP or DDP
         return model.module if self.is_parallel(model) else model
-
 
     def copy_attr(self, a, b, include=(), exclude=()):
         # Copy attributes from b to a, options to only include [...] and to exclude [...]
@@ -399,7 +396,6 @@ class ModelEMA(object):
                 continue
             else:
                 setattr(a, k, v)
-
 
     def update(self, model):
         # Update EMA parameters
