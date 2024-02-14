@@ -368,7 +368,7 @@ if __name__ == '__main__':
         'hidden_dim': 256,
         'en_num_heads': 8,
         'en_num_layers': 6,
-        'en_mlp_ratio': 4.0,
+        'en_ffn_dim': 2048,
         'en_dropout': 0.0,
         'en_act': 'gelu',
         # Transformer Decoder
@@ -376,7 +376,7 @@ if __name__ == '__main__':
         'hidden_dim': 256,
         'de_num_heads': 8,
         'de_num_layers': 6,
-        'de_mlp_ratio': 4.0,
+        'de_ffn_dim': 2048,
         'de_dropout': 0.0,
         'de_act': 'gelu',
         'de_pre_norm': True,

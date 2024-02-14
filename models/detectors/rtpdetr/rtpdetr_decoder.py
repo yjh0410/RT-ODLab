@@ -25,7 +25,7 @@ def build_transformer(cfg, return_intermediate=False):
                                     return_intermediate = return_intermediate,
                                     use_checkpoint      = cfg['use_checkpoint'],
                                     num_queries_one2one = cfg['num_queries_one2one'],
-                                    num_queries_one2many = cfg['num_queries_one2many'],
+                                    num_queries_one2many    = cfg['num_queries_one2many'],
                                     proposal_feature_levels = cfg['proposal_feature_levels'],
                                     proposal_in_stride      = cfg['out_stride'],
                                     proposal_tgt_strides    = cfg['proposal_tgt_strides'],
@@ -39,7 +39,7 @@ class PlainDETRTransformer(nn.Module):
                  # Decoder layer params
                  d_model        :int   = 256,
                  num_heads      :int   = 8,
-                 ffn_dim        :int = 1024,
+                 ffn_dim        :int   = 1024,
                  dropout        :float = 0.1,
                  act_type       :str   = "relu",
                  pre_norm       :bool  = False,
@@ -47,13 +47,13 @@ class PlainDETRTransformer(nn.Module):
                  feature_stride :int   = 16,
                  num_layers     :int   = 6,
                  # Decoder params
-                 return_intermediate :bool = False,
-                 use_checkpoint      :bool = False,
-                 num_queries_one2one :int = 300,
-                 num_queries_one2many :int = 1500,
-                 proposal_feature_levels :int = 3,
-                 proposal_in_stride      :int = 16,
-                 proposal_tgt_strides    :int = [8, 16, 32],
+                 return_intermediate     :bool = False,
+                 use_checkpoint          :bool = False,
+                 num_queries_one2one     :int  = 300,
+                 num_queries_one2many    :int  = 1500,
+                 proposal_feature_levels :int  = 3,
+                 proposal_in_stride      :int  = 16,
+                 proposal_tgt_strides    :int  = [8, 16, 32],
                  ):
         super().__init__()
         # ------------ Basic setting ------------
@@ -251,7 +251,7 @@ class PlainDETRTransformer(nn.Module):
         ))
 
         topk = self.two_stage_num_proposals
-        topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+        topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
         topk_coords_unact = torch.gather(
             enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
         )
