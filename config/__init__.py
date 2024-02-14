@@ -96,7 +96,6 @@ from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config  import yolox_cfg
 ## Real-time DETR series
 from .model_config.rtdetr_config import rtdetr_cfg
-from .model_config.rtpdetr_config import rtpdetr_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -131,9 +130,6 @@ def build_model_config(args):
     # RT-DETR
     elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:
         cfg = rtdetr_cfg[args.model]
-    # RT-PlainDETR
-    elif args.model in ['rtpdetr_r18', 'rtpdetr_r34', 'rtpdetr_r50', 'rtpdetr_r101']:
-        cfg = rtpdetr_cfg[args.model]
 
     return cfg
 

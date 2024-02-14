@@ -1488,119 +1488,6 @@ class RTDetrTrainer(object):
         
         self.train_loader.dataset.transform = self.train_transform
 
-## Real-time PlainDETR Trainer
-class RTPDetrTrainer(RTDetrTrainer):
-    def __init__(self, args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
-        super().__init__(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
-        # ------------------- Basic parameters -------------------
-        ## Reset optimzier hyper-parameters
-        self.optimizer_dict = {'optimizer': 'adamw', 'momentum': None, 'weight_decay': 0.0001, 'lr0': 0.0001, 'backbone_lr_ratio': 0.1}
-        self.warmup_dict = {'warmup': 'linear', 'warmup_iters': 2000, 'warmup_factor': 0.00066667}
-        self.lr_schedule_dict = {'lr_scheduler': 'step', 'lr_epoch': [self.args.max_epoch // 12 * 11]}
-        self.normalize_bbox = False
-
-        # ---------------------------- Build Optimizer ----------------------------
-        print("- Re-build oprimizer -")
-        self.optimizer_dict['lr0'] *= self.args.batch_size / 16.  # auto lr scaling
-        self.optimizer, self.start_epoch = build_rtdetr_optimizer(self.optimizer_dict, model, self.args.resume)
-
-        # ---------------------------- Build LR Scheduler ----------------------------
-        print("- Re-build lr scheduler -")
-        self.wp_lr_scheduler = build_wp_lr_scheduler(self.warmup_dict, self.optimizer_dict['lr0'])
-        self.lr_scheduler    = build_lr_scheduler(self.lr_schedule_dict, self.optimizer, args.resume)
-
-    def train_one_epoch(self, model):
-        metric_logger = MetricLogger(delimiter="  ")
-        metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
-        metric_logger.add_meter('size', SmoothedValue(window_size=1, fmt='{value:d}'))
-        metric_logger.add_meter('grad_norm', SmoothedValue(window_size=1, fmt='{value:.1f}'))
-        header = 'Epoch: [{} / {}]'.format(self.epoch, self.args.max_epoch)
-        epoch_size = len(self.train_loader)
-        print_freq = 10
-
-        # basic parameters
-        epoch_size = len(self.train_loader)
-        img_size = self.args.img_size
-        nw = self.warmup_dict['warmup_iters']
-        lr_warmup_stage = True
-
-        # Train one epoch
-        for iter_i, (images, targets) in enumerate(metric_logger.log_every(self.train_loader, print_freq, header)):
-            ni = iter_i + self.epoch * epoch_size
-            # WarmUp
-            if ni < nw and lr_warmup_stage:
-                self.wp_lr_scheduler(ni, self.optimizer)
-            elif ni == nw and lr_warmup_stage:
-                print('Warmup stage is over.')
-                lr_warmup_stage = False
-                self.wp_lr_scheduler.set_lr(self.optimizer, self.optimizer_dict['lr0'], self.optimizer_dict['lr0'])
-                                            
-            # To device
-            images = images.to(self.device, non_blocking=True).float()
-            for tgt in targets:
-                tgt['boxes'] = tgt['boxes'].to(self.device)
-                tgt['labels'] = tgt['labels'].to(self.device)
-
-            # Multi scale
-            if self.args.multi_scale:
-                images, targets, img_size = self.rescale_image_targets(
-                    images, targets, self.model_cfg['max_stride'], self.args.min_box_size, self.model_cfg['multi_scale'])
-            else:
-                targets = self.refine_targets(img_size, targets, self.args.min_box_size)
-
-            # xyxy -> cxcywh
-            targets = self.box_xyxy_to_cxcywh(targets)
-                
-            # Visualize train targets
-            if self.args.vis_tgt:
-                targets = self.box_cxcywh_to_xyxy(targets)
-                vis_data(images, targets, pixel_mean=self.trans_cfg['pixel_mean'], pixel_std=self.trans_cfg['pixel_std'])
-                targets = self.box_xyxy_to_cxcywh(targets)
-
-            # Inference
-            with torch.cuda.amp.autocast(enabled=self.args.fp16):
-                outputs = model(images)
-                # Compute loss
-                loss_dict = self.criterion(outputs, targets)
-                losses = sum(loss_dict.values())
-                # Grad Accumulate
-                if self.grad_accumulate > 1:
-                    losses /= self.grad_accumulate
-
-                loss_dict_reduced = distributed_utils.reduce_dict(loss_dict)
-
-            # Backward
-            self.scaler.scale(losses).backward()
-
-            # Optimize
-            if ni % self.grad_accumulate == 0:
-                grad_norm = None
-                if self.clip_grad > 0:
-                    # unscale gradients
-                    self.scaler.unscale_(self.optimizer)
-                    # clip gradients
-                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.clip_grad)
-                # optimizer.step
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
-                self.optimizer.zero_grad()
-                # ema
-                if self.model_ema is not None:
-                    self.model_ema.update(model)
-
-            # Update log
-            metric_logger.update(loss=losses.item(), **loss_dict_reduced)
-            metric_logger.update(lr=self.optimizer.param_groups[0]["lr"])
-            metric_logger.update(grad_norm=grad_norm)
-            metric_logger.update(size=img_size)
-
-            if self.args.debug:
-                print("For debug mode, we only train 1 iteration")
-                break
-
-        # LR Schedule
-        self.lr_scheduler.step()
-        
 
 # Build Trainer
 def build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size):
@@ -1613,9 +1500,6 @@ def build_trainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion
         return RTCTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
     elif model_cfg['trainer_type'] == 'rtdetr':
         return RTDetrTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
-    elif model_cfg['trainer_type'] == 'rtpdetr':
-        return RTPDetrTrainer(args, data_cfg, model_cfg, trans_cfg, device, model, criterion, world_size)
-    
     else:
         raise NotImplementedError(model_cfg['trainer_type'])
     
