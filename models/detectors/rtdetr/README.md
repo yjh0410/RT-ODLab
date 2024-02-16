@@ -5,7 +5,7 @@ This model is not yet complete.
 |     Model    | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight | Los |
 |--------------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|-----|
 | RT-DETR-R18  | 4xb4  |  640  |           45.5         |        63.0       |        66.8       |        21.0        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/detr_series_ckpt/rtdetr_r18_coco.pth) | [log](https://github.com/yjh0410/RT-ODLab/releases/download/detr_series_ckpt/RT-DETR-R18-COCO.txt)|
-| RT-DETR-R50  | 4xb4  |  640  |                        |                   |                   |                    |  | |
+| RT-DETR-R50  | 4xb4  |  640  |           50.2         |        68.5       |       113.7       |        40.4        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/detr_series_ckpt/rtdetr_r50_coco.pth) | [log](https://github.com/yjh0410/RT-ODLab/releases/download/detr_series_ckpt/RT-DETR-R50-COCO.txt)|
 | RT-DETR-R101 | 4xb4  |  640  |                        |                   |                   |                    |  | |
 
 - For the backbone of the image encoder, we use the IN-1K classification pretrained weight from torchvision, which is different from the official
