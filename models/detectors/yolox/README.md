@@ -12,21 +12,6 @@
 - For optimizer, we use SGD with weight decay 0.0005 and base per image lr 0.01 / 64,.
 - For learning rate scheduler, we use Cosine decay scheduler.
 
-On the other hand, we are trying to use **AdamW** to train our reproduced YOLOX. We will update the new results as soon as possible.
-
-|   Model | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|---------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOX-N | 8xb16 |  640  |                        |                   |                   |                    |  |
-| YOLOX-S | 8xb16 |  640  |                        |                   |                   |                    |  |
-| YOLOX-M | 8xb16 |  640  |                        |                   |                   |                    |  |
-| YOLOX-L | 8xb16 |  640  |                        |                   |                   |                    |  |
-| YOLOX-X | 8xb16 |  640  |                        |                   |                   |                    |  |
-
-- For training, we train YOLOX series with 300 epochs on COCO.
-- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation.
-- For optimizer, we use AdamW with weight decay 0.05 and base per image lr 0.001 / 64,.
-- For learning rate scheduler, we use linear decay scheduler.
-
 ## Train YOLOX
 ### Single GPU
 Taking training YOLOX-S on COCO as the example,

@@ -10,6 +10,7 @@ This model is not yet complete.
 
 - For the backbone of the image encoder, we use the IN-1K classification pretrained weight from torchvision, which is different from the official
 RT-DETR. It might be hard to train RT-DETR from scratch without IN-1K pretrained weight.
+- For the HybridEncoder, we use the C2f of YOLOv8 rather than the CSPRepLayer.
 - For training, we train RT-DETR series with 6x (~72 epochs) schedule on COCO and use ModelEMA trick. We close the fp16 training trick.
 - For data augmentation, we use the `color jitter`, `random hflip`, `random crop`, and multi-scale training trick.
 - For optimizer, we use AdamW with weight decay 0.0001 and base per image lr 0.0001 / 16.

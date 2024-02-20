@@ -35,7 +35,7 @@ yolov3_cfg = {
         # ---------------- Train config ----------------
         ## input
         'trans_type': 'yolov5_l',
-        'multi_scale': [0.5, 1.0],
+        'multi_scale': [0.5, 1.25],  # 320 -> 800
         # ---------------- Assignment config ----------------
         ## matcher
         'iou_thresh': 0.5,
@@ -82,7 +82,7 @@ yolov3_cfg = {
         # ---------------- Train config ----------------
         ## input
         'trans_type': 'yolov5_n',
-        'multi_scale': [0.5, 1.0],
+        'multi_scale': [0.5, 1.25],  # 320 -> 800
         # ---------------- Assignment config ----------------
         ## matcher
         'iou_thresh': 0.5,

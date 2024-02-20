@@ -272,24 +272,26 @@ if __name__ == "__main__":
 
     trans_config = {
         'aug_type': args.aug_type,    # optional: ssd, yolov5
-        'pixel_mean': [0., 0., 0.],
-        'pixel_std':  [255., 255., 255.],
-        # Basic Augment
-        'degrees': 0.0,
-        'translate': 0.2,
-        'scale': [0.1, 2.0],
-        'shear': 0.0,
-        'perspective': 0.0,
-        'hsv_h': 0.015,
-        'hsv_s': 0.7,
-        'hsv_v': 0.4,
+        'pixel_mean': [123.675, 116.28, 103.53],
+        'pixel_std':  [58.395, 57.12, 57.375],
         'use_ablu': True,
+        # Basic Augment
+        'affine_params': {
+            'degrees': 0.0,
+            'translate': 0.2,
+            'scale': [0.1, 2.0],
+            'shear': 0.0,
+            'perspective': 0.0,
+            'hsv_h': 0.015,
+            'hsv_s': 0.7,
+            'hsv_v': 0.4,
+        },
         # Mosaic & Mixup
+        'mosaic_keep_ratio': False,
         'mosaic_prob': args.mosaic,
         'mixup_prob': args.mixup,
-        'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
-        'mosaic_keep_ratio': False,
+        'mosaic_type': 'yolov5',
+        'mixup_type':  'yolov5',
         'mixup_scale': [0.5, 1.5]
     }
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)

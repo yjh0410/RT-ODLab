@@ -33,8 +33,7 @@ from .data_config.transform_config import (
     # SSD-Style
     ssd_trans_config,
     # RT-DETR style
-    rtdetr_s_trans_config,
-    rtdetr_l_trans_config,
+    rtdetr_base_trans_config,
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -74,10 +73,8 @@ def build_trans_config(trans_config='ssd'):
         cfg = yolox_x_trans_config
 
     # RT-DETR style
-    elif trans_config == 'rtdetr_s':
-        cfg = rtdetr_s_trans_config
-    elif trans_config == 'rtdetr_l':
-        cfg = rtdetr_l_trans_config
+    elif trans_config == 'rtdetr_base':
+        cfg = rtdetr_base_trans_config
 
     print('Transform Config: {} \n'.format(cfg))
 

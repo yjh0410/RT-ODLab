@@ -277,6 +277,7 @@ def run():
     model_cfg = build_model_config(args)
     trans_cfg = build_trans_config(model_cfg['trans_type'])
     data_cfg  = build_dataset_config(args)
+    
     ## Data info
     num_classes = data_cfg['num_classes']
     class_names = data_cfg['class_names']

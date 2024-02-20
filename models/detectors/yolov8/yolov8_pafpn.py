@@ -129,12 +129,12 @@ if __name__ == '__main__':
         'fpn_act': 'silu',
         'fpn_norm': 'BN',
         'fpn_depthwise': False,
-        'width': 1.0,
-        'depth': 1.0,
-        'ratio': 1.0,
+        'width': 0.25,
+        'depth': 0.34,
+        'ratio': 2.0,
     }
-    model = build_fpn(cfg, in_dims=[256, 512, 512])
-    pyramid_feats = [torch.randn(1, 256, 80, 80), torch.randn(1, 512, 40, 40), torch.randn(1, 512, 20, 20)]
+    model = build_fpn(cfg, in_dims=[64, 128, 256])
+    pyramid_feats = [torch.randn(1, 64, 80, 80), torch.randn(1, 128, 40, 40), torch.randn(1, 256, 20, 20)]
     t0 = time.time()
     outputs = model(pyramid_feats)
     t1 = time.time()

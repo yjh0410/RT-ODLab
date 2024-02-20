@@ -111,9 +111,13 @@ class MultiLevelPredLayer(nn.Module):
                                   for level in range(num_levels)
                                   ])
         ## proj conv
-        proj_init = torch.arange(reg_max, dtype=torch.float)
         self.proj_conv = nn.Conv2d(self.reg_max, 1, kernel_size=1, bias=False).requires_grad_(False)
-        self.proj_conv.weight.data[:] = nn.Parameter(proj_init.view([1, reg_max, 1, 1]))
+
+        self._reset_parameters()
+
+    def _reset_parameters(self):
+        proj_init = torch.arange(self.reg_max, dtype=torch.float)
+        self.proj_conv.weight.data[:] = nn.Parameter(proj_init.view([1, self.reg_max, 1, 1]), requires_grad=False)
 
     def forward(self, cls_feats, reg_feats):
         all_anchors = []
