@@ -2,28 +2,25 @@ import os
 
 try:
     # dataset class
-    from .voc import VOCDataset
-    from .coco import COCODataset
+    from .voc        import VOCDataset
+    from .coco       import COCODataset
     from .crowdhuman import CrowdHumanDataset
-    from .widerface import WiderFaceDataset
-    from .customed import CustomedDataset
+    from .widerface  import WiderFaceDataset
+    from .customed   import CustomedDataset
     # transform class
-    from .data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
+    from .data_augment.ssd_augment    import SSDAugmentation, SSDBaseTransform
     from .data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
-    from .data_augment.rtdetr_augment import RTDetrAugmentation, RTDetrBaseTransform
 
 except:
     # dataset class
-    from voc import VOCDataset
-    from coco import COCODataset
+    from voc        import VOCDataset
+    from coco       import COCODataset
     from crowdhuman import CrowdHumanDataset
-    from widerface import WiderFaceDataset
-    from customed import CustomedDataset
+    from widerface  import WiderFaceDataset
+    from customed   import CustomedDataset
     # transform class
-    from data_augment.ssd_augment import SSDAugmentation, SSDBaseTransform
+    from data_augment.ssd_augment    import SSDAugmentation, SSDBaseTransform
     from data_augment.yolov5_augment import YOLOv5Augmentation, YOLOv5BaseTransform
-    from data_augment.rtdetr_augment import RTDetrAugmentation, RTDetrBaseTransform
-
 
 # ------------------------------ Dataset ------------------------------
 def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
@@ -48,7 +45,6 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                              transform    = transform,
                              trans_config = trans_config,
                              is_train     = is_train,
-                             load_cache   = args.load_cache
                              )
     ## COCO dataset
     elif args.dataset == 'coco':
@@ -59,7 +55,6 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                               transform    = transform,
                               trans_config = trans_config,
                               is_train     = is_train,
-                              load_cache   = args.load_cache
                               )
     ## CrowdHuman dataset
     elif args.dataset == 'crowdhuman':
@@ -89,8 +84,7 @@ def build_dataset(args, data_cfg, trans_config, transform, is_train=False):
                                   image_set    = image_set,
                                   transform    = transform,
                                   trans_config = trans_config,
-                                  is_train      = is_train,
-                                  load_cache    = args.load_cache
+                                  is_train     = is_train,
                                   )
 
     return dataset, dataset_info
@@ -115,20 +109,10 @@ def build_transform(args, trans_config, max_stride=32, is_train=False):
         else:
             transform = SSDBaseTransform(args.img_size)
     ## YOLO style transform
-    elif trans_config['aug_type'] == 'yolov5':
+    elif trans_config['aug_type'] == 'yolo':
         if is_train:
             transform = YOLOv5Augmentation(args.img_size, trans_config['affine_params'], trans_config['use_ablu'])
         else:
             transform = YOLOv5BaseTransform(args.img_size, max_stride)
-    ## RT-DETR style transform
-    elif trans_config['aug_type'] == 'rtdetr':
-        if is_train:
-            transform = RTDetrAugmentation(
-                args.img_size, trans_config['pixel_mean'], trans_config['pixel_std'])
-            if trans_config["mosaic_prob"] > 0:
-                transform.reset_weak_augment()
-        else:
-            transform = RTDetrBaseTransform(
-                args.img_size, trans_config['pixel_mean'], trans_config['pixel_std'])
 
     return transform, trans_config

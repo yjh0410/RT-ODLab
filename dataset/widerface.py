@@ -51,8 +51,8 @@ class WiderFaceDataset(Dataset):
         if is_train:
             self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
             self.mixup_prob  = trans_config['mixup_prob']  if trans_config else 0.0
-            self.mosaic_augment = MosaicAugment(img_size, trans_config, is_train)
-            self.mixup_augment  = MixupAugment(img_size, trans_config)
+            self.mosaic_augment = MosaicAugment(img_size, trans_config, is_train) if self.mosaic_prob > 0. else None
+            self.mixup_augment  = MixupAugment(img_size, trans_config)            if self.mixup_prob > 0.  else None
         else:
             self.mosaic_prob = 0.0
             self.mixup_prob  = 0.0
@@ -61,7 +61,6 @@ class WiderFaceDataset(Dataset):
         print('==============================')
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
-        print('==============================')
 
     # ------------ Basic dataset function ------------
     def __len__(self):
@@ -203,15 +202,13 @@ if __name__ == "__main__":
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=0., type=float,
                         help='mixup augmentation.')
-    parser.add_argument('--mixup_type', type=str, default='yolov5_mixup',
-                        help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
 
     args = parser.parse_args()
 
     trans_config = {
-        'aug_type': args.aug_type,    # optional: ssd, yolov5
+        'aug_type': args.aug_type,    # optional: ssd, yolo
         'pixel_mean': [0., 0., 0.],
         'pixel_std':  [255., 255., 255.],
         # Basic Augment
@@ -227,9 +224,8 @@ if __name__ == "__main__":
         # Mosaic & Mixup
         'mosaic_prob': args.mosaic,
         'mixup_prob': args.mixup,
-        'mosaic_type': 'yolov5_mosaic',
-        'mixup_type': args.mixup_type,   # optional: yolov5_mixup, yolox_mixup
-        'mosaic_keep_ratio': False,
+        'mosaic_type': 'yolov5',
+        'mixup_type':  'yolov5',   # optional: yolov5, yolox
         'mixup_scale': [0.5, 1.5]
     }
     transform, trans_cfg = build_transform(args, trans_config, 32, args.is_train)

@@ -16,13 +16,15 @@ def build_dataset_config(args):
 
 # ------------------ Transform Config ------------------
 from .data_config.transform_config import (
+    # SSD-Style
+    ssd_trans_config,
     # YOLOv5-Style
-    yolov5_p_trans_config,
-    yolov5_n_trans_config,
-    yolov5_s_trans_config,
-    yolov5_m_trans_config,
-    yolov5_l_trans_config,
-    yolov5_x_trans_config,
+    yolo_p_trans_config,
+    yolo_n_trans_config,
+    yolo_s_trans_config,
+    yolo_m_trans_config,
+    yolo_l_trans_config,
+    yolo_x_trans_config,
     # YOLOX-Style
     yolox_p_trans_config,
     yolox_n_trans_config,
@@ -30,10 +32,6 @@ from .data_config.transform_config import (
     yolox_m_trans_config,
     yolox_l_trans_config,
     yolox_x_trans_config,
-    # SSD-Style
-    ssd_trans_config,
-    # RT-DETR style
-    rtdetr_base_trans_config,
 )
 
 def build_trans_config(trans_config='ssd'):
@@ -45,18 +43,18 @@ def build_trans_config(trans_config='ssd'):
         cfg = ssd_trans_config
 
     # YOLOv5-style transform 
-    elif trans_config == 'yolov5_p':
-        cfg = yolov5_p_trans_config
-    elif trans_config == 'yolov5_n':
-        cfg = yolov5_n_trans_config
-    elif trans_config == 'yolov5_s':
-        cfg = yolov5_s_trans_config
-    elif trans_config == 'yolov5_m':
-        cfg = yolov5_m_trans_config
-    elif trans_config == 'yolov5_l':
-        cfg = yolov5_l_trans_config
-    elif trans_config == 'yolov5_x':
-        cfg = yolov5_x_trans_config
+    elif trans_config == 'yolo_p':
+        cfg = yolo_p_trans_config
+    elif trans_config == 'yolo_n':
+        cfg = yolo_n_trans_config
+    elif trans_config == 'yolo_s':
+        cfg = yolo_s_trans_config
+    elif trans_config == 'yolo_m':
+        cfg = yolo_m_trans_config
+    elif trans_config == 'yolo_l':
+        cfg = yolo_l_trans_config
+    elif trans_config == 'yolo_x':
+        cfg = yolo_x_trans_config
         
     # YOLOX-style transform 
     elif trans_config == 'yolox_p':
@@ -72,10 +70,8 @@ def build_trans_config(trans_config='ssd'):
     elif trans_config == 'yolox_x':
         cfg = yolox_x_trans_config
 
-    # RT-DETR style
-    elif trans_config == 'rtdetr_base':
-        cfg = rtdetr_base_trans_config
-
+    else:
+        raise NotImplementedError("Unknown transform config: {}".format(trans_config))
     print('Transform Config: {} \n'.format(cfg))
 
     return cfg
@@ -87,7 +83,7 @@ from .model_config.yolov1_config import yolov1_cfg
 from .model_config.yolov2_config import yolov2_cfg
 from .model_config.yolov3_config import yolov3_cfg
 from .model_config.yolov4_config import yolov4_cfg
-from .model_config.yolov5_config import yolov5_cfg, yolov5_adamw_cfg
+from .model_config.yolov5_config import yolov5_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config  import yolox_cfg
@@ -110,9 +106,6 @@ def build_model_config(args):
     # YOLOv5
     elif args.model in ['yolov5_n', 'yolov5_s', 'yolov5_m', 'yolov5_l', 'yolov5_x']:
         cfg = yolov5_cfg[args.model]
-    # YOLOv5-AdamW
-    elif args.model in ['yolov5_n_adamw', 'yolov5_s_adamw', 'yolov5_m_adamw', 'yolov5_l_adamw', 'yolov5_x_adamw']:
-        cfg = yolov5_adamw_cfg[args.model]
     # YOLOv7
     elif args.model in ['yolov7_tiny', 'yolov7', 'yolov7_x']:
         cfg = yolov7_cfg[args.model]

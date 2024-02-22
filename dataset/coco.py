@@ -3,12 +3,9 @@ import cv2
 import time
 import random
 import numpy as np
-from torch.utils.data import Dataset
 
-try:
-    from pycocotools.coco import COCO
-except:
-    print("It seems that the COCOAPI is not installed.")
+from torch.utils.data import Dataset
+from pycocotools.coco import COCO
 
 try:
     from .data_augment.strong_augment import MosaicAugment, MixupAugment
@@ -28,7 +25,6 @@ class COCODataset(Dataset):
                  trans_config = None,
                  transform    = None,
                  is_train     :bool =False,
-                 load_cache   :bool = False,
                  ):
         # ----------- Basic parameters -----------
         self.img_size = img_size
@@ -56,8 +52,8 @@ class COCODataset(Dataset):
         if is_train:
             self.mosaic_prob = trans_config['mosaic_prob'] if trans_config else 0.0
             self.mixup_prob  = trans_config['mixup_prob']  if trans_config else 0.0
-            self.mosaic_augment = MosaicAugment(img_size, trans_config, is_train)
-            self.mixup_augment  = MixupAugment(img_size, trans_config)
+            self.mosaic_augment = MosaicAugment(img_size, trans_config, is_train) if self.mosaic_prob > 0. else None
+            self.mixup_augment  = MixupAugment(img_size, trans_config)            if self.mixup_prob > 0.  else None
         else:
             self.mosaic_prob = 0.0
             self.mixup_prob  = 0.0
@@ -66,12 +62,6 @@ class COCODataset(Dataset):
         print('==============================')
         print('use Mosaic Augmentation: {}'.format(self.mosaic_prob))
         print('use Mixup Augmentation: {}'.format(self.mixup_prob))
-        print('==============================')
-        # ----------- Cached data -----------
-        self.load_cache = load_cache
-        self.cached_datas = None
-        if self.load_cache:
-            self.cached_datas = self._load_cache()
 
     # ------------ Basic dataset function ------------
     def __len__(self):
@@ -79,38 +69,6 @@ class COCODataset(Dataset):
 
     def __getitem__(self, index):
         return self.pull_item(index)
-
-    def _load_cache(self):
-        data_items = []
-        for idx in range(self.dataset_size):
-            if idx % 2000 == 0:
-                print("Caching images and targets : {} / {} ...".format(idx, self.dataset_size))
-
-            # load a data
-            image, target = self.load_image_target(idx)
-            orig_h, orig_w, _ = image.shape
-
-            # resize image
-            r = self.img_size / max(orig_h, orig_w)
-            if r != 1: 
-                interp = cv2.INTER_LINEAR
-                new_size = (int(orig_w * r), int(orig_h * r))
-                image = cv2.resize(image, new_size, interpolation=interp)
-            img_h, img_w = image.shape[:2]
-
-            # rescale bbox
-            boxes = target["boxes"].copy()
-            boxes[:, [0, 2]] = boxes[:, [0, 2]] / orig_w * img_w
-            boxes[:, [1, 3]] = boxes[:, [1, 3]] / orig_h * img_h
-            target["boxes"] = boxes
-
-            dict_item = {}
-            dict_item["image"] = image
-            dict_item["target"] = target
-
-            data_items.append(dict_item)
-        
-        return data_items
 
     # ------------ Mosaic & Mixup ------------
     def load_mosaic(self, index):
@@ -150,25 +108,17 @@ class COCODataset(Dataset):
     
     # ------------ Load data function ------------
     def load_image_target(self, index):
-        # == Load a data from the cached data ==
-        if self.cached_datas is not None:
-            # load a data
-            data_item = self.cached_datas[index]
-            image = data_item["image"]
-            target = data_item["target"]
-        # == Load a data from the local disk ==
-        else:        
-            # load an image
-            image, _ = self.pull_image(index)
-            height, width, channels = image.shape
+        # load an image
+        image, _ = self.pull_image(index)
+        height, width, channels = image.shape
 
-            # load a target
-            bboxes, labels = self.pull_anno(index)
-            target = {
-                "boxes": bboxes,
-                "labels": labels,
-                "orig_size": [height, width]
-            }
+        # load a target
+        bboxes, labels = self.pull_anno(index)
+        target = {
+            "boxes": bboxes,
+            "labels": labels,
+            "orig_size": [height, width]
+        }
 
         return image, target
 
@@ -256,7 +206,7 @@ if __name__ == "__main__":
     parser.add_argument('-size', '--img_size', default=640, type=int,
                         help='input image size.')
     parser.add_argument('--aug_type', type=str, default='ssd',
-                        help='augmentation type: ssd, yolov5, rtdetr.')
+                        help='augmentation type: ssd, yolo.')
     parser.add_argument('--mosaic', default=0., type=float,
                         help='mosaic augmentation.')
     parser.add_argument('--mixup', default=0., type=float,
@@ -265,8 +215,6 @@ if __name__ == "__main__":
                         help='mixup augmentation.')
     parser.add_argument('--is_train', action="store_true", default=False,
                         help='mixup augmentation.')
-    parser.add_argument('--load_cache', action="store_true", default=False,
-                        help='load cached data.')
     
     args = parser.parse_args()
 
@@ -306,7 +254,6 @@ if __name__ == "__main__":
         trans_config=trans_config,
         transform=transform,
         is_train=args.is_train,
-        load_cache=args.load_cache
         )
     
     np.random.seed(0)

@@ -5,7 +5,7 @@ yolov7_cfg = {
         # ---------------- Model config ----------------
         ## Backbone
         'backbone': 'elannet_tiny',
-        'pretrained': True,
+        'pretrained': False,
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,
@@ -13,11 +13,11 @@ yolov7_cfg = {
         'max_stride': 32,
         ## Neck
         'neck': 'csp_sppf',
-        'expand_ratio': 0.5,
-        'pooling_size': 5,
         'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': False,
+        'expand_ratio': 0.5,
+        'pooling_size': 5,
         ## FPN
         'fpn': 'yolov7_pafpn',
         'fpn_act': 'silu',
@@ -33,8 +33,7 @@ yolov7_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
-        # ---------------- Train config ----------------
-        ## input
+        # ---------------- Data process config ----------------
         'trans_type': 'yolox_s',
         'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
@@ -47,7 +46,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov7':{
@@ -62,11 +61,11 @@ yolov7_cfg = {
         'max_stride': 32,
         # neck
         'neck': 'csp_sppf',
-        'expand_ratio': 0.5,
-        'pooling_size': 5,
         'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': False,
+        'expand_ratio': 0.5,
+        'pooling_size': 5,
         # fpn
         'fpn': 'yolov7_pafpn',
         'fpn_act': 'silu',
@@ -82,8 +81,7 @@ yolov7_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
-        # ---------------- Train config ----------------
-        ## input
+        # ---------------- Data process config ----------------
         'trans_type': 'yolox_l',
         'multi_scale': [0.5, 1.25], # 320 -> 800
         # ---------------- Assignment config ----------------
@@ -96,7 +94,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov7_x':{
@@ -111,11 +109,11 @@ yolov7_cfg = {
         'max_stride': 32,
         ## Neck
         'neck': 'csp_sppf',
-        'expand_ratio': 0.5,
-        'pooling_size': 5,
         'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': False,
+        'expand_ratio': 0.5,
+        'pooling_size': 5,
         ## FPN
         'fpn': 'yolov7_pafpn',
         'fpn_act': 'silu',
@@ -131,8 +129,7 @@ yolov7_cfg = {
         'num_cls_head': 2,
         'num_reg_head': 2,
         'head_depthwise': False,
-        # ---------------- Train config ----------------
-        ## input
+        # ---------------- Data process config ----------------
         'trans_type': 'yolox_x',
         'multi_scale': [0.5, 1.5], # 320 -> 960
         # ---------------- Assignment config ----------------
@@ -145,7 +142,7 @@ yolov7_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
 }

@@ -12,11 +12,11 @@ yolov3_cfg = {
         'max_stride': 32,
         ## Neck
         'neck': 'sppf',
-        'expand_ratio': 0.5,
-        'pooling_size': 5,
         'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': False,
+        'expand_ratio': 0.5,
+        'pooling_size': 5,
         ## FPN
         'fpn': 'yolov3_fpn',
         'fpn_act': 'silu',
@@ -32,9 +32,8 @@ yolov3_cfg = {
         'anchor_size': [[10, 13],   [16, 30],   [33, 23],     # P3
                         [30, 61],   [62, 45],   [59, 119],    # P4
                         [116, 90],  [156, 198], [373, 326]],  # P5
-        # ---------------- Train config ----------------
-        ## input
-        'trans_type': 'yolov5_l',
+        # ---------------- Data process config ----------------
+        'trans_type': 'yolo_l',
         'multi_scale': [0.5, 1.25],  # 320 -> 800
         # ---------------- Assignment config ----------------
         ## matcher
@@ -45,7 +44,7 @@ yolov3_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov3_tiny':{
@@ -59,11 +58,11 @@ yolov3_cfg = {
         'max_stride': 32,
         ## Neck
         'neck': 'sppf',
-        'expand_ratio': 0.5,
-        'pooling_size': 5,
         'neck_act': 'silu',
         'neck_norm': 'BN',
         'neck_depthwise': False,
+        'expand_ratio': 0.5,
+        'pooling_size': 5,
         ## FPN
         'fpn': 'yolov3_fpn',
         'fpn_act': 'silu',
@@ -79,9 +78,9 @@ yolov3_cfg = {
         'anchor_size': [[10, 13],   [16, 30],   [33, 23],     # P3
                         [30, 61],   [62, 45],   [59, 119],    # P4
                         [116, 90],  [156, 198], [373, 326]],  # P5
-        # ---------------- Train config ----------------
+        # ---------------- Data process config ----------------
         ## input
-        'trans_type': 'yolov5_n',
+        'trans_type': 'yolo_n',
         'multi_scale': [0.5, 1.25],  # 320 -> 800
         # ---------------- Assignment config ----------------
         ## matcher
@@ -92,7 +91,7 @@ yolov3_cfg = {
         'loss_cls_weight': 1.0,
         'loss_box_weight': 5.0,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
 }

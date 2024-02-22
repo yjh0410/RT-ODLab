@@ -15,7 +15,6 @@ class MosaicAugment(object):
                  ) -> None:
         self.img_size = img_size
         self.is_train = is_train
-        self.keep_ratio    = transform_config['mosaic_keep_ratio']
         self.affine_params = transform_config['affine_params']
         self.mosaic_type   = transform_config['mosaic_type']
 
@@ -37,14 +36,10 @@ class MosaicAugment(object):
             orig_h, orig_w, _ = img_i.shape
 
             # resize
-            if self.keep_ratio:
-                r = self.img_size / max(orig_h, orig_w)
-                if r != 1: 
-                    interp = cv2.INTER_LINEAR if (self.is_train or r > 1) else cv2.INTER_AREA
-                    img_i = cv2.resize(img_i, (int(orig_w * r), int(orig_h * r)), interpolation=interp)
-            else:
-                interp = cv2.INTER_LINEAR if self.is_train else cv2.INTER_AREA
-                img_i = cv2.resize(img_i, (self.img_size, self.img_size), interpolation=interp)
+            r = self.img_size / max(orig_h, orig_w)
+            if r != 1: 
+                interp = cv2.INTER_LINEAR if (self.is_train or r > 1) else cv2.INTER_AREA
+                img_i = cv2.resize(img_i, (int(orig_w * r), int(orig_h * r)), interpolation=interp)
             h, w, _ = img_i.shape
 
             # place img in img4

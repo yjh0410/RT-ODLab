@@ -37,7 +37,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_n',
+        'trans_type': 'yolo_n',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -49,7 +49,7 @@ yolov8_cfg = {
         'loss_box_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov8_s':{
@@ -87,7 +87,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_s',
+        'trans_type': 'yolo_s',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -99,7 +99,7 @@ yolov8_cfg = {
         'loss_box_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov8_m':{
@@ -137,7 +137,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_m',
+        'trans_type': 'yolo_m',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -149,7 +149,7 @@ yolov8_cfg = {
         'loss_box_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov8_l':{
@@ -187,7 +187,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_l',
+        'trans_type': 'yolo_l',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -199,7 +199,7 @@ yolov8_cfg = {
         'loss_box_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
     'yolov8_x':{
@@ -237,7 +237,7 @@ yolov8_cfg = {
         # ---------------- Train config ----------------
         ## Input
         'multi_scale': [0.5, 1.5], # 320 -> 960
-        'trans_type': 'yolov5_x',
+        'trans_type': 'yolo_x',
         # ---------------- Assignment config ----------------
         ## Matcher
         'matcher': "tal",
@@ -249,7 +249,7 @@ yolov8_cfg = {
         'loss_box_weight': 7.5,
         'loss_dfl_weight': 1.5,
         # ---------------- Train config ----------------
-        'trainer_type': 'rtcdet',
+        'trainer_type': 'yolo',
     },
 
 }
