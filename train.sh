@@ -10,14 +10,7 @@ RESUME=$7
 # MODEL setting
 IMAGE_SIZE=640
 FIND_UNUSED_PARAMS=False
-if [[ $MODEL == *"rtdetr"* ]]; then
-    # Epoch setting
-    MAX_EPOCH=72
-    WP_EPOCH=-1
-    EVAL_EPOCH=1
-    NO_AUG_EPOCH=-1
-    FIND_UNUSED_PARAMS=True
-elif [[ $MODEL == *"yolov8"* ]]; then
+if [[ $MODEL == *"yolov8"* ]]; then
     # Epoch setting
     MAX_EPOCH=500
     WP_EPOCH=3

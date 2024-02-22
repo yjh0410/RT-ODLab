@@ -91,8 +91,6 @@ from .model_config.yolov5_config import yolov5_cfg, yolov5_adamw_cfg
 from .model_config.yolov7_config import yolov7_cfg
 from .model_config.yolov8_config import yolov8_cfg
 from .model_config.yolox_config  import yolox_cfg
-## Real-time DETR series
-from .model_config.rtdetr_config import rtdetr_cfg
 
 def build_model_config(args):
     print('==============================')
@@ -124,9 +122,6 @@ def build_model_config(args):
     # YOLOX
     elif args.model in ['yolox_n', 'yolox_s', 'yolox_m', 'yolox_l', 'yolox_x']:
         cfg = yolox_cfg[args.model]
-    # RT-DETR
-    elif args.model in ['rtdetr_r18', 'rtdetr_r34', 'rtdetr_r50', 'rtdetr_r101']:
-        cfg = rtdetr_cfg[args.model]
 
     return cfg
 

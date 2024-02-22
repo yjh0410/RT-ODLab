@@ -76,7 +76,7 @@ class Yolov8Backbone(nn.Module):
         c3 = self.layer_3(c2)
         c4 = self.layer_4(c3)
         c5 = self.layer_5(c4)
-
+        print(c3)
         outputs = [c3, c4, c5]
 
         return outputs
