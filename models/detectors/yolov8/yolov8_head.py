@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
 
-try:
-    from .yolov8_basic import Conv
-except:
-    from yolov8_basic import Conv
+from .yolov8_basic import Conv
 
 
 # Single-level Head
@@ -130,36 +127,3 @@ def build_det_head(cfg, in_dims, num_levels=3, num_classes=80, reg_max=16):
         head = MultiLevelHead(cfg, in_dims, num_levels, num_classes, reg_max)
 
     return head
-
-
-if __name__ == '__main__':
-    import time
-    from thop import profile
-    cfg = {
-        'head': 'decoupled_head',
-        'num_cls_head': 2,
-        'num_reg_head': 2,
-        'head_act': 'silu',
-        'head_norm': 'BN',
-        'head_depthwise': False,
-        'reg_max': 16,
-    }
-    fpn_dims = [256, 512, 512]
-    cls_out_dim = 256
-    reg_out_dim = 64
-    # Head-1
-    model = build_det_head(cfg, fpn_dims, num_levels=3, num_classes=80, reg_max=16)
-    print(model)
-    fpn_feats = [torch.randn(1, fpn_dims[0], 80, 80), torch.randn(1, fpn_dims[1], 40, 40), torch.randn(1, fpn_dims[2], 20, 20)]
-    t0 = time.time()
-    outputs = model(fpn_feats)
-    t1 = time.time()
-    print('Time: ', t1 - t0)
-    # for out in outputs:
-    #     print(out.shape)
-
-    print('==============================')
-    flops, params = profile(model, inputs=(fpn_feats, ), verbose=False)
-    print('==============================')
-    print('Head-1: GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
-    print('Head-1: Params : {:.2f} M'.format(params / 1e6))

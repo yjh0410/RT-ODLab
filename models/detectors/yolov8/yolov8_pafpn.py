@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-try:
-    from .yolov8_basic import Conv, Yolov8StageBlock
-except:
-    from yolov8_basic import Conv, Yolov8StageBlock
+
+from .yolov8_basic import Conv, Yolov8StageBlock
 
 
 # PaFPN-ELAN
@@ -119,31 +117,3 @@ def build_fpn(cfg, in_dims):
                              depthwise=cfg['fpn_depthwise']
                              )
     return fpn_net
-
-
-if __name__ == '__main__':
-    import time
-    from thop import profile
-    cfg = {
-        'fpn': 'yolov8_pafpn',
-        'fpn_act': 'silu',
-        'fpn_norm': 'BN',
-        'fpn_depthwise': False,
-        'width': 0.25,
-        'depth': 0.34,
-        'ratio': 2.0,
-    }
-    model = build_fpn(cfg, in_dims=[64, 128, 256])
-    pyramid_feats = [torch.randn(1, 64, 80, 80), torch.randn(1, 128, 40, 40), torch.randn(1, 256, 20, 20)]
-    t0 = time.time()
-    outputs = model(pyramid_feats)
-    t1 = time.time()
-    print('Time: ', t1 - t0)
-    for out in outputs:
-        print(out.shape)
-
-    print('==============================')
-    flops, params = profile(model, inputs=(pyramid_feats, ), verbose=False)
-    print('==============================')
-    print('GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
-    print('Params : {:.2f} M'.format(params / 1e6))

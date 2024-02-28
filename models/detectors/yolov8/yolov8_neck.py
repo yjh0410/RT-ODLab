@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
 
-try:
-    from .yolov8_basic import Conv
-except:
-    from yolov8_basic import Conv
+from .yolov8_basic import Conv
 
 
 # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
@@ -71,34 +68,3 @@ def build_neck(cfg, in_dim, out_dim):
         neck = SPPFBlockCSP(cfg, in_dim, out_dim, cfg['neck_expand_ratio'])
 
     return neck
-
-
-if __name__ == '__main__':
-    import time
-    from thop import profile
-    cfg = {
-        ## Neck: SPP
-        'neck': 'sppf',
-        'neck_expand_ratio': 0.5,
-        'pooling_size': 5,
-        'neck_act': 'silu',
-        'neck_norm': 'BN',
-        'neck_depthwise': False,
-    }
-    in_dim = 512
-    out_dim = 512
-    # Head-1
-    model = build_neck(cfg, in_dim, out_dim)
-    feat = torch.randn(1, in_dim, 20, 20)
-    t0 = time.time()
-    outputs = model(feat)
-    t1 = time.time()
-    print('Time: ', t1 - t0)
-    # for out in outputs:
-    #     print(out.shape)
-
-    print('==============================')
-    flops, params = profile(model, inputs=(feat, ), verbose=False)
-    print('==============================')
-    print('FPN: GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
-    print('FPN: Params : {:.2f} M'.format(params / 1e6))

@@ -2,10 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-try:
-    from .yolox_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
-except:
-    from  yolox_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
+from .yolox_basic import (Conv, build_reduce_layer, build_downsample_layer, build_fpn_block)
 
 
 # YOLO-Style PaFPN
@@ -93,33 +90,3 @@ def build_fpn(cfg, in_dims, out_dim=None):
         fpn_net = YoloxPaFPN(cfg, in_dims, out_dim)
 
     return fpn_net
-
-
-if __name__ == '__main__':
-    import time
-    from thop import profile
-    cfg = {
-        'fpn': 'yolox_pafpn',
-        'fpn_reduce_layer': 'conv',
-        'fpn_downsample_layer': 'conv',
-        'fpn_core_block': 'cspblock',
-        'fpn_act': 'silu',
-        'fpn_norm': 'BN',
-        'fpn_depthwise': False,
-        'width': 1.0,
-        'depth': 1.0,
-    }
-    model = build_fpn(cfg, in_dims=[256, 512, 1024], out_dim=256)
-    pyramid_feats = [torch.randn(1, 256, 80, 80), torch.randn(1, 512, 40, 40), torch.randn(1, 1024, 20, 20)]
-    t0 = time.time()
-    outputs = model(pyramid_feats)
-    t1 = time.time()
-    print('Time: ', t1 - t0)
-    for out in outputs:
-        print(out.shape)
-
-    print('==============================')
-    flops, params = profile(model, inputs=(pyramid_feats, ), verbose=False)
-    print('==============================')
-    print('GFLOPs : {:.2f}'.format(flops / 1e9 * 2))
-    print('Params : {:.2f} M'.format(params / 1e6))

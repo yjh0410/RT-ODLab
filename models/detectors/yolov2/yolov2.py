@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
 
 from utils.misc import multiclass_nms
 
