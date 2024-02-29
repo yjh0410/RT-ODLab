@@ -2,22 +2,6 @@
 
 |   Model   | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
 |-----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
-| YOLOv5-N  | 1xb16 |  640  |         29.8           |       47.1        |   7.7             |   2.4              | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov5_n_coco.pth) |
-| YOLOv5-S  | 1xb16 |  640  |         37.8           |       56.5        |   27.1            |   9.0              | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov5_s_coco.pth) |
-| YOLOv5-M  | 1xb16 |  640  |         43.5           |       62.5        |   74.3            |   25.4             | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov5_m_coco.pth) |
-| YOLOv5-L  | 1xb16 |  640  |         46.7           |       65.5        |   155.6           |   54.2             | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov5_l_coco.pth) |
-
-- For training, we train YOLOv5 series with 300 epochs on COCO.
-- For data augmentation, we use the large scale jitter (LSJ), Mosaic augmentation and Mixup augmentation, following the setting of [YOLOv5](https://github.com/ultralytics/yolov5).
-- For optimizer, we use SGD with weight decay 0.0005 and base per image lr 0.01 / 64, following the setting of the official YOLOv5.
-- For learning rate scheduler, we use linear decay scheduler.
-- We use decoupled head in our reproduced YOLOv5, which is different from the official YOLOv5'head.
-
-
-On the other hand, we are trying to use **AdamW** and larger batch size to train our reproduced YOLOv5. We will update the new results as soon as possible.
-
-|   Model   | Batch | Scale | AP<sup>val<br>0.5:0.95 | AP<sup>val<br>0.5 | FLOPs<br><sup>(G) | Params<br><sup>(M) | Weight |
-|-----------|-------|-------|------------------------|-------------------|-------------------|--------------------|--------|
 | YOLOv5-N  | 8xb16 |  640  |                        |                   |                   |                    |  |
 | YOLOv5-S  | 8xb16 |  640  |         39.2           |        57.9       |        27.3       |         9.0        | [ckpt](https://github.com/yjh0410/RT-ODLab/releases/download/yolo_tutorial_ckpt/yolov5_s_coco_adamw.pth) |
 | YOLOv5-M  | 8xb16 |  640  |                        |                   |                   |                    |  |
