@@ -110,7 +110,7 @@ def detect(args,
 
                 # prepare
                 x, _, ratio = transform(frame)
-                x = x.unsqueeze(0).to(device) / 255.
+                x = x.unsqueeze(0).to(device)
                 
                 # inference
                 t0 = time.time()
@@ -179,7 +179,7 @@ def detect(args,
 
                 # prepare
                 x, _, ratio = transform(frame)
-                x = x.unsqueeze(0).to(device) / 255.
+                x = x.unsqueeze(0).to(device)
 
                 # inference
                 t0 = time.time()
@@ -236,7 +236,7 @@ def detect(args,
 
             # prepare
             x, _, ratio = transform(image)
-            x = x.unsqueeze(0).to(device) / 255.
+            x = x.unsqueeze(0).to(device)
 
             # inference
             t0 = time.time()
