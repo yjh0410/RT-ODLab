@@ -177,11 +177,11 @@ def train():
     model, criterion = build_model(args, model_cfg, device, data_cfg['num_classes'], True)
     model = model.to(device).train()
     model_without_ddp = model
-    if args.sybn and args.distributed:
-        print('use SyncBatchNorm ...')
-        model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     if args.distributed:
         model = DDP(model, device_ids=[args.gpu], find_unused_parameters=args.find_unused_parameters)
+        if args.sybn:
+            print('use SyncBatchNorm ...')
+            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model_without_ddp = model.module
     ## Calcute Params & GFLOPs
     if distributed_utils.is_main_process:
@@ -204,6 +204,7 @@ def train():
         # to check whether the evaluator can work
         model_eval = model_without_ddp
         trainer.eval(model_eval)
+        return
 
     ## Satrt Training
     trainer.train(model)

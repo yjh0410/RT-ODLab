@@ -21,7 +21,7 @@ yolo_x_trans_config = {
     # Basic Augment
     'affine_params': {
         'degrees': 0.0,
-        'translate': 0.2,
+        'translate': 0.1,
         'scale': [0.1, 2.0],
         'shear': 0.0,
         'perspective': 0.0,
@@ -43,7 +43,7 @@ yolo_l_trans_config = {
     # Basic Augment
     'affine_params': {
         'degrees': 0.0,
-        'translate': 0.2,
+        'translate': 0.1,
         'scale': [0.1, 2.0],
         'shear': 0.0,
         'perspective': 0.0,
@@ -65,7 +65,7 @@ yolo_m_trans_config = {
     # Basic Augment
     'affine_params': {
         'degrees': 0.0,
-        'translate': 0.2,
+        'translate': 0.1,
         'scale': [0.1, 2.0],
         'shear': 0.0,
         'perspective': 0.0,
@@ -87,8 +87,8 @@ yolo_s_trans_config = {
     # Basic Augment
     'affine_params': {
         'degrees': 0.0,
-        'translate': 0.2,
-        'scale': [0.1, 2.0],
+        'translate': 0.1,
+        'scale': [0.5, 1.5],
         'shear': 0.0,
         'perspective': 0.0,
         'hsv_h': 0.015,
