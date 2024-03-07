@@ -370,9 +370,7 @@ class YoloxTrainer(object):
         self.heavy_eval = False
         # weak augmentatino stage
         self.second_stage = False
-        self.third_stage = False
         self.second_stage_epoch = args.no_aug_epoch
-        self.third_stage_epoch = args.no_aug_epoch // 2
         # path to save model
         self.path_to_save = os.path.join(args.save_folder, args.dataset, args.model)
         os.makedirs(self.path_to_save, exist_ok=True)
@@ -434,20 +432,6 @@ class YoloxTrainer(object):
                 weight_name = '{}_last_mosaic_epoch.pth'.format(self.args.model)
                 checkpoint_path = os.path.join(self.path_to_save, weight_name)
                 print('Saving state of the last Mosaic epoch-{}.'.format(self.epoch))
-                torch.save({'model': model.state_dict(),
-                            'mAP': round(self.evaluator.map*100, 1),
-                            'optimizer': self.optimizer.state_dict(),
-                            'epoch': self.epoch,
-                            'args': self.args}, 
-                            checkpoint_path)
-
-            # check third stage
-            if epoch >= (self.args.max_epoch - self.third_stage_epoch - 1) and not self.third_stage:
-                self.check_third_stage()
-                # save model of the last mosaic epoch
-                weight_name = '{}_last_weak_augment_epoch.pth'.format(self.args.model)
-                checkpoint_path = os.path.join(self.path_to_save, weight_name)
-                print('Saving state of the last weak augment epoch-{}.'.format(self.epoch))
                 torch.save({'model': model.state_dict(),
                             'mAP': round(self.evaluator.map*100, 1),
                             'optimizer': self.optimizer.state_dict(),
@@ -617,18 +601,17 @@ class YoloxTrainer(object):
         # set second stage
         print('============== Second stage of Training ==============')
         self.second_stage = True
+        self.heavy_eval = True
 
         # close mosaic augmentation
         if self.train_loader.dataset.mosaic_prob > 0.:
             print(' - Close < Mosaic Augmentation > ...')
             self.train_loader.dataset.mosaic_prob = 0.
-            self.heavy_eval = True
 
         # close mixup augmentation
         if self.train_loader.dataset.mixup_prob > 0.:
             print(' - Close < Mixup Augmentation > ...')
             self.train_loader.dataset.mixup_prob = 0.
-            self.heavy_eval = True
 
         # close rotation augmentation
         if 'degrees' in self.trans_cfg.keys() and self.trans_cfg['degrees'] > 0.0:
@@ -640,17 +623,6 @@ class YoloxTrainer(object):
         if 'perspective' in self.trans_cfg.keys() and self.trans_cfg['perspective'] > 0.0:
             print(' - Close < perspective of rotation > ...')
             self.trans_cfg['perspective'] = 0.0
-
-        # build a new transform for second stage
-        print(' - Rebuild transforms ...')
-        self.train_transform, self.trans_cfg = build_transform(
-            args=self.args, trans_config=self.trans_cfg, max_stride=self.model_cfg['max_stride'], is_train=True)
-        self.train_loader.dataset.transform = self.train_transform
-        
-    def check_third_stage(self):
-        # set third stage
-        print('============== Third stage of Training ==============')
-        self.third_stage = True
 
         # close random affine
         if 'translate' in self.trans_cfg.keys() and self.trans_cfg['translate'] > 0.0:
