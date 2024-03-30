@@ -134,17 +134,33 @@ python eval.py -d coco \
 ```
 
 ## Demo
-I have provide some images in `data/demo/images/`, so you can run following command to run a demo:
+I have provide some images in `data/demo/images/`, so you can run following command to run a demo with coco pretrained model:
 
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
                --cuda \
                --img_size 640 \
-               -m yolov2 \
+               --model yolov2 \
                --weight path/to/weight \
+               --dataset coco \
+               --num_classes 80 \
                --show
 ```
+
+If you want to try this command with voc pretrained model, you could refer to the following command:
+```Shell
+python demo.py --mode image \
+               --path_to_img data/demo/images/ \
+               --cuda \
+               --img_size 640 \
+               --model yolov2 \
+               --weight path/to/weight \
+               --dataset voc \
+               --num_classes 20 \
+               --show
+```
+
 
 If you want run a demo of streaming video detection, you need to set `--mode` to `video`, and give the path to video `--path_to_vid`。
 

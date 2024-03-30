@@ -147,18 +147,33 @@ python eval.py -d coco \
 - 按照COCO官方的要求，将该文件上传至官方的服务器去计算AP。
 
 ## Demo
-本项目在`data/demo/images/`文件夹中提供了一些图片，使用者可以运行下面的命令来测试本地的图片：
+本项目在`data/demo/images/`文件夹中提供了一些图片，使用者可以运行下面的命令去在本地的图片上测试用COCO训练出来的模型：
 
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
                --cuda \
                --img_size 640 \
-               -m yolov2 \
+               --model yolov2 \
                --weight path/to/weight \
+               --dataset coco \
+               --num_classes 80 \
                --show
 ```
 
+当然，如果你想测试的是用VOC训练出来的模型，而非COCO，则参考下面的运行命令即可：
+
+```Shell
+python demo.py --mode image \
+               --path_to_img data/demo/images/ \
+               --cuda \
+               --img_size 640 \
+               --model yolov2 \
+               --weight path/to/weight \
+               --dataset voc \
+               --num_classes 20 \
+               --show
+```
 如果使用者想在本地的视频上去做测试，那么你需要将上述命令中的`--mode image`修改为`--mode video`，并给`--path_to_vid`传入视频所在的文件路径，例如：
 
 ```Shell
