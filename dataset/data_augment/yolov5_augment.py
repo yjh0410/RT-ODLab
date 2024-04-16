@@ -146,6 +146,12 @@ class YOLOv5Augmentation(object):
             img = image
         img_h, img_w = img.shape[:2]
 
+        # rescale bbox
+        boxes_ = target["boxes"].copy()
+        boxes_[:, [0, 2]] = boxes_[:, [0, 2]] / img_w0 * img_w
+        boxes_[:, [1, 3]] = boxes_[:, [1, 3]] / img_h0 * img_h
+        target["boxes"] = boxes_
+        
         # --------------- Filter bad targets ---------------
         tgt_boxes_wh = target["boxes"][..., 2:] - target["boxes"][..., :2]
         min_tgt_size = np.min(tgt_boxes_wh, axis=-1)
@@ -166,11 +172,6 @@ class YOLOv5Augmentation(object):
         # --------------- Spatial augmentations ---------------
         ## Random perspective
         if not mosaic:
-            # rescale bbox
-            boxes_ = target["boxes"].copy()
-            boxes_[:, [0, 2]] = boxes_[:, [0, 2]] / img_w0 * img_w
-            boxes_[:, [1, 3]] = boxes_[:, [1, 3]] / img_h0 * img_h
-            target["boxes"] = boxes_
             # spatial augment
             target_ = np.concatenate(
                 (target['labels'][..., None], target['boxes']), axis=-1)

@@ -54,10 +54,13 @@ class Resize(object):
 
     def __call__(self, image, boxes=None, labels=None):
         orig_h, orig_w = image.shape[:2]
-        image = cv2.resize(image, (self.img_size, self.img_size))
+
+        # resize
+        image = cv2.resize(image, (self.img_size, self.img_size)).astype(np.float32)
+        img_h, img_w = image.shape[:2]
+
         # rescale bbox
         if boxes is not None:
-            img_h, img_w = image.shape[:2]
             boxes[..., [0, 2]] = boxes[..., [0, 2]] / orig_w * img_w
             boxes[..., [1, 3]] = boxes[..., [1, 3]] / orig_h * img_h
 
