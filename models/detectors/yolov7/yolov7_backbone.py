@@ -208,8 +208,8 @@ if __name__ == '__main__':
     import time
     from thop import profile
     cfg = {
-        'pretrained': True,
-        'backbone': 'elannet_large',
+        'pretrained': False,
+        'backbone': 'elannet_tiny',
         'bk_act': 'silu',
         'bk_norm': 'BN',
         'bk_dpw': False,

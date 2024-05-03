@@ -183,6 +183,7 @@ class YoloTrainer(object):
         header = 'Epoch: [{} / {}]'.format(self.epoch, self.args.max_epoch)
         epoch_size = len(self.train_loader)
         print_freq = 10
+        grad_norm  = 0.0
 
         # basic parameters
         epoch_size = len(self.train_loader)
@@ -233,7 +234,6 @@ class YoloTrainer(object):
 
             # Optimize
             if ni % self.grad_accumulate == 0:
-                grad_norm = None
                 if self.clip_grad > 0:
                     # unscale gradients
                     self.scaler.unscale_(self.optimizer)
