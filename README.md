@@ -110,27 +110,13 @@ bash train.sh yolov3 coco path/to/coco 128 4 1699 path/to/yolov3.pth
 
 ## Test
 ```Shell
-python test.py -d coco \
-               --cuda \
-               -m yolov1 \
-               --img_size 640 \
-               --weight path/to/weight \
-               --root path/to/dataset/ \
-               --no_multi_labels \
-               --visual_threshold 0.35 \
-               --show
+python test.py --cuda --dataset coco --root path/to/coco --model yolov1 --weight path/to/yolov1.pth --img_size 640 --show 
 ```
 
 
 ## Evaluation
 ```Shell
-python eval.py -d coco \
-               --cuda \
-               -m yolov1 \
-               --img_size 640 \
-               --weight path/to/weight \
-               --root path/to/dataset/ \
-               --show
+python eval.py --cuda --dataset coco --root path/to/coco --model yolov1 --weight path/to/yolov1.pth --img_size 640
 ```
 
 ## Demo
@@ -139,12 +125,11 @@ I have provide some images in `data/demo/images/`, so you can run following comm
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
+               --dataset coco \
                --cuda \
                --img_size 640 \
                --model yolov2 \
-               --weight path/to/weight \
-               --dataset coco \
-               --num_classes 80 \
+               --weight path/to/yolov2_coco.pth \
                --show
 ```
 
@@ -152,12 +137,11 @@ If you want to try this command with voc pretrained model, you could refer to th
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
+               --dataset voc \
                --cuda \
                --img_size 640 \
                --model yolov2 \
-               --weight path/to/weight \
-               --dataset voc \
-               --num_classes 20 \
+               --weight path/to/yolov2_voc.pth \
                --show
 ```
 
@@ -167,10 +151,11 @@ If you want run a demo of streaming video detection, you need to set `--mode` to
 ```Shell
 python demo.py --mode video \
                --path_to_vid data/demo/videos/your_video \
+               --dataset coco \
                --cuda \
                --img_size 640 \
-               -m yolov2 \
-               --weight path/to/weight \
+               --model yolov2 \
+               --weight path/to/yolov2_coco.pth \
                --show \
                --gif
 ```
@@ -180,9 +165,10 @@ If you want run video detection with your camera, you need to set `--mode` to `c
 ```Shell
 python demo.py --mode camera \
                --cuda \
+               --dataset coco \
                --img_size 640 \
-               -m yolov2 \
-               --weight path/to/weight \
+               --model yolov2 \
+               --weight path/to/yolov2_coco.pth \
                --show \
                --gif
 ```
@@ -194,11 +180,12 @@ Command：
 
 ```Shell
 python demo.py --mode video \
-                --path_to_vid ./dataset/demo/videos/000006.mp4 \
+               --path_to_vid ./dataset/demo/videos/000006.mp4 \
                --cuda \
+               --dataset coco \
                --img_size 640 \
-               -m yolov2 \
-               --weight path/to/weight \
+               --model yolov2 \
+               --weight path/to/yolov2_coco.pth \
                --show \
                --gif
 ```
@@ -215,10 +202,10 @@ Our project also supports **multi-object tracking** tasks. We use the YOLO of th
 python track.py --mode image \
                 --path_to_img path/to/images/ \
                 --cuda \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```
@@ -229,10 +216,10 @@ python track.py --mode image \
 python track.py --mode video \
                 --path_to_img path/to/video/ \
                 --cuda \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```
@@ -242,10 +229,10 @@ python track.py --mode video \
 ```Shell
 python track.py --mode camera \
                 --cuda \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```
@@ -260,10 +247,10 @@ Command：
 ```Shell
 python track.py --mode video \
                 --path_to_img ./dataset/demo/videos/000006.mp4 \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```

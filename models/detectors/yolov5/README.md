@@ -31,27 +31,27 @@ python -m torch.distributed.run --nproc_per_node=8 train.py --cuda -dist -d coco
 ## Test YOLOv5
 Taking testing YOLOv5 on COCO-val as the example,
 ```Shell
-python test.py --cuda -d coco --root path/to/coco -m yolov5_s --weight path/to/yolov5.pth -size 640 -vt 0.4 --show 
+python test.py --cuda -d coco --root path/to/coco -m yolov5_s --weight path/to/yolov5_coco.pth -size 640 --show 
 ```
 
 ## Evaluate YOLOv5
 Taking evaluating YOLOv5 on COCO-val as the example,
 ```Shell
-python eval.py --cuda -d coco-val --root path/to/coco -m yolov5_s --weight path/to/yolov5.pth 
+python eval.py --cuda -d coco --root path/to/coco -m yolov5_s --weight path/to/yolov5_coco.pth 
 ```
 
 ## Demo
 ### Detect with Image
 ```Shell
-python demo.py --mode image --path_to_img path/to/image_dirs/ --cuda -m yolov5_s --weight path/to/weight -size 640 -vt 0.4 --show
+python demo.py --mode image --path_to_img path/to/image_dirs/ --cuda -m yolov5_s --weight path/to/yolov5_coco.pth  -size 640 --show
 ```
 
 ### Detect with Video
 ```Shell
-python demo.py --mode video --path_to_vid path/to/video --cuda -m yolov5_s --weight path/to/weight -size 640 -vt 0.4 --show --gif
+python demo.py --mode video --path_to_vid path/to/video --cuda -m yolov5_s --weight path/to/yolov5_coco.pth  -size 640 --show --gif
 ```
 
 ### Detect with Camera
 ```Shell
-python demo.py --mode camera --cuda -m yolov5_s --weight path/to/weight -size 640 -vt 0.4 --show --gif
+python demo.py --mode camera --cuda -m yolov5_s --weight path/to/weight -size 640 --show --gif
 ```

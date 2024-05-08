@@ -114,15 +114,7 @@ bash train.sh yolov3 coco path/to/coco 128 4 1699 path/to/yolov3.pth
 使用者可以参考下面的给出的例子在相应的数据集上去测试训练好的模型，正常情况下，使用者将会看到检测结果的可视化图像。
 
 ```Shell
-python test.py -d coco \
-               --cuda \
-               -v yolov1 \
-               --img_size 640 \
-               --weight path/to/weight \
-               --root path/to/dataset/ \
-               --no_multi_labels \
-               --visual_threshold 0.35 \
-               --show
+python test.py --cuda --dataset coco --root path/to/coco --model yolov1 --weight path/to/yolov1.pth --img_size 640 --show 
 ```
 
 
@@ -130,13 +122,7 @@ python test.py -d coco \
 使用者可以参考下面的给出的例子在相应的数据集上去验证训练好的模型，正常情况下，使用者将会看到COCO风格的AP结果输出。
 
 ```Shell
-python eval.py -d coco \
-               --cuda \
-               -v yolov1 \
-               --img_size 640 \
-               --weight path/to/weight \
-               --root path/to/dataset/ \
-               --show
+python eval.py --cuda --dataset coco --root path/to/coco --model yolov1 --weight path/to/yolov1.pth --img_size 640
 ```
 
 如果使用者想测试模型在COCO test-dev数据集上的AP指标，可以遵循以下步骤：
@@ -152,12 +138,11 @@ python eval.py -d coco \
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
+               --dataset coco \
                --cuda \
                --img_size 640 \
                --model yolov2 \
-               --weight path/to/weight \
-               --dataset coco \
-               --num_classes 80 \
+               --weight path/to/yolov2_coco.pth \
                --show
 ```
 
@@ -166,23 +151,23 @@ python demo.py --mode image \
 ```Shell
 python demo.py --mode image \
                --path_to_img data/demo/images/ \
+               --dataset voc \
                --cuda \
                --img_size 640 \
                --model yolov2 \
-               --weight path/to/weight \
-               --dataset voc \
-               --num_classes 20 \
+               --weight path/to/yolov2_voc.pth \
                --show
 ```
 如果使用者想在本地的视频上去做测试，那么你需要将上述命令中的`--mode image`修改为`--mode video`，并给`--path_to_vid`传入视频所在的文件路径，例如：
 
 ```Shell
 python demo.py --mode video \
-               --path_to_img data/demo/videos/your_video \
+               --path_to_vid data/demo/videos/your_video \
+               --dataset coco \
                --cuda \
                --img_size 640 \
-               -m yolov2 \
-               --weight path/to/weight \
+               --model yolov2 \
+               --weight path/to/yolov2_coco.pth \
                --show \
                --gif
 ```
@@ -192,9 +177,10 @@ python demo.py --mode video \
 ```Shell
 python demo.py --mode camera \
                --cuda \
+               --dataset coco \
                --img_size 640 \
-               -m yolov2 \
-               --weight path/to/weight \
+               --model yolov2 \
+               --weight path/to/yolov2_coco.pth \
                --show \
                --gif
 ```
@@ -206,11 +192,12 @@ python demo.py --mode camera \
 
 ```Shell
 python demo.py --mode video \
-                --path_to_vid ./dataset/demo/videos/000006.mp4 \
+               --path_to_vid ./dataset/demo/videos/000006.mp4 \
                --cuda \
+               --dataset coco \
                --img_size 640 \
-               -m yolov2 \
-               --weight path/to/weight \
+               --model yolov2 \
+               --weight path/to/yolov2_coco.pth \
                --show \
                --gif
 ```
@@ -228,10 +215,10 @@ python demo.py --mode video \
 python track.py --mode image \
                 --path_to_img path/to/images/ \
                 --cuda \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```
@@ -242,10 +229,10 @@ python track.py --mode image \
 python track.py --mode video \
                 --path_to_img path/to/video/ \
                 --cuda \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```
@@ -255,10 +242,10 @@ python track.py --mode video \
 ```Shell
 python track.py --mode camera \
                 --cuda \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```
@@ -273,10 +260,10 @@ python track.py --mode camera \
 ```Shell
 python track.py --mode video \
                 --path_to_img ./dataset/demo/videos/000006.mp4 \
-                -size 640 \
+                --img_size 640 \
                 -dt yolov2 \
                 -tk byte_tracker \
-                --weight path/to/coco_pretrained/ \
+                --weight path/to/yolov2_coco.pth \
                 --show \
                 --gif
 ```

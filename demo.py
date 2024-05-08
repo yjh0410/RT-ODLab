@@ -284,7 +284,7 @@ def run():
     class_indexs = data_cfg['class_indexs']
 
     # build model
-    model = build_model(args, model_cfg, device, args.num_classes, False)
+    model = build_model(args, model_cfg, device, num_classes, False)
 
     # load trained weight
     model = load_weight(model, args.weight, args.fuse_conv_bn)
