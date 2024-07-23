@@ -532,7 +532,7 @@ class PreProcessor(object):
             return padded_img, r
         else:
             orig_h, orig_w = image.shape[:2]
-            r = np.array([self.input_size[0] / orig_w, self.input_size[1] / orig_w])
+            r = np.array([self.input_size[0] / orig_h, self.input_size[1] / orig_w])
             if [orig_h, orig_w] == self.input_size:
                 resized_img = image
             else:
